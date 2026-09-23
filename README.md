@@ -1,70 +1,67 @@
-# 🎓 Alumni Tracking System (Mezun Takip Sistemi)
+# 🎓 Alumni Tracking System
 
-Modern, güvenilir ve ölçeklenebilir bir **Mezun Takip ve İletişim Sistemi** (Alumni Tracking System). Bu platform, mezunların kariyer gelişimlerini takip etmeyi, mezunlar ve kurumlar arasındaki iletişimi güçlendirmeyi ve mezun istatistiklerini raporlamayı hedefler.
-
----
-
-## 🚀 Proje Hakkında
-
-Bu proje, kurumların mezunları ile sürdürülebilir bağlar kurabilmesini, mezunların sektör ve iş bilgilerini güncel tutabilmesini ve kurum içi kariyer/ağ fırsatlarının yönetilmesini sağlayan bir web platformudur.
-
-### 🌟 Temel Özellikler
-- **Mezun Profil Yönetimi**: Kişisel bilgiler, eğitim geçmişi, mevcut iş ve pozisyon detayları.
-- **Arama ve Filtreleme**: Bölüm, mezuniyet yılı, şirket, unvan ve şehir bazlı gelişmiş arama.
-- **İletişim & Ağ Oluşturma**: Mezunlar ve öğrenci/öğretim görevlileri arasında köprü oluşturma.
-- **Raporlama & İstatistikler**: Sektörel istihdam analizi ve mezun istatistikleri.
-- **Yetkilendirme & Güvenlik**: Rol bazlı erişim kontrolü (Öğrenci, Mezun, Yönetici/Admin) ve güvenli kimlik doğrulama.
+A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
 ---
 
-## 🛠️ Teknolojiler & Araçlar
+## 🚀 Key Features
 
-Proje modern backend ve konteyner teknolojileri temel alınarak geliştirilmektedir:
+- **Alumni Profile Management:** Maintain comprehensive profiles including educational background, current workplace, job titles, industry experience, and professional links (e.g., LinkedIn).
+- **Advanced Search & Filtering:** Filter alumni directories by graduation year, department/faculty, current employer, industry sector, and geographical location.
+- **Networking & Engagement:** Facilitate meaningful connections, mentorship opportunities, and communications between students, alumni, and faculty.
+- **Analytics & Reporting:** Visual dashboards highlighting alumni employment rates, industry distributions, and career trajectories over time.
+- **Role-Based Access Control (RBAC):** Distinct permissions and workflows for Students, Alumni, and Institutional Administrators secured with JWT-based authentication.
 
-| Alan | Teknoloji | Açıklama |
+---
+
+## 🛠️ Tech Stack
+
+| Domain | Technology | Description |
 | :--- | :--- | :--- |
-| **Backend** | **Node.js** | Hızlı, asenkron ve modüler RESTful API mimarisi |
-| **Veritabanı** | **PostgreSQL** | Güçlü, ilişkisel ve ACID uyumlu veri tabanı |
-| **Konteynerleştirme** | **Docker & Docker Compose** | İzole geliştirme ortamı ve kolay dağıtım |
-| **Sürüm Kontrolü** | **Git & GitHub** | Kod yönetimi, iş birliği ve versiyonlama |
+| **Backend** | **Node.js** & **Express.js** | High-performance, asynchronous RESTful API architecture |
+| **Database** | **PostgreSQL** | Reliable, ACID-compliant relational database management system |
+| **Containerization** | **Docker** & **Docker Compose** | Isolated micro-environments for seamless development and deployment |
+| **Version Control & CI/CD** | **Git** & **GitHub** | Source control, collaborative workflows, and automated pipelines |
 
 ---
 
-## 📁 Proje Dizin Yapısı (Öngörülen)
+## 📁 Project Directory Structure
 
 ```text
 alumni/
-├── docker/                 # Dockerfile ve ortam konfigürasyonları
-│   └── Dockerfile
-├── src/                    # Node.js backend kaynak kodları
-│   ├── config/             # Veritabanı ve ortam konfigürasyonları
-│   ├── controllers/        # İstek yönetimi (Request handlers)
-│   ├── models/             # PostgreSQL veri modelleri / şemalar
-│   ├── routes/             # API rotaları / endpointler
-│   ├── services/           # İş mantığı (Business logic)
-│   ├── middlewares/        # Hata yönetimi, auth filtreleri vb.
-│   └── app.js              # Uygulama giriş noktası
-├── .env.example            # Örnek ortam değişkenleri
-├── .gitignore              # Git tarafından yoksayılacak dosyalar
-├── docker-compose.yml      # Node.js + PostgreSQL konteyner orkestrasyonu
-├── package.json            # Node.js bağımlılıkları ve scriptler
-└── README.md               # Proje dokümantasyonu
+├── docker/                 # Container configs and initialization scripts
+│   └── init.sql            # Initial PostgreSQL database schema & seeds
+├── src/                    # Node.js backend source code
+│   ├── config/             # Environment & database connection configs
+│   ├── controllers/        # Request handlers & controllers
+│   ├── middlewares/        # Authentication, authorization, and error handlers
+│   ├── models/             # Database models and queries
+│   ├── routes/             # Express API route definitions
+│   ├── services/           # Core business logic
+│   └── server.js           # Application entry point
+├── .dockerignore           # Files ignored by Docker build context
+├── .env.example            # Sample environment variables configuration
+├── .gitignore              # Files ignored by Git
+├── docker-compose.yml      # Multi-container orchestration (Node.js + PostgreSQL)
+├── Dockerfile              # Production-ready container image for the API
+├── package.json            # Node.js project manifest and dependencies
+└── README.md               # Project documentation
 ```
 
 ---
 
-## ⚙️ Kurulum ve Başlangıç
+## ⚙️ Getting Started
 
-### 📋 Ön Koşullar
-Sistemi yerel ortamınızda çalıştırmadan önce aşağıdaki araçların kurulu olduğundan emin olun:
+### 📋 Prerequisites
+Ensure you have the following installed on your local machine:
 - [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/) (v18 veya üzeri önerilir) & npm
 - [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
-- [PostgreSQL](https://www.postgresql.org/) (Docker kullanılmadığı senaryolarda)
+- [Node.js](https://nodejs.org/) (v18 or higher) & npm (for local non-containerized development)
+- [PostgreSQL](https://www.postgresql.org/) (if running locally without Docker)
 
 ---
 
-### 📥 1. Depoyu Klonlama
+### 📥 1. Clone the Repository
 
 ```bash
 git clone https://github.com/ecemyakali/alumni.git
@@ -73,81 +70,89 @@ cd alumni
 
 ---
 
-### 🐳 2. Docker ile Hızlı Başlatma (Önerilen)
+### 🐳 2. Quick Start with Docker (Recommended)
 
-Projeyi PostgreSQL ve Node.js servisleriyle birlikte tek komutla ayağa kaldırmak için:
+To spin up both the **Node.js API** and the **PostgreSQL database** with persistent storage in isolated containers:
 
 ```bash
-# Servisleri arka planda başlat
-docker compose up -d
+# Start containers in detached mode
+docker compose up --build -d
 
-# Logları izle
+# Follow container logs
 docker compose logs -f
 ```
 
+The API service will be accessible at `http://localhost:5000`.
+
 ---
 
-### 💻 3. Manuel Yerel Geliştirme Ortamı
+### 💻 3. Local Development (Without Docker)
 
-Eğer backend uygulamasını doğrudan ana makinenizde çalıştırmak isterseniz:
+If you prefer to run the Node.js server directly on your host machine:
 
-1. **Bağımlılıkları Yükleyin:**
+1. **Install Dependencies:**
    ```bash
    npm install
    ```
 
-2. **Ortam Değişkenlerini Tanımlayın:**
-   `.env.example` dosyasını `.env` olarak kopyalayın ve PostgreSQL bağlantı bilgilerinizi girin:
+2. **Configure Environment Variables:**
+   Copy the `.env.example` template to `.env` and fill in your local PostgreSQL credentials:
    ```bash
    cp .env.example .env
    ```
 
-   Örnek `.env` içeriği:
+   Example configuration:
    ```env
    PORT=5000
    NODE_ENV=development
+   
+   # PostgreSQL Connection
    DB_HOST=localhost
    DB_PORT=5432
    DB_NAME=alumni_db
    DB_USER=postgres
-   DB_PASSWORD=your_password
+   DB_PASSWORD=your_secure_password
+   
+   # Security
    JWT_SECRET=your_jwt_secret_key
    ```
 
-3. **Uygulamayı Başlatın:**
+3. **Start the Application:**
    ```bash
-   # Geliştirici modu (hot-reload)
+   # Development mode with live reload
    npm run dev
 
-   # veya normal çalıştırma
+   # Production mode
    npm start
    ```
 
 ---
 
-## 🗺️ Geliştirme Yol Haritası (Roadmap)
+## 🗺️ Roadmap
 
-- [ ] Temel proje altyapısının kurulması (Express.js / Node.js)
-- [ ] Docker ve Docker Compose konfigürasyonlarının oluşturulması
-- [ ] PostgreSQL veritabanı şemasının tasarlanması ve migrasyonların yazılması
-- [ ] Kimlik doğrulama (JWT / Auth) ve rol bazlı yetkilendirme modülü
-- [ ] Mezun profil yönetimi CRUD API uç noktaları
-- [ ] Arama ve filtreleme servisleri
-- [ ] Testlerin (Unit / Integration) eklenmesi
-- [ ] CI/CD iş akışlarının (GitHub Actions) tanımlanması
-
----
-
-## 🤝 Katkıda Bulunma
-
-1. Bu depoyu Fork'layın
-2. Yeni bir özellik dalı oluşturun (`git checkout -b feature/yeni-ozellik`)
-3. Değişikliklerinizi commit edin (`git commit -m 'feat: Yeni özellik eklendi'`)
-4. Dalınıza push yapın (`git push origin feature/yeni-ozellik`)
-5. Bir Pull Request (PR) açın
+- [ ] Project initialization with Express.js and ES Modules
+- [ ] Docker and Docker Compose environment orchestration
+- [ ] PostgreSQL schema modeling and initial database migrations
+- [ ] Secure JWT authentication and role-based authorization middleware
+- [ ] Alumni profile CRUD operations and file upload support (profile avatars, resumes)
+- [ ] Advanced search, filter, and pagination APIs
+- [ ] Automated unit and integration testing suite
+- [ ] GitHub Actions CI/CD deployment pipelines
 
 ---
 
-## 📄 Lisans
+## 🤝 Contributing
 
-Bu proje [MIT](LICENSE) lisansı ile lisanslanmıştır.
+Contributions are welcome! If you would like to contribute:
+
+1. **Fork** the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'feat: Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a **Pull Request**
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
