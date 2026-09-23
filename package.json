@@ -1,0 +1,26 @@
+{
+  "name": "alumni",
+  "version": "1.0.0",
+  "description": "A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ecemyakali/alumni.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ecemyakali/alumni/issues"
+  },
+  "homepage": "https://github.com/ecemyakali/alumni#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
