@@ -132,6 +132,67 @@ router.get(['/api/users', '/users'], (req, res) => {
   });
 });
 
+/**
+ * GET /api/users/:id (and /users/:id) -> Get user by ID
+ */
+router.get(['/api/users/:id', '/users/:id'], (req, res) => {
+  const userId = Number(req.params.id);
+  const user = users.find(u => u.id === userId);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      error: `User with id ${req.params.id} not found`
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: user
+  });
+});
+
+/**
+ * PUT /api/users/:id and PATCH /api/users/:id
+ * Updates an existing user's details in-memory (supports form-urlencoded & JSON)
+ */
+const updateUserHandler = (req, res) => {
+  const userId = Number(req.params.id);
+  const userIndex = users.findIndex(u => u.id === userId);
+
+  if (userIndex === -1) {
+    return res.status(404).json({
+      success: false,
+      error: `User with id ${req.params.id} not found`
+    });
+  }
+
+  const updateData = req.body;
+  if (!updateData || Object.keys(updateData).length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'No update data provided. Please send updated fields.'
+    });
+  }
+
+  // Merge updated fields while keeping original ID and creation timestamp
+  users[userIndex] = {
+    ...users[userIndex],
+    ...updateData,
+    id: userId,
+    updatedAt: new Date().toISOString()
+  };
+
+  res.status(200).json({
+    success: true,
+    message: 'User updated successfully',
+    user: users[userIndex]
+  });
+};
+
+router.put(['/api/users/:id', '/users/:id'], updateUserHandler);
+router.patch(['/api/users/:id', '/users/:id'], updateUserHandler);
+
 // Mount routes at both root and /alumni prefix for maximum flexibility
 app.use('/', router);
 app.use('/alumni', router);

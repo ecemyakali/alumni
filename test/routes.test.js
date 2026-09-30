@@ -111,4 +111,56 @@ test('Whiteboard Routes Test Suite', async (t) => {
     assert.ok(Array.isArray(data.data));
     assert.ok(data.data.length >= 1);
   });
+
+  await t.test('Task 3: PUT /api/users/:id updates user details', async () => {
+    const updateParams = new URLSearchParams();
+    updateParams.append('name', 'Ece Yakali Updated');
+    updateParams.append('email', 'ece.updated@example.com');
+    updateParams.append('department', 'Software Engineering');
+
+    const res = await fetch(`${baseUrl}/api/users/1`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: updateParams.toString()
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.user.name, 'Ece Yakali Updated');
+    assert.strictEqual(data.user.department, 'Software Engineering');
+    assert.ok(data.user.updatedAt);
+  });
+
+  await t.test('Task 3b: PATCH /api/users/:id partially updates user details', async () => {
+    const res = await fetch(`${baseUrl}/api/users/1`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ role: 'senior_alumni' })
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.user.role, 'senior_alumni');
+    assert.strictEqual(data.user.name, 'Ece Yakali Updated'); // preserved
+  });
+
+  await t.test('Task 3c: PUT /api/users/999 returns 404 for non-existent user', async () => {
+    const res = await fetch(`${baseUrl}/api/users/999`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name: 'Ghost' })
+    });
+
+    assert.strictEqual(res.status, 404);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+  });
 });
