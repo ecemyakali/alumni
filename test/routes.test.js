@@ -80,4 +80,35 @@ test('Whiteboard Routes Test Suite', async (t) => {
     assert.ok(typeof data.uptime === 'number');
     assert.ok(data.timestamp);
   });
+
+  await t.test('Task 2: POST /api/users adds a user via form-urlencoded', async () => {
+    const formParams = new URLSearchParams();
+    formParams.append('name', 'Ece Yakali');
+    formParams.append('email', 'ece@example.com');
+    formParams.append('role', 'alumni');
+
+    const res = await fetch(`${baseUrl}/api/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formParams.toString()
+    });
+
+    assert.strictEqual(res.status, 201);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.user.name, 'Ece Yakali');
+    assert.strictEqual(data.user.email, 'ece@example.com');
+    assert.ok(data.user.id);
+  });
+
+  await t.test('Task 2b: GET /api/users returns list of users', async () => {
+    const res = await fetch(`${baseUrl}/api/users`);
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(Array.isArray(data.data));
+    assert.ok(data.data.length >= 1);
+  });
 });

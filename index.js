@@ -14,6 +14,8 @@ app.listen(PORT, () => {
   console.log(`  GET /about                  -> "temp. about page"`);
   console.log(`  GET /alumni                 -> "ok"`);
   console.log(`  GET /api/health             -> JSON system health status`);
+  console.log(`  POST /api/users             -> Add user via form data (in-memory)`);
+  console.log(`  GET /api/users              -> List all users (in-memory)`);
 });
 
 // Support both 5000 and 3000 ports simultaneously

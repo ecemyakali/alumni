@@ -88,6 +88,50 @@ router.get(['/api/health', '/health'], (req, res) => {
   });
 });
 
+// In-memory user storage (no database yet)
+const users = [];
+
+/**
+ * Task 2: POST /api/users (and /users)
+ * Adds a new user in-memory from form data (x-www-form-urlencoded or JSON)
+ */
+router.post(['/api/users', '/users'], (req, res) => {
+  const formData = req.body;
+
+  if (!formData || Object.keys(formData).length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'Form data is empty. Please provide user details (e.g. name, email).'
+    });
+  }
+
+  const newUser = {
+    id: users.length + 1,
+    ...formData,
+    createdAt: new Date().toISOString()
+  };
+
+  users.push(newUser);
+
+  res.status(201).json({
+    success: true,
+    message: 'User created successfully',
+    user: newUser,
+    totalUsers: users.length
+  });
+});
+
+/**
+ * GET /api/users (and /users) -> List all in-memory users
+ */
+router.get(['/api/users', '/users'], (req, res) => {
+  res.status(200).json({
+    success: true,
+    count: users.length,
+    data: users
+  });
+});
+
 // Mount routes at both root and /alumni prefix for maximum flexibility
 app.use('/', router);
 app.use('/alumni', router);

@@ -1,13 +1,38 @@
 {
   "info": {
-    "_postman_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "_postman_id": "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
     "name": "Alumni Tracking System API",
-    "description": "Postman collection for Alumni Tracking System Express backend endpoints",
+    "description": "Postman collection with automated tests for Alumni Tracking System Express backend endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Health Check (GET /api/health)",
+      "name": "GET /api/health",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Response is JSON\", function () {",
+              "    pm.response.to.be.json;",
+              "});",
+              "pm.test(\"Health status is ok\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql(\"ok\");",
+              "});",
+              "pm.test(\"Contains timestamp and uptime\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property(\"timestamp\");",
+              "    pm.expect(jsonData).to.have.property(\"uptime\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [
@@ -17,12 +42,12 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3000/api/health",
+          "raw": "http://localhost:5000/api/health",
           "protocol": "http",
           "host": [
             "localhost"
           ],
-          "port": "3000",
+          "port": "5000",
           "path": [
             "api",
             "health"
@@ -32,17 +57,105 @@
       "response": []
     },
     {
-      "name": "2. Root Status (GET /)",
+      "name": "POST /api/users (Add User - Form Data)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"User created successfully\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.eql(true);",
+              "    pm.expect(jsonData.user).to.have.property(\"id\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
       "request": {
-        "method": "GET",
-        "header": [],
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "name",
+              "value": "Ece Yakali",
+              "type": "text"
+            },
+            {
+              "key": "email",
+              "value": "ece@example.com",
+              "type": "text"
+            },
+            {
+              "key": "role",
+              "value": "alumni",
+              "type": "text"
+            },
+            {
+              "key": "department",
+              "value": "Computer Engineering",
+              "type": "text"
+            }
+          ]
+        },
         "url": {
-          "raw": "http://localhost:3000/",
+          "raw": "http://localhost:5000/api/users",
           "protocol": "http",
           "host": [
             "localhost"
           ],
-          "port": "3000",
+          "port": "5000",
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /api/users (List Users)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
           "path": [
             ""
           ]
@@ -51,17 +164,17 @@
       "response": []
     },
     {
-      "name": "3. Hello World (GET /hello)",
+      "name": "GET /hello",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/hello",
+          "raw": "http://localhost:5000/hello",
           "protocol": "http",
           "host": [
             "localhost"
           ],
-          "port": "3000",
+          "port": "5000",
           "path": [
             "hello"
           ]
@@ -70,37 +183,37 @@
       "response": []
     },
     {
-      "name": "4. Hello Name (GET /hello/ece)",
+      "name": "GET /hello/:name",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/hello/ece",
+          "raw": "http://localhost:5000/hello/emre",
           "protocol": "http",
           "host": [
             "localhost"
           ],
-          "port": "3000",
+          "port": "5000",
           "path": [
             "hello",
-            "ece"
+            "emre"
           ]
         }
       },
       "response": []
     },
     {
-      "name": "5. Sum Numbers (GET /sum/15/25)",
+      "name": "GET /sum/:number1/:number2",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/sum/15/25",
+          "raw": "http://localhost:5000/sum/15/25",
           "protocol": "http",
           "host": [
             "localhost"
           ],
-          "port": "3000",
+          "port": "5000",
           "path": [
             "sum",
             "15",
@@ -111,17 +224,17 @@
       "response": []
     },
     {
-      "name": "6. About Page (GET /about)",
+      "name": "GET /about",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/about",
+          "raw": "http://localhost:5000/about",
           "protocol": "http",
           "host": [
             "localhost"
           ],
-          "port": "3000",
+          "port": "5000",
           "path": [
             "about"
           ]
