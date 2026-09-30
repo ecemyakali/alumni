@@ -1,4 +1,6 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./config/swagger');
 
 const app = express();
 
@@ -217,6 +219,15 @@ router.delete(['/api/users/:id', '/users/:id'], (req, res) => {
     totalUsers: users.length
   });
 });
+
+// Swagger UI API Documentation: GET /api/swagger and /api/docs
+const swaggerOptions = {
+  customSiteTitle: 'Alumni Tracking System API Docs'
+};
+
+app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
+router.get('/api/swagger.json', (req, res) => res.json(swaggerDocument));
 
 // Mount routes at both root and /alumni prefix for maximum flexibility
 app.use('/', router);

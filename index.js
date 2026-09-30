@@ -20,6 +20,8 @@ app.listen(PORT, () => {
   console.log(`  PUT /api/users/:id          -> Update user details by ID (in-memory)`);
   console.log(`  PATCH /api/users/:id        -> Partial update user details by ID (in-memory)`);
   console.log(`  DELETE /api/users/:id       -> Delete user by ID (in-memory)`);
+  console.log(`  GET /api/swagger            -> Interactive Swagger UI Documentation`);
+  console.log(`  GET /api/swagger.json       -> OpenAPI 3.0 JSON Specification`);
 });
 
 // Support both 5000 and 3000 ports simultaneously

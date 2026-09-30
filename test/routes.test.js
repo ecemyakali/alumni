@@ -188,4 +188,21 @@ test('Whiteboard Routes Test Suite', async (t) => {
     const data = await res.json();
     assert.strictEqual(data.success, false);
   });
+
+  await t.test('Swagger: GET /api/swagger loads Swagger documentation UI', async () => {
+    const res = await fetch(`${baseUrl}/api/swagger/`);
+    assert.strictEqual(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes('swagger-ui') || html.includes('Swagger'));
+  });
+
+  await t.test('Swagger: GET /api/swagger.json returns OpenAPI 3.0 specification', async () => {
+    const res = await fetch(`${baseUrl}/api/swagger.json`);
+    assert.strictEqual(res.status, 200);
+    assert.match(res.headers.get('content-type'), /application\/json/);
+    const spec = await res.json();
+    assert.strictEqual(spec.openapi, '3.0.0');
+    assert.strictEqual(spec.info.title, 'Alumni Tracking System API');
+    assert.ok(spec.paths['/api/users']);
+  });
 });
