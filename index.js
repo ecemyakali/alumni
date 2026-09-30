@@ -12,4 +12,5 @@ app.listen(PORT, () => {
   console.log(`  GET /main                   -> "temporary one main page"`);
   console.log(`  GET /about                  -> "temp. about page"`);
   console.log(`  GET /alumni                 -> "ok"`);
+  console.log(`  GET /api/health             -> JSON system health status`);
 });

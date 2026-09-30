@@ -76,6 +76,18 @@ router.get('/alumni', (req, res) => {
   res.send('ok');
 });
 
+/**
+ * Task 1: GET /api/health (and /health) -> Returns system health status in JSON format
+ */
+router.get(['/api/health', '/health'], (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'System is healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Mount routes at both root and /alumni prefix for maximum flexibility
 app.use('/', router);
 app.use('/alumni', router);

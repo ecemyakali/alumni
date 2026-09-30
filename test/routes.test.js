@@ -69,4 +69,15 @@ test('Whiteboard Routes Test Suite', async (t) => {
     const body = await res.text();
     assert.strictEqual(body, 'ok');
   });
+
+  await t.test('Task 1: GET /api/health responds with JSON system health', async () => {
+    const res = await fetch(`${baseUrl}/api/health`);
+    assert.strictEqual(res.status, 200);
+    assert.match(res.headers.get('content-type'), /application\/json/);
+    const data = await res.json();
+    assert.strictEqual(data.status, 'ok');
+    assert.strictEqual(data.message, 'System is healthy');
+    assert.ok(typeof data.uptime === 'number');
+    assert.ok(data.timestamp);
+  });
 });
