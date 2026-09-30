@@ -227,7 +227,7 @@ const swaggerOptions = {
 
 app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
-router.get('/api/swagger.json', (req, res) => res.json(swaggerDocument));
+router.get(['/api/swagger.json', '/swagger.json'], (req, res) => res.json(swaggerDocument));
 
 // Mount routes at both root and /alumni prefix for maximum flexibility
 app.use('/', router);

@@ -1,0 +1,596 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Alumni Tracking System API",
+    "version": "1.0.0",
+    "description": "Comprehensive API documentation for the Alumni Tracking System backend, built with Node.js and Express.",
+    "contact": {
+      "name": "Alumni Tracking System Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Default Server (Port 5000)"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Alternate Server (Port 3000)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "System health checks and status"
+    },
+    {
+      "name": "Users",
+      "description": "In-memory user management (CRUD)"
+    },
+    {
+      "name": "Whiteboard Routes",
+      "description": "Introductory classroom routes and endpoints"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "System health check",
+        "description": "Returns the current server health status, uptime, and timestamp in JSON format.",
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "System is healthy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "example": "2026-09-30T07:23:17.000Z"
+                    },
+                    "uptime": {
+                      "type": "number",
+                      "example": 124.56
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "List all users",
+        "description": "Retrieves all registered users from in-memory storage.",
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 2
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create a new user",
+        "description": "Adds a new user to in-memory storage. Accepts form-urlencoded or JSON body.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Ece Yakali"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "ece@example.com"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "alumni"
+                  },
+                  "department": {
+                    "type": "string",
+                    "example": "Computer Engineering"
+                  }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Ece Yakali"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "ece@example.com"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "alumni"
+                  },
+                  "department": {
+                    "type": "string",
+                    "example": "Computer Engineering"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User created successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    },
+                    "totalUsers": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input / empty form data"
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Numeric user ID",
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update user by ID",
+        "description": "Updates all or multiple details of an existing user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Ece Yakali (Updated)"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "ece.updated@example.com"
+                  },
+                  "department": {
+                    "type": "string",
+                    "example": "Software Engineering"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "senior_alumni"
+                  }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Ece Yakali (Updated)"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "ece.updated@example.com"
+                  },
+                  "department": {
+                    "type": "string",
+                    "example": "Software Engineering"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "senior_alumni"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User updated successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Partial update user by ID",
+        "description": "Partially updates specific fields of an existing user.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "example": "senior_alumni"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User updated successfully"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User deleted successfully"
+                    },
+                    "deletedUser": {
+                      "$ref": "#/components/schemas/User"
+                    },
+                    "totalUsers": {
+                      "type": "integer",
+                      "example": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/hello": {
+      "get": {
+        "tags": [
+          "Whiteboard Routes"
+        ],
+        "summary": "Hello World greeting",
+        "responses": {
+          "200": {
+            "description": "Returns Hello, World!"
+          }
+        }
+      }
+    },
+    "/hello/{name}": {
+      "get": {
+        "tags": [
+          "Whiteboard Routes"
+        ],
+        "summary": "Personalized greeting",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "emre"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns Hello, {Name}!"
+          }
+        }
+      }
+    },
+    "/sum/{number1}/{number2}": {
+      "get": {
+        "tags": [
+          "Whiteboard Routes"
+        ],
+        "summary": "Add two numbers",
+        "parameters": [
+          {
+            "name": "number1",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "example": 5
+            }
+          },
+          {
+            "name": "number2",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "example": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns sum of the two numbers"
+          }
+        }
+      }
+    },
+    "/about": {
+      "get": {
+        "tags": [
+          "Whiteboard Routes"
+        ],
+        "summary": "About page",
+        "responses": {
+          "200": {
+            "description": "Returns temp. about page"
+          }
+        }
+      }
+    },
+    "/alumni": {
+      "get": {
+        "tags": [
+          "Whiteboard Routes"
+        ],
+        "summary": "Alumni base route status",
+        "responses": {
+          "200": {
+            "description": "Returns ok"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Ece Yakali"
+          },
+          "email": {
+            "type": "string",
+            "example": "ece@example.com"
+          },
+          "role": {
+            "type": "string",
+            "example": "alumni"
+          },
+          "department": {
+            "type": "string",
+            "example": "Computer Engineering"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-09-30T08:11:30.322Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-09-30T08:11:58.287Z"
+          }
+        }
+      }
+    }
+  }
+}
