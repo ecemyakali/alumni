@@ -1,6 +1,7 @@
 const app = require('./src/app');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
+const ALT_PORT = 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
@@ -13,4 +14,9 @@ app.listen(PORT, () => {
   console.log(`  GET /about                  -> "temp. about page"`);
   console.log(`  GET /alumni                 -> "ok"`);
   console.log(`  GET /api/health             -> JSON system health status`);
+});
+
+// Support both 5000 and 3000 ports simultaneously
+app.listen(ALT_PORT, () => {
+  console.log(`Server also listening at http://localhost:${ALT_PORT}`);
 });
