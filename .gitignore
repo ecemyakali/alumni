@@ -28,7 +28,3 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
-
-# Postman local caches
-.postman/
-postman/
