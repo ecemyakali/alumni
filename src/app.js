@@ -193,6 +193,31 @@ const updateUserHandler = (req, res) => {
 router.put(['/api/users/:id', '/users/:id'], updateUserHandler);
 router.patch(['/api/users/:id', '/users/:id'], updateUserHandler);
 
+/**
+ * DELETE /api/users/:id (and /users/:id)
+ * Deletes an existing user from in-memory storage
+ */
+router.delete(['/api/users/:id', '/users/:id'], (req, res) => {
+  const userId = Number(req.params.id);
+  const userIndex = users.findIndex(u => u.id === userId);
+
+  if (userIndex === -1) {
+    return res.status(404).json({
+      success: false,
+      error: `User with id ${req.params.id} not found`
+    });
+  }
+
+  const deletedUser = users.splice(userIndex, 1)[0];
+
+  res.status(200).json({
+    success: true,
+    message: 'User deleted successfully',
+    deletedUser,
+    totalUsers: users.length
+  });
+});
+
 // Mount routes at both root and /alumni prefix for maximum flexibility
 app.use('/', router);
 app.use('/alumni', router);

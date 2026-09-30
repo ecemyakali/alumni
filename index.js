@@ -19,6 +19,7 @@ app.listen(PORT, () => {
   console.log(`  GET /api/users/:id          -> Get user by ID (in-memory)`);
   console.log(`  PUT /api/users/:id          -> Update user details by ID (in-memory)`);
   console.log(`  PATCH /api/users/:id        -> Partial update user details by ID (in-memory)`);
+  console.log(`  DELETE /api/users/:id       -> Delete user by ID (in-memory)`);
 });
 
 // Support both 5000 and 3000 ports simultaneously

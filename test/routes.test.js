@@ -163,4 +163,29 @@ test('Whiteboard Routes Test Suite', async (t) => {
     const data = await res.json();
     assert.strictEqual(data.success, false);
   });
+
+  await t.test('Task 4: DELETE /api/users/:id deletes user', async () => {
+    const res = await fetch(`${baseUrl}/api/users/1`, {
+      method: 'DELETE'
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.deletedUser.id, 1);
+
+    // Verify it is really gone
+    const verifyRes = await fetch(`${baseUrl}/api/users/1`);
+    assert.strictEqual(verifyRes.status, 404);
+  });
+
+  await t.test('Task 4b: DELETE /api/users/999 returns 404 for non-existent user', async () => {
+    const res = await fetch(`${baseUrl}/api/users/999`, {
+      method: 'DELETE'
+    });
+
+    assert.strictEqual(res.status, 404);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+  });
 });
