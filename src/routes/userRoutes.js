@@ -1,24 +1,18 @@
 /**
- * Router Layer: User Routes
+ * ========================================================
+ * Router Layer: Web User Routes (UserRoutes)
  * File: src/routes/userRoutes.js
+ * ========================================================
  * 
- * Maps HTTP methods and endpoints to both ApiUserController and UserController.
+ * Task 4: Defines application routes for UserController (/users).
+ * Handles web client operations, browser form submissions, and HTML views.
  */
 
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const apiUserController = require('../controllers/apiUserController');
 
-// REST API Endpoints (/api/users) -> Handled by ApiUserController
-router.post('/api/users', (req, res) => apiUserController.createUser(req, res));
-router.get('/api/users', (req, res) => apiUserController.getAllUsers(req, res));
-router.get('/api/users/:id', (req, res) => apiUserController.getUserById(req, res));
-router.put('/api/users/:id', (req, res) => apiUserController.updateUser(req, res));
-router.patch('/api/users/:id', (req, res) => apiUserController.updateUser(req, res));
-router.delete('/api/users/:id', (req, res) => apiUserController.deleteUser(req, res));
-
-// Web / Application Endpoints (/users) -> Handled by UserController
+// Web / Application Routes: .../users
 router.post('/users', (req, res) => userController.createUser(req, res));
 router.get('/users', (req, res) => userController.getAllUsers(req, res));
 router.get('/users/:id', (req, res) => userController.getUserById(req, res));

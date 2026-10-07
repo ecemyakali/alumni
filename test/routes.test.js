@@ -189,6 +189,21 @@ test('Whiteboard Routes Test Suite', async (t) => {
     assert.strictEqual(data.success, false);
   });
 
+  await t.test('Task 4c: POST /users and GET /users via UserController', async () => {
+    const postRes = await fetch(`${baseUrl}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Web Student', email: 'student@example.com' })
+    });
+    assert.strictEqual(postRes.status, 201);
+
+    const getRes = await fetch(`${baseUrl}/users`);
+    assert.strictEqual(getRes.status, 200);
+    const data = await getRes.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(data.data.some(u => u.name === 'Web Student'));
+  });
+
   await t.test('Swagger: GET /api/swagger loads Swagger documentation UI', async () => {
     const res = await fetch(`${baseUrl}/api/swagger/`);
     assert.strictEqual(res.status, 200);
@@ -196,13 +211,14 @@ test('Whiteboard Routes Test Suite', async (t) => {
     assert.ok(html.includes('swagger-ui') || html.includes('Swagger'));
   });
 
-  await t.test('Swagger: GET /api/swagger.json returns OpenAPI 3.0 specification', async () => {
+  await t.test('Swagger: GET /api/swagger.json returns OpenAPI 3.0 specification with both /api/users and /users', async () => {
     const res = await fetch(`${baseUrl}/api/swagger.json`);
     assert.strictEqual(res.status, 200);
     assert.match(res.headers.get('content-type'), /application\/json/);
     const spec = await res.json();
     assert.strictEqual(spec.openapi, '3.0.0');
     assert.strictEqual(spec.info.title, 'Alumni Tracking System API');
-    assert.ok(spec.paths['/api/users']);
+    assert.ok(spec.paths['/api/users'], 'spec must define /api/users');
+    assert.ok(spec.paths['/users'], 'spec must define /users');
   });
 });

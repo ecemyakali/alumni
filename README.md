@@ -19,17 +19,32 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 
 ## 🛣️ API Endpoints Summary
 
+### 🌐 RESTful API Endpoints (`ApiUserController` ➡️ `.../api/users`)
 | Method | Endpoint | Description | Request Format |
 | :--- | :--- | :--- | :--- |
 | **GET** | `/api/swagger` | Interactive Swagger UI API documentation | - |
 | **GET** | `/api/swagger.json` | OpenAPI 3.0 specification in JSON format | - |
 | **GET** | `/api/health` | System health check (status, uptime, timestamp) | - |
-| **GET** | `/api/users` | List all registered users (in-memory) | - |
-| **POST** | `/api/users` | Create a new user | Form (`x-www-form-urlencoded`) or JSON |
+| **GET** | `/api/users` | List all users as JSON (in-memory) | - |
+| **POST** | `/api/users` | Create a new user (JSON API) | Form (`x-www-form-urlencoded`) or JSON |
 | **GET** | `/api/users/:id` | Get single user details by numeric ID | - |
-| **PUT** | `/api/users/:id` | Update all or multiple user details | Form (`x-www-form-urlencoded`) or JSON |
-| **PATCH**| `/api/users/:id` | Partially update user fields | JSON or Form |
-| **DELETE**| `/api/users/:id`| Remove a user from in-memory storage | - |
+| **PUT** | `/api/users/:id` | Update all or multiple user details (API) | Form (`x-www-form-urlencoded`) or JSON |
+| **PATCH**| `/api/users/:id` | Partially update user fields (API) | JSON or Form |
+| **DELETE**| `/api/users/:id`| Remove a user from in-memory storage (API) | - |
+
+### 🖥️ Web / Application Endpoints (`UserController` ➡️ `.../users`)
+| Method | Endpoint | Description | Response Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/users` | List users (HTML view or JSON fallback) | HTML / JSON |
+| **POST** | `/users` | Form submission to create user | HTML / JSON |
+| **GET** | `/users/:id` | User profile page (HTML or JSON) | HTML / JSON |
+| **PUT** | `/users/:id` | Update user details by ID | JSON / Form |
+| **PATCH**| `/users/:id` | Partially update user details by ID | JSON / Form |
+| **DELETE**| `/users/:id`| Delete user by ID | JSON |
+
+### 📋 Whiteboard Classroom Routes
+| Method | Endpoint | Description | Request Format |
+| :--- | :--- | :--- | :--- |
 | **GET** | `/` | Root endpoint (`ok` or `temporary one main page` in browser) | - |
 | **GET** | `/hello` | Basic greeting (`Hello, World!`) | - |
 | **GET** | `/hello/:name` | Dynamic personalized greeting (`Hello, {Name}!`) | - |
@@ -222,14 +237,15 @@ alumni/
 │   ├── models/                         # Model Layer (Data structures & entity manipulation)
 │   │   └── userModel.js                # User entity data store & CRUD operations
 │   ├── routes/                         # Router Layer (HTTP verb & URL route definitions)
-│   │   ├── healthRoutes.js             # Routes for /api/health
+│   │   ├── apiUserRoutes.js            # Routes for .../api/users -> ApiUserController
+│   │   ├── healthRoutes.js             # Routes for /api/health -> HealthController
 │   │   ├── index.js                    # Aggregated master router & Swagger JSON endpoints
-│   │   ├── userRoutes.js               # Routes for /api/users (POST, GET, PUT, PATCH, DELETE)
+│   │   ├── userRoutes.js               # Routes for .../users -> UserController
 │   │   └── whiteboardRoutes.js         # Routes for classroom endpoints (/, /hello, /sum, etc.)
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner)
+├── test/                               # Automated test suites (Node.js native test runner - 40 tests)
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
-│   ├── routes.test.js                  # 19 integration tests validating all endpoints & MVC layers
+│   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
 │   └── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
 ├── .dockerignore                       # Files excluded from Docker container build
 ├── .env.example                        # Sample environment variable template

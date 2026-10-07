@@ -3,7 +3,7 @@ const swaggerDocument = {
   info: {
     title: 'Alumni Tracking System API',
     version: '1.0.0',
-    description: 'Comprehensive API documentation for the Alumni Tracking System backend, built with Node.js and Express.',
+    description: 'Comprehensive API documentation for the Alumni Tracking System backend, built with Node.js and Express following MVC architecture.',
     contact: {
       name: 'Alumni Tracking System Team'
     }
@@ -21,11 +21,15 @@ const swaggerDocument = {
   tags: [
     {
       name: 'System',
-      description: 'System health checks and status'
+      description: 'System health checks and uptime status'
     },
     {
-      name: 'Users',
-      description: 'In-memory user management (CRUD)'
+      name: 'API Users',
+      description: 'RESTful API user management via ApiUserController (.../api/users)'
+    },
+    {
+      name: 'Web Users',
+      description: 'Web / Application user management via UserController (.../users)'
     },
     {
       name: 'Whiteboard Routes',
@@ -60,9 +64,9 @@ const swaggerDocument = {
     },
     '/api/users': {
       get: {
-        tags: ['Users'],
-        summary: 'List all users',
-        description: 'Retrieves all registered users from in-memory storage.',
+        tags: ['API Users'],
+        summary: 'List all users (API)',
+        description: 'Retrieves all registered users as JSON from in-memory storage via ApiUserController.',
         responses: {
           '200': {
             description: 'List of users',
@@ -85,9 +89,9 @@ const swaggerDocument = {
         }
       },
       post: {
-        tags: ['Users'],
-        summary: 'Create a new user',
-        description: 'Adds a new user to in-memory storage. Accepts form-urlencoded or JSON body.',
+        tags: ['API Users'],
+        summary: 'Create a new user (API)',
+        description: 'Adds a new user to in-memory storage via ApiUserController. Accepts form-urlencoded or JSON body.',
         requestBody: {
           required: true,
           content: {
@@ -142,8 +146,8 @@ const swaggerDocument = {
     },
     '/api/users/{id}': {
       get: {
-        tags: ['Users'],
-        summary: 'Get user by ID',
+        tags: ['API Users'],
+        summary: 'Get user by ID (API)',
         parameters: [
           {
             name: 'id',
@@ -174,9 +178,9 @@ const swaggerDocument = {
         }
       },
       put: {
-        tags: ['Users'],
-        summary: 'Update user by ID',
-        description: 'Updates all or multiple details of an existing user.',
+        tags: ['API Users'],
+        summary: 'Update user by ID (API)',
+        description: 'Updates all or multiple details of an existing user via ApiUserController.',
         parameters: [
           {
             name: 'id',
@@ -234,9 +238,9 @@ const swaggerDocument = {
         }
       },
       patch: {
-        tags: ['Users'],
-        summary: 'Partial update user by ID',
-        description: 'Partially updates specific fields of an existing user.',
+        tags: ['API Users'],
+        summary: 'Partial update user by ID (API)',
+        description: 'Partially updates specific fields of an existing user via ApiUserController.',
         parameters: [
           {
             name: 'id',
@@ -280,8 +284,8 @@ const swaggerDocument = {
         }
       },
       delete: {
-        tags: ['Users'],
-        summary: 'Delete user by ID',
+        tags: ['API Users'],
+        summary: 'Delete user by ID (API)',
         parameters: [
           {
             name: 'id',
@@ -306,6 +310,188 @@ const swaggerDocument = {
                 }
               }
             }
+          },
+          '404': {
+            description: 'User not found'
+          }
+        }
+      }
+    },
+    '/users': {
+      get: {
+        tags: ['Web Users'],
+        summary: 'List all users (Web / App)',
+        description: 'Retrieves all users via UserController. Supports HTML views (Accept: text/html) and JSON fallback.',
+        responses: {
+          '200': {
+            description: 'List of users in HTML or JSON representation',
+            content: {
+              'text/html': {
+                schema: { type: 'string', example: '<h1>Alumni Users Directory</h1><ul>...</ul>' }
+              },
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    count: { type: 'integer', example: 1 },
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/User' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['Web Users'],
+        summary: 'Create a new user (Web / App)',
+        description: 'Handles web user creation form submission via UserController.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/x-www-form-urlencoded': {
+              schema: {
+                type: 'object',
+                required: ['name', 'email'],
+                properties: {
+                  name: { type: 'string', example: 'Ece Yakali' },
+                  email: { type: 'string', example: 'ece@example.com' },
+                  role: { type: 'string', example: 'alumni' },
+                  department: { type: 'string', example: 'Computer Engineering' }
+                }
+              }
+            },
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'email'],
+                properties: {
+                  name: { type: 'string', example: 'Ece Yakali' },
+                  email: { type: 'string', example: 'ece@example.com' },
+                  role: { type: 'string', example: 'alumni' },
+                  department: { type: 'string', example: 'Computer Engineering' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: 'User created successfully'
+          },
+          '400': {
+            description: 'Form data is empty'
+          }
+        }
+      }
+    },
+    '/users/{id}': {
+      get: {
+        tags: ['Web Users'],
+        summary: 'Get user profile by ID (Web / App)',
+        description: 'Retrieves user profile via UserController (HTML view or JSON).',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer', example: 1 }
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'User profile representation'
+          },
+          '404': {
+            description: 'User not found'
+          }
+        }
+      },
+      put: {
+        tags: ['Web Users'],
+        summary: 'Update user by ID (Web / App)',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer', example: 1 }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string', example: 'Ece Yakali (Updated)' },
+                  department: { type: 'string', example: 'Software Engineering' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: 'User updated'
+          },
+          '404': {
+            description: 'User not found'
+          }
+        }
+      },
+      patch: {
+        tags: ['Web Users'],
+        summary: 'Partial update user by ID (Web / App)',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer', example: 1 }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  role: { type: 'string', example: 'senior_alumni' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: 'User updated'
+          },
+          '404': {
+            description: 'User not found'
+          }
+        }
+      },
+      delete: {
+        tags: ['Web Users'],
+        summary: 'Delete user by ID (Web / App)',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer', example: 1 }
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'User deleted'
           },
           '404': {
             description: 'User not found'
