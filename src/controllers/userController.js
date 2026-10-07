@@ -4,27 +4,49 @@
  * File: src/controllers/userController.js
  * ========================================================
  * 
- * Task 3: Application / Web Controller for User resources.
- * Handles user management operations for web client views, form submissions,
- * and content-negotiated responses (HTML view rendering with JSON fallback).
+ * Task 3 & Task 5: Web / Application Controller for User resources.
+ * Coordinates with the Model Layer (userModel) and View Layer (userView):
+ * - GET  .../users -> Retrieves users from Model and renders Users View
+ * - POST .../users -> Validates form data, saves via Model, renders View with feedback
+ * - GET  .../users/:id -> Renders individual User Profile View
  */
 
 const userModel = require('../models/userModel');
+const userView = require('../views/userView');
+
+/**
+ * Safely determines if incoming request expects HTML View response
+ */
+function isHtmlRequest(req) {
+  if (req.headers && typeof req.headers.accept === 'string' && req.headers.accept.includes('text/html')) {
+    return true;
+  }
+  if (typeof req.is === 'function' && req.is('application/x-www-form-urlencoded')) {
+    return true;
+  }
+  if (req.query && req.query.format === 'html') {
+    return true;
+  }
+  return false;
+}
 
 const userController = {
   /**
-   * CREATE: POST /users
-   * Handles user creation form submission.
+   * Task 5: POST .../users
+   * Handles user creation form submission using the View layer
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
   createUser(req, res) {
     const formData = req.body;
+    const expectsHtml = isHtmlRequest(req);
 
     if (!formData || Object.keys(formData).length === 0) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(400).send('<h1>Error</h1><p>Form data is empty. Please provide user details.</p>');
+      if (expectsHtml) {
+        return res.status(400).send(userView.renderUsersList(userModel.getAll(), {
+          errorMessage: 'Form data is empty. Please provide full name and email.'
+        }));
       }
       return res.status(400).json({
         success: false,
@@ -34,10 +56,14 @@ const userController = {
 
     const newUser = userModel.create(formData);
 
-    if (req.headers.accept && req.headers.accept.includes('text/html')) {
-      return res.status(201).send(`<h1>User Created</h1><p>Welcome, ${newUser.name}!</p>`);
+    // If requested by a web browser or HTML form submission, render View layer
+    if (expectsHtml) {
+      return res.status(201).send(userView.renderUsersList(userModel.getAll(), {
+        successMessage: `Welcome, ${newUser.name}! User #${newUser.id} registered successfully.`
+      }));
     }
 
+    // JSON fallback for programmatic API clients
     return res.status(201).json({
       success: true,
       message: 'User created successfully',
@@ -47,8 +73,8 @@ const userController = {
   },
 
   /**
-   * READ (All): GET /users
-   * Retrieves all users (renders HTML list if requested by browser, otherwise JSON).
+   * Task 5: GET .../users
+   * Retrieves users from userModel and renders the HTML View layer
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -56,11 +82,12 @@ const userController = {
   getAllUsers(req, res) {
     const users = userModel.getAll();
 
-    if (req.headers.accept && req.headers.accept.includes('text/html')) {
-      const userListHtml = users.map(u => `<li><strong>${u.name}</strong> (${u.email}) - ${u.role || 'alumni'}</li>`).join('');
-      return res.status(200).send(`<h1>Alumni Users Directory</h1><ul>${userListHtml || '<li>No users registered yet.</li>'}</ul>`);
+    // When requested with text/html (browsers), render the User View layer
+    if (isHtmlRequest(req)) {
+      return res.status(200).send(userView.renderUsersList(users));
     }
 
+    // Default JSON fallback
     return res.status(200).json({
       success: true,
       count: users.length,
@@ -69,8 +96,8 @@ const userController = {
   },
 
   /**
-   * READ (By ID): GET /users/:id
-   * Retrieves a single user profile by ID.
+   * GET .../users/:id
+   * Retrieves single user and renders profile view
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -78,10 +105,11 @@ const userController = {
   getUserById(req, res) {
     const userId = Number(req.params.id);
     const user = userModel.getById(userId);
+    const expectsHtml = isHtmlRequest(req);
 
     if (!user) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(404).send(`<h1>404 Not Found</h1><p>User with id ${req.params.id} not found.</p>`);
+      if (expectsHtml) {
+        return res.status(404).send(userView.renderError(`User with id ${req.params.id} not found.`, 404));
       }
       return res.status(404).json({
         success: false,
@@ -89,8 +117,8 @@ const userController = {
       });
     }
 
-    if (req.headers.accept && req.headers.accept.includes('text/html')) {
-      return res.status(200).send(`<h1>User Profile</h1><p>Name: ${user.name}</p><p>Email: ${user.email}</p><p>Role: ${user.role || 'alumni'}</p>`);
+    if (expectsHtml) {
+      return res.status(200).send(userView.renderUserDetail(user));
     }
 
     return res.status(200).json({
@@ -100,8 +128,8 @@ const userController = {
   },
 
   /**
-   * UPDATE: PUT /users/:id or PATCH /users/:id
-   * Updates an existing user's details by ID.
+   * PUT .../users/:id or PATCH .../users/:id
+   * Updates user and returns status
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -109,10 +137,11 @@ const userController = {
   updateUser(req, res) {
     const userId = Number(req.params.id);
     const existingUser = userModel.getById(userId);
+    const expectsHtml = isHtmlRequest(req);
 
     if (!existingUser) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(404).send(`<h1>404 Not Found</h1><p>User with id ${req.params.id} not found.</p>`);
+      if (expectsHtml) {
+        return res.status(404).send(userView.renderError(`User with id ${req.params.id} not found.`, 404));
       }
       return res.status(404).json({
         success: false,
@@ -138,8 +167,8 @@ const userController = {
   },
 
   /**
-   * DELETE: DELETE /users/:id
-   * Removes an existing user from storage by ID.
+   * DELETE .../users/:id
+   * Deletes user and returns confirmation
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -147,10 +176,11 @@ const userController = {
   deleteUser(req, res) {
     const userId = Number(req.params.id);
     const deletedUser = userModel.delete(userId);
+    const expectsHtml = isHtmlRequest(req);
 
     if (!deletedUser) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(404).send(`<h1>404 Not Found</h1><p>User with id ${req.params.id} not found.</p>`);
+      if (expectsHtml) {
+        return res.status(404).send(userView.renderError(`User with id ${req.params.id} not found.`, 404));
       }
       return res.status(404).json({
         success: false,

@@ -140,9 +140,9 @@ The codebase is organized into modular directories reflecting each layer of the 
 | MVC Layer | Directory / Folder | Core Files | Responsibility |
 | :--- | :--- | :--- | :--- |
 | **Model (M)** | `src/models/`<br>`docker/` | `userModel.js`<br>`init.sql` | Encapsulates business data structures, entity state, CRUD manipulation, and database schemas. |
-| **View (V)** | Presentation Layer<br>`src/config/` | `swagger.js`<br>`swagger.json`<br>JSON responses | Formats and delivers data to clients. In our REST API, this includes JSON payloads, Swagger UI documentation, and HTML views. |
+| **View (V)** | `src/views/`<br>`src/config/` | `userView.js`<br>`swagger.js`<br>`swagger.json`<br>JSON responses | Formats and delivers presentations to clients. Includes dedicated HTML templates (`userView.js` for `.../users`), Swagger UI documentation, and JSON payloads. |
 | **Controller (C)** | `src/controllers/` | `apiUserController.js`<br>`userController.js`<br>`healthController.js`<br>`whiteboardController.js` | Receives client HTTP requests, validates input parameters, invokes Model operations, and formats the output View (REST JSON vs. Web HTML). |
-| **Router / Dispatcher** | `src/routes/` | `index.js`<br>`userRoutes.js`<br>`healthRoutes.js`<br>`whiteboardRoutes.js` | Directs incoming HTTP requests (HTTP method + URI path) to the designated Controller handler. |
+| **Router / Dispatcher** | `src/routes/` | `index.js`<br>`apiUserRoutes.js`<br>`userRoutes.js`<br>`healthRoutes.js`<br>`whiteboardRoutes.js` | Directs incoming HTTP requests (HTTP method + URI path) to the designated Controller handler. |
 | **Infrastructure & Core** | Root & `src/` | `app.js`<br>`index.js` | Configures Express middlewares (JSON parser, URL-encoded parser), binds port listeners, and registers Swagger UI. |
 
 ---
@@ -165,9 +165,14 @@ The **Model** represents the application's domain data, data structures, and the
 * **`docker/init.sql`**:
   * Defines the relational PostgreSQL schema (`users` table with primary keys, constraints, and timestamps) and initial seed data for persistent database operations.
 
-#### 2. 🖥️ View & Presentation Layer (`src/config/` & API Serializers)
-In a modern headless RESTful backend, the **View** layer is responsible for formatting data into standardized representations for client applications (browsers, mobile applications, and API consumers):
-* **RESTful JSON Presentation (`res.json`)**: Every controller serializes Model data into uniform JSON responses accompanied by semantic HTTP status codes (`200 OK`, `201 Created`, `400 Bad Request`, `404 Not Found`).
+#### 2. 🖥️ View & Presentation Layer (`src/views/` & `src/config/`)
+The **View** layer is responsible for formatting data into standardized presentations for human users, browsers, mobile applications, and API consumers:
+* **`src/views/userView.js` (Dedicated Web View Layer)**:
+  * Generates clean, responsive HTML view templates with embedded CSS:
+    * `renderUsersList(users, options)`: Renders the **Users Directory** (`GET /users`) with a table of registered alumni and an embedded **User Registration Form** (`POST /users`), plus alert banners for feedback.
+    * `renderUserDetail(user)`: Renders individual user profile card view (`GET /users/:id`).
+    * `renderError(message, statusCode)`: Renders semantic error pages (400, 404).
+* **RESTful JSON Presentation (`res.json`)**: Formats Model data into uniform JSON responses accompanied by semantic HTTP status codes (`200 OK`, `201 Created`, `400 Bad Request`, `404 Not Found`).
 * **Interactive API Documentation View (`src/config/swagger.js` & `swagger.json`)**:
   * Powered by `swagger-ui-express` and OpenAPI 3.0.
   * Served at `/api/swagger` and `/api/docs` to provide a visual, interactive GUI where human users and developers can inspect schemas, parameters, and execute live requests.
@@ -242,11 +247,14 @@ alumni/
 │   │   ├── index.js                    # Aggregated master router & Swagger JSON endpoints
 │   │   ├── userRoutes.js               # Routes for .../users -> UserController
 │   │   └── whiteboardRoutes.js         # Routes for classroom endpoints (/, /hello, /sum, etc.)
+│   ├── views/                          # View Layer (HTML page templates & UI rendering)
+│   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 40 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 46 tests)
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
-│   └── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
+│   ├── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
+│   └── userView.test.js                # Unit and integration tests for HTML View layer (GET/POST /users)
 ├── .dockerignore                       # Files excluded from Docker container build
 ├── .env.example                        # Sample environment variable template
 ├── .gitignore                          # Git tracking exclusion list
