@@ -14,12 +14,10 @@ app.listen(PORT, () => {
   console.log(`  GET /about                  -> "temp. about page"`);
   console.log(`  GET /alumni                 -> "ok"`);
   console.log(`  GET /api/health             -> JSON system health status`);
-  console.log(`  POST /api/users             -> Add user via form data (in-memory)`);
-  console.log(`  GET /api/users              -> List all users (in-memory)`);
-  console.log(`  GET /api/users/:id          -> Get user by ID (in-memory)`);
-  console.log(`  PUT /api/users/:id          -> Update user details by ID (in-memory)`);
-  console.log(`  PATCH /api/users/:id        -> Partial update user details by ID (in-memory)`);
-  console.log(`  DELETE /api/users/:id       -> Delete user by ID (in-memory)`);
+  console.log(`  GET /users                  -> Users Directory & Management Web View (HTML)`);
+  console.log(`  GET /api/users              -> List all users (in-memory JSON)`);
+  console.log(`  GET /announcements          -> Announcements Board Web View (HTML)`);
+  console.log(`  GET /api/announcements      -> List all announcements (in-memory JSON)`);
   console.log(`  GET /api/swagger            -> Interactive Swagger UI Documentation`);
   console.log(`  GET /api/swagger.json       -> OpenAPI 3.0 JSON Specification`);
 });

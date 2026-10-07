@@ -32,6 +32,14 @@
       "description": "Web / Application user management via UserController (.../users)"
     },
     {
+      "name": "API Announcements",
+      "description": "RESTful API announcement management via ApiAnnouncementController (.../api/announcements)"
+    },
+    {
+      "name": "Web Announcements",
+      "description": "Web / Application announcement management via AnnouncementController (.../announcements)"
+    },
+    {
       "name": "Whiteboard Routes",
       "description": "Introductory classroom routes and endpoints"
     }
@@ -831,6 +839,331 @@
         }
       }
     },
+    "/api/announcements": {
+      "get": {
+        "tags": [
+          "API Announcements"
+        ],
+        "summary": "List all announcements (API)",
+        "description": "Retrieves all published announcements as JSON from in-memory storage.",
+        "responses": {
+          "200": {
+            "description": "List of announcements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Announcement"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "API Announcements"
+        ],
+        "summary": "Publish new announcement (API)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "content"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Annual Alumni Homecoming 2026"
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "Join us for campus reunion and networking events."
+                  },
+                  "author": {
+                    "type": "string",
+                    "example": "Alumni Office"
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Event"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "example": "high"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Announcement published successfully"
+          },
+          "400": {
+            "description": "Title and content required"
+          }
+        }
+      }
+    },
+    "/api/announcements/{id}": {
+      "get": {
+        "tags": [
+          "API Announcements"
+        ],
+        "summary": "Get announcement by ID (API)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Announcement details"
+          },
+          "404": {
+            "description": "Announcement not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "API Announcements"
+        ],
+        "summary": "Update announcement by ID (API)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Updated Title"
+                  },
+                  "content": {
+                    "type": "string",
+                    "example": "Updated Content"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "example": "urgent"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated successfully"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "API Announcements"
+        ],
+        "summary": "Delete announcement by ID (API)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted successfully"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/announcements": {
+      "get": {
+        "tags": [
+          "Web Announcements"
+        ],
+        "summary": "Announcements Board (Web / App)",
+        "description": "Renders the Announcements Board HTML view with list and creation form.",
+        "responses": {
+          "200": {
+            "description": "Announcements Board HTML or JSON"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Web Announcements"
+        ],
+        "summary": "Publish announcement from Web form",
+        "description": "Creates new announcement from browser form submission.",
+        "responses": {
+          "201": {
+            "description": "Published and view rendered"
+          },
+          "400": {
+            "description": "Missing required fields"
+          }
+        }
+      }
+    },
+    "/announcements/{id}": {
+      "get": {
+        "tags": [
+          "Web Announcements"
+        ],
+        "summary": "Announcement Detail page (Web / App)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Announcement detail card"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/announcements/{id}/edit": {
+      "get": {
+        "tags": [
+          "Web Announcements"
+        ],
+        "summary": "Get Edit Announcement form View",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pre-filled edit form"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/announcements/{id}/update": {
+      "post": {
+        "tags": [
+          "Web Announcements"
+        ],
+        "summary": "Update announcement from Web form",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated and detail view rendered"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/announcements/{id}/delete": {
+      "post": {
+        "tags": [
+          "Web Announcements"
+        ],
+        "summary": "Delete announcement from Web form",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted and board view rendered"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/hello": {
       "get": {
         "tags": [
@@ -960,6 +1293,43 @@
           "updatedAt": {
             "type": "string",
             "example": "2026-09-30T08:11:58.287Z"
+          }
+        }
+      },
+      "Announcement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Annual Alumni Homecoming 2026"
+          },
+          "content": {
+            "type": "string",
+            "example": "Join us for campus reunion and networking events."
+          },
+          "author": {
+            "type": "string",
+            "example": "Alumni Office"
+          },
+          "category": {
+            "type": "string",
+            "example": "Event"
+          },
+          "priority": {
+            "type": "string",
+            "example": "high"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-07T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-10-07T11:00:00.000Z"
           }
         }
       }

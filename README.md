@@ -31,8 +31,15 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **PUT** | `/api/users/:id` | Update all or multiple user details (API) | Form (`x-www-form-urlencoded`) or JSON |
 | **PATCH**| `/api/users/:id` | Partially update user fields (API) | JSON or Form |
 | **DELETE**| `/api/users/:id`| Remove a user from in-memory storage (API) | - |
+| **GET** | `/api/announcements` | List all announcements as JSON | - |
+| **POST** | `/api/announcements` | Publish new announcement (JSON API) | JSON |
+| **GET** | `/api/announcements/:id` | Get single announcement by ID | - |
+| **PUT** | `/api/announcements/:id` | Update announcement by ID (API) | JSON |
+| **DELETE**| `/api/announcements/:id`| Delete announcement by ID (API) | - |
 
-### 🖥️ Web / Application Endpoints (`UserController` ➡️ `.../users` with Dedicated View Layer)
+### 🖥️ Web / Application Endpoints (Dedicated View Layers)
+
+#### 👥 Users Management (`UserController` ➡️ `.../users`)
 | Method | Endpoint | Description | Layer / Format |
 | :--- | :--- | :--- | :--- |
 | **GET** | `/users` | **READ ALL:** Users directory table & embedded create form | HTML View / JSON |
@@ -44,6 +51,19 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **PATCH**| `/users/:id` | **UPDATE (REST):** Partial update user details by ID | JSON / HTML View |
 | **POST** | `/users/:id/delete`| **DELETE (Action):** Form delete submit & render directory view | HTML View / JSON |
 | **DELETE**| `/users/:id`| **DELETE (REST):** Delete user by ID | JSON / HTML View |
+
+#### 📢 Announcements Board (`AnnouncementController` ➡️ `.../announcements`)
+| Method | Endpoint | Description | Layer / Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/announcements` | **READ ALL:** Announcements board & publishing form | HTML View / JSON |
+| **POST** | `/announcements` | **CREATE:** Publish announcement form submit & feedback view | HTML View / JSON |
+| **GET** | `/announcements/:id` | **READ ONE:** Full announcement detail view card | HTML View / JSON |
+| **GET** | `/announcements/:id/edit` | **UPDATE (Form):** Pre-filled Edit Announcement form view | HTML View |
+| **POST** | `/announcements/:id/update`| **UPDATE (Action):** Submit edits & render updated view | HTML View / JSON |
+| **PUT** | `/announcements/:id` | **UPDATE (REST):** Full update announcement details | JSON / HTML View |
+| **PATCH**| `/announcements/:id` | **UPDATE (REST):** Partial update announcement details | JSON / HTML View |
+| **POST** | `/announcements/:id/delete`| **DELETE (Action):** Form delete submit & render board view | HTML View / JSON |
+| **DELETE**| `/announcements/:id`| **DELETE (REST):** Delete announcement by ID | JSON / HTML View |
 
 ### 📋 Whiteboard Classroom Routes
 | Method | Endpoint | Description | Request Format |
@@ -86,25 +106,29 @@ graph TD
     subgraph RouterLayer["Routing & Dispatching Layer (src/routes/)"]
       App["src/app.js (Middleware & Router Assembler)"]
       MasterRouter["src/routes/index.js (Central Aggregator)"]
-      UserRoutes["src/routes/userRoutes.js"]
-      HealthRoutes["src/routes/healthRoutes.js"]
-      WhiteboardRoutes["src/routes/whiteboardRoutes.js"]
+      UserRoutes["userRoutes.js & apiUserRoutes.js"]
+      AnnouncementRoutes["announcementRoutes.js & apiAnnouncementRoutes.js"]
+      HealthRoutes["healthRoutes.js"]
+      WhiteboardRoutes["whiteboardRoutes.js"]
     end
 
     subgraph ControllerLayer["Controller Layer (src/controllers/)"]
-      UserController["src/controllers/userController.js"]
-      HealthController["src/controllers/healthController.js"]
-      WhiteboardController["src/controllers/whiteboardController.js"]
+      UserController["UserController & ApiUserController"]
+      AnnouncementController["AnnouncementController & ApiAnnouncementController"]
+      HealthController["healthController.js"]
+      WhiteboardController["whiteboardController.js"]
     end
 
     subgraph ModelLayer["Model Layer (src/models/ & docker/)"]
-      UserModel["src/models/userModel.js (In-Memory Entity Manager)"]
+      UserModel["userModel.js (In-Memory Entity Manager)"]
+      AnnouncementModel["announcementModel.js (In-Memory Entity Manager)"]
       PostgresDB[("PostgreSQL Database / docker/init.sql")]
     end
 
-    subgraph ViewLayer["View & Presentation Layer"]
+    subgraph ViewLayer["View & Presentation Layer (src/views/)"]
+      UserView["userView.js (Web HTML)"]
+      AnnouncementView["announcementView.js (Web HTML)"]
       JSONView["JSON Response Payloads (res.json)"]
-      HTMLView["HTML / Plain Text Responses (res.send)"]
       SwaggerView["Interactive Swagger UI Documentation"]
     end
   end
@@ -115,22 +139,29 @@ graph TD
 
   App --> MasterRouter
   MasterRouter --> UserRoutes
+  MasterRouter --> AnnouncementRoutes
   MasterRouter --> HealthRoutes
   MasterRouter --> WhiteboardRoutes
 
   UserRoutes --> UserController
+  AnnouncementRoutes --> AnnouncementController
   HealthRoutes --> HealthController
   WhiteboardRoutes --> WhiteboardController
 
   UserController -->|Query / Mutate Entity| UserModel
+  AnnouncementController -->|Query / Mutate Entity| AnnouncementModel
   UserModel -.->|Persistent Storage / Seeds| PostgresDB
 
-  UserController -->|Format Response| JSONView
+  UserController -->|Format Web / API Response| UserView
+  UserController -->|Format API Response| JSONView
+  AnnouncementController -->|Format Web / API Response| AnnouncementView
+  AnnouncementController -->|Format API Response| JSONView
   HealthController -->|Format Response| JSONView
-  WhiteboardController -->|Format HTML / String| HTMLView
+  WhiteboardController -->|Format HTML / String| UserView
 
   JSONView -->|HTTP 200 / 201 / 400 / 404 Response| Client
-  HTMLView -->|HTTP 200 Response| Client
+  UserView -->|HTTP 200 / 201 Response| Client
+  AnnouncementView -->|HTTP 200 / 201 Response| Client
   SwaggerView -->|Visual API Specification| Browser
 ```
 
@@ -142,10 +173,10 @@ The codebase is organized into modular directories reflecting each layer of the 
 
 | MVC Layer | Directory / Folder | Core Files | Responsibility |
 | :--- | :--- | :--- | :--- |
-| **Model (M)** | `src/models/`<br>`docker/` | `userModel.js`<br>`init.sql` | Encapsulates business data structures, entity state, CRUD manipulation, and database schemas. |
-| **View (V)** | `src/views/`<br>`src/config/` | `userView.js`<br>`swagger.js`<br>`swagger.json`<br>JSON responses | Formats and delivers presentations to clients. Includes dedicated HTML templates (`userView.js` for `.../users`), Swagger UI documentation, and JSON payloads. |
-| **Controller (C)** | `src/controllers/` | `apiUserController.js`<br>`userController.js`<br>`healthController.js`<br>`whiteboardController.js` | Receives client HTTP requests, validates input parameters, invokes Model operations, and formats the output View (REST JSON vs. Web HTML). |
-| **Router / Dispatcher** | `src/routes/` | `index.js`<br>`apiUserRoutes.js`<br>`userRoutes.js`<br>`healthRoutes.js`<br>`whiteboardRoutes.js` | Directs incoming HTTP requests (HTTP method + URI path) to the designated Controller handler. |
+| **Model (M)** | `src/models/`<br>`docker/` | `userModel.js`<br>`announcementModel.js`<br>`init.sql` | Encapsulates business data structures, entity state, CRUD manipulation, and database schemas. |
+| **View (V)** | `src/views/`<br>`src/config/` | `userView.js`<br>`announcementView.js`<br>`swagger.js`<br>`swagger.json`<br>JSON responses | Formats and delivers presentations to clients. Includes dedicated HTML templates (`userView.js` for users, `announcementView.js` for announcements), Swagger UI documentation, and JSON payloads. |
+| **Controller (C)** | `src/controllers/` | `apiUserController.js`<br>`userController.js`<br>`apiAnnouncementController.js`<br>`announcementController.js`<br>`healthController.js`<br>`whiteboardController.js` | Receives client HTTP requests, validates input parameters, invokes Model operations, and formats the output View (REST JSON vs. Web HTML). |
+| **Router / Dispatcher** | `src/routes/` | `index.js`<br>`apiUserRoutes.js`<br>`userRoutes.js`<br>`apiAnnouncementRoutes.js`<br>`announcementRoutes.js`<br>`healthRoutes.js`<br>`whiteboardRoutes.js` | Directs incoming HTTP requests (HTTP method + URI path) to the designated Controller handler. |
 | **Infrastructure & Core** | Root & `src/` | `app.js`<br>`index.js` | Configures Express middlewares (JSON parser, URL-encoded parser), binds port listeners, and registers Swagger UI. |
 
 ---
@@ -165,35 +196,53 @@ The **Model** represents the application's domain data, data structures, and the
     * `delete(id)` / `remove(id)`: Removes a user from the collection and returns the deleted record.
     * `count()`: Reports the total number of stored users.
     * `clear()`: Empties in-memory storage (used for isolated unit testing).
+* **`src/models/announcementModel.js`**:
+  * **Entity State:** Maintains the in-memory collection of announcement objects (`announcements = []`).
+  * **Data Access Operations:** Complete CRUD functions for campus & alumni announcements:
+    * `create(data)`: Generates numeric IDs, assigns `createdAt`/`updatedAt`, defaults `priority: 'normal'`, and persists the announcement.
+    * `findAll()` / `getAll()`: Retrieves all announcements sorted in reverse chronological order.
+    * `findById(id)` / `getById(id)`: Retrieves a specific announcement by its numeric ID.
+    * `findByCategory(category)`: Filters announcements matching a specific category (e.g. `Career`, `Event`, `Networking`).
+    * `update(id, updateData)`: Updates fields and updates the `updatedAt` timestamp.
+    * `delete(id)` / `remove(id)`: Removes an announcement from storage and returns the deleted record.
+    * `count()`: Returns the total count of active announcements.
+    * `clear()`: Empties in-memory storage for test isolation.
 * **`docker/init.sql`**:
   * Defines the relational PostgreSQL schema (`users` table with primary keys, constraints, and timestamps) and initial seed data for persistent database operations.
 
 #### 2. 🖥️ View & Presentation Layer (`src/views/` & `src/config/`)
 The **View** layer is responsible for formatting data into standardized presentations for human users, browsers, mobile applications, and API consumers:
-* **`src/views/userView.js` (Dedicated Web View Layer)**:
+* **`src/views/userView.js` (Dedicated Users Web View)**:
   * Generates clean, responsive HTML view templates with embedded CSS:
     * `renderUsersList(users, options)`: Renders the **Users Directory** (`GET /users`) with a table of registered alumni and an embedded **User Registration Form** (`POST /users`), plus alert banners for feedback.
     * `renderUserDetail(user)`: Renders individual user profile card view (`GET /users/:id`).
+    * `renderEditUserForm(user, options)`: Renders the pre-filled edit form view (`GET /users/:id/edit`).
+    * `renderError(message, statusCode)`: Renders semantic error pages (400, 404).
+* **`src/views/announcementView.js` (Dedicated Announcements Web View)**:
+  * Generates modern responsive HTML templates for announcement management:
+    * `renderAnnouncementsList(announcements, options)`: Renders the **Announcements Board** (`GET /announcements`) with priority badges, category chips, action triggers, and an embedded **Create Announcement Form** (`POST /announcements`).
+    * `renderAnnouncementDetail(announcement)`: Full announcement detail view card (`GET /announcements/:id`) with metadata badges and navigation buttons.
+    * `renderEditAnnouncementForm(announcement, options)`: Pre-filled edit form view (`GET /announcements/:id/edit`) supporting in-browser form updates.
     * `renderError(message, statusCode)`: Renders semantic error pages (400, 404).
 * **RESTful JSON Presentation (`res.json`)**: Formats Model data into uniform JSON responses accompanied by semantic HTTP status codes (`200 OK`, `201 Created`, `400 Bad Request`, `404 Not Found`).
 * **Interactive API Documentation View (`src/config/swagger.js` & `swagger.json`)**:
   * Powered by `swagger-ui-express` and OpenAPI 3.0.
   * Served at `/api/swagger` and `/api/docs` to provide a visual, interactive GUI where human users and developers can inspect schemas, parameters, and execute live requests.
-* **HTML & Plain Text Views**: Browser-oriented endpoints (`/`, `/main`, `/about`, `/hello`, `/users`) serving direct textual or HTML view representations.
+* **HTML & Plain Text Views**: Browser-oriented endpoints (`/`, `/main`, `/about`, `/hello`, `/users`, `/announcements`) serving direct textual or HTML view representations.
 
 #### 3. 🎮 Controller Layer (`src/controllers/`)
-The **Controller** acts as the intermediary between the incoming HTTP request, the Model layer, and the View layer. The system provides two specialized user controllers to cleanly separate API serialization from Web views:
+The **Controller** acts as the intermediary between the incoming HTTP request, the Model layer, and the View layer. The system provides dedicated controllers to cleanly separate API serialization from Web views:
 * **`src/controllers/apiUserController.js` (ApiUserController)**:
-  * Dedicated to RESTful API consumers, Postman, mobile clients, and Swagger UI.
-  * `createUser(req, res)`: Validates incoming request payload, calls `userModel.create()`, and returns HTTP `201 Created` with JSON.
-  * `getAllUsers(req, res)`: Fetches data via `userModel.getAll()` and formats the JSON list response with HTTP `200 OK`.
-  * `getUserById(req, res)`: Extracts `req.params.id`, queries `userModel.getById()`, and responds with JSON `200 OK` or `404 Not Found`.
-  * `updateUser(req, res)`: Handles `PUT` / `PATCH` requests, validates non-empty payloads, executes `userModel.update()`, and responds with updated JSON.
-  * `deleteUser(req, res)`: Removes a user via `userModel.delete()` and returns JSON confirmation with HTTP `200 OK` or `404 Not Found`.
+  * Dedicated to RESTful API consumers, Postman, mobile clients, and Swagger UI (`/api/users`).
+  * `createUser`, `getAllUsers`, `getUserById`, `updateUser`, `deleteUser`.
 * **`src/controllers/userController.js` (UserController)**:
-  * Dedicated to standard web clients, browser form submissions, and content-negotiated responses.
-  * Implements complete CRUD functions (`createUser`, `getAllUsers`, `getUserById`, `updateUser`, `deleteUser`).
-  * Supports HTML rendering when requested by browsers (`Accept: text/html`), while gracefully supporting JSON fallback.
+  * Dedicated to standard web clients and browser interactions (`/users`).
+  * Supports HTML rendering with CSS when requested by browsers (`Accept: text/html`), while gracefully supporting JSON fallback.
+* **`src/controllers/apiAnnouncementController.js` (ApiAnnouncementController)**:
+  * Dedicated RESTful JSON CRUD controller for `/api/announcements`.
+  * `createAnnouncement`, `getAllAnnouncements`, `getAnnouncementById`, `updateAnnouncement`, `deleteAnnouncement`.
+* **`src/controllers/announcementController.js` (AnnouncementController)**:
+  * Dedicated Web CRUD controller for `/announcements` with full HTML View layer integration (`getAllAnnouncements`, `getAnnouncementById`, `createAnnouncement`, `getEditAnnouncementForm`, `updateAnnouncement`, `deleteAnnouncement`).
 * **`src/controllers/healthController.js`**:
   * `getHealth(req, res)`: Computes server health metrics (`uptime`, system timestamp, status string) and formats the response.
 * **`src/controllers/whiteboardController.js`**:
@@ -201,7 +250,10 @@ The **Controller** acts as the intermediary between the incoming HTTP request, t
 
 #### 4. 🚦 Routing & Dispatching Layer (`src/routes/`)
 Decouples URL route matching from business logic:
-* **`src/routes/userRoutes.js`**: Dispatches `/api/users` endpoints to `ApiUserController` and `/users` web endpoints to `UserController`.
+* **`src/routes/apiUserRoutes.js`**: Maps `.../api/users` endpoints to `ApiUserController`.
+* **`src/routes/userRoutes.js`**: Maps `.../users` web endpoints to `UserController`.
+* **`src/routes/apiAnnouncementRoutes.js`**: Maps `.../api/announcements` endpoints to `ApiAnnouncementController`.
+* **`src/routes/announcementRoutes.js`**: Maps `.../announcements` web endpoints to `AnnouncementController`.
 * **`src/routes/healthRoutes.js`**: Registers `GET /api/health` and `GET /health` mapped to `healthController.getHealth`.
 * **`src/routes/whiteboardRoutes.js`**: Registers introductory educational routes mapped to `whiteboardController`.
 * **`src/routes/index.js`**: Central aggregator that combines all modular sub-routers and serves the OpenAPI specification endpoints (`/api/swagger.json`, `/swagger.json`).
@@ -209,7 +261,7 @@ Decouples URL route matching from business logic:
 #### 5. ⚙️ Application Entry Point & Infrastructure
 * **`src/app.js`**: Configures the Express instance, attaches global middlewares (`express.json()`, `express.urlencoded()`), mounts Swagger UI, and binds the central router.
 * **`index.js`**: Main executable script that initializes the HTTP listeners on both port `5000` (default) and port `3000` (alternate).
-* **`test/`**: Comprehensive automated test suites (39 tests across `routes.test.js`, `userModel.test.js`, and `controllers.test.js`).
+* **`test/`**: Comprehensive automated test suites (80 tests across all model, controller, route, and view test files).
 
 ---
 
@@ -238,26 +290,35 @@ alumni/
 │   ├── config/                         # Environment & API documentation configurations
 │   │   └── swagger.js                  # OpenAPI 3.0 specification definition (View layer)
 │   ├── controllers/                    # Controller Layer (Request orchestration & business flow)
-│   │   ├── apiUserController.js        # Dedicated RESTful API CRUD Controller (JSON responses)
-│   │   ├── userController.js           # Web/Application CRUD Controller (HTML/content-negotiated)
+│   │   ├── apiAnnouncementController.js# Dedicated RESTful API CRUD Controller for Announcements
+│   │   ├── announcementController.js   # Web/Application CRUD Controller for Announcements (HTML/View)
+│   │   ├── apiUserController.js        # Dedicated RESTful API CRUD Controller for Users (JSON responses)
+│   │   ├── userController.js           # Web/Application CRUD Controller for Users (HTML/content-negotiated)
 │   │   ├── healthController.js         # System health & uptime metric handler
 │   │   └── whiteboardController.js     # Classroom introductory routes & calculation handlers
 │   ├── models/                         # Model Layer (Data structures & entity manipulation)
+│   │   ├── announcementModel.js        # Announcement entity data store & CRUD operations
 │   │   └── userModel.js                # User entity data store & CRUD operations
 │   ├── routes/                         # Router Layer (HTTP verb & URL route definitions)
+│   │   ├── apiAnnouncementRoutes.js    # Routes for .../api/announcements -> ApiAnnouncementController
+│   │   ├── announcementRoutes.js       # Routes for .../announcements -> AnnouncementController
 │   │   ├── apiUserRoutes.js            # Routes for .../api/users -> ApiUserController
 │   │   ├── healthRoutes.js             # Routes for /api/health -> HealthController
 │   │   ├── index.js                    # Aggregated master router & Swagger JSON endpoints
 │   │   ├── userRoutes.js               # Routes for .../users -> UserController
 │   │   └── whiteboardRoutes.js         # Routes for classroom endpoints (/, /hello, /sum, etc.)
 │   ├── views/                          # View Layer (HTML page templates & UI rendering)
+│   │   ├── announcementView.js         # Announcements board, card view & publishing form
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 51 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 80 tests)
+│   ├── announcementControllers.test.js # Unit tests for ApiAnnouncementController & AnnouncementController
+│   ├── announcementModel.test.js       # Unit tests for Announcement Model in-memory CRUD operations
+│   ├── announcementView.test.js        # Unit and integration tests for Announcement HTML View layer
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
 │   ├── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
-│   └── userView.test.js                # Unit and integration tests for HTML View layer (all CRUD operations)
+│   └── userView.test.js                # Unit and integration tests for User HTML View layer
 ├── .dockerignore                       # Files excluded from Docker container build
 ├── .env.example                        # Sample environment variable template
 ├── .gitignore                          # Git tracking exclusion list
@@ -313,7 +374,7 @@ cd alumni
    ```bash
    npm test
    ```
-   *Executes all 19 automated test cases covering health checks, user CRUD, routing, and Swagger specs.*
+   *Executes all 80 automated test cases covering health checks, user & announcement CRUD, routing, views, and Swagger specs.*
 
 ---
 
@@ -354,8 +415,11 @@ You can:
 - [x] Introductory routes (`/`, `/hello`, `/hello/:name`, `/sum/:n1/:n2`, `/about`, `/alumni`)
 - [x] System health check endpoint (`GET /api/health`)
 - [x] In-memory user management CRUD operations (`POST`, `GET`, `PUT`, `PATCH`, `DELETE /api/users`)
-- [x] Interactive Swagger UI documentation (`GET /api/swagger`)
-- [x] Automated unit and integration testing suite (19/19 tests passing)
+- [x] Dedicated User View layer with HTML CRUD interface (`GET`, `POST`, `PUT`, `DELETE /users`)
+- [x] Homework: In-memory announcement management without database (`AnnouncementModel`, `AnnouncementController`, `ApiAnnouncementController`)
+- [x] Homework: Dedicated Announcement View layer with HTML CRUD board (`GET`, `POST`, `PUT`, `DELETE /announcements`)
+- [x] Interactive Swagger UI documentation with User and Announcement APIs (`GET /api/swagger`)
+- [x] Automated unit and integration testing suite (80/80 tests passing)
 - [ ] PostgreSQL schema modeling and persistent database integration
 - [ ] JWT authentication and role-based authorization middleware
 - [ ] Advanced alumni search, filter, and pagination APIs
