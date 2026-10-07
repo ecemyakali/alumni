@@ -1,20 +1,21 @@
 /**
  * ========================================================
- * Controller Layer: Web User Controller (UserController)
- * File: src/controllers/userController.js
+ * Controller Layer: API User Controller (ApiUserController)
+ * File: src/controllers/apiUserController.js
  * ========================================================
  * 
- * Task 3: Application / Web Controller for User resources.
- * Handles user management operations for web client views, form submissions,
- * and content-negotiated responses (HTML view rendering with JSON fallback).
+ * Task 3: Dedicated RESTful API Controller for User resources.
+ * Handles client requests and returns standardized JSON representations
+ * with semantic HTTP status codes (200, 201, 400, 404).
+ * Used by external API consumers, Mobile clients, Postman & Swagger UI.
  */
 
 const userModel = require('../models/userModel');
 
-const userController = {
+const apiUserController = {
   /**
-   * CREATE: POST /users
-   * Handles user creation form submission.
+   * CREATE: POST /api/users
+   * Creates a new user record from JSON or form-urlencoded request body.
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -23,9 +24,6 @@ const userController = {
     const formData = req.body;
 
     if (!formData || Object.keys(formData).length === 0) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(400).send('<h1>Error</h1><p>Form data is empty. Please provide user details.</p>');
-      }
       return res.status(400).json({
         success: false,
         error: 'Form data is empty. Please provide user details (e.g. name, email).'
@@ -33,10 +31,6 @@ const userController = {
     }
 
     const newUser = userModel.create(formData);
-
-    if (req.headers.accept && req.headers.accept.includes('text/html')) {
-      return res.status(201).send(`<h1>User Created</h1><p>Welcome, ${newUser.name}!</p>`);
-    }
 
     return res.status(201).json({
       success: true,
@@ -47,20 +41,14 @@ const userController = {
   },
 
   /**
-   * READ (All): GET /users
-   * Retrieves all users (renders HTML list if requested by browser, otherwise JSON).
+   * READ (All): GET /api/users
+   * Retrieves all users formatted as a JSON array.
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
   getAllUsers(req, res) {
     const users = userModel.getAll();
-
-    if (req.headers.accept && req.headers.accept.includes('text/html')) {
-      const userListHtml = users.map(u => `<li><strong>${u.name}</strong> (${u.email}) - ${u.role || 'alumni'}</li>`).join('');
-      return res.status(200).send(`<h1>Alumni Users Directory</h1><ul>${userListHtml || '<li>No users registered yet.</li>'}</ul>`);
-    }
-
     return res.status(200).json({
       success: true,
       count: users.length,
@@ -69,8 +57,8 @@ const userController = {
   },
 
   /**
-   * READ (By ID): GET /users/:id
-   * Retrieves a single user profile by ID.
+   * READ (By ID): GET /api/users/:id
+   * Retrieves a single user record by numeric ID.
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -80,17 +68,10 @@ const userController = {
     const user = userModel.getById(userId);
 
     if (!user) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(404).send(`<h1>404 Not Found</h1><p>User with id ${req.params.id} not found.</p>`);
-      }
       return res.status(404).json({
         success: false,
         error: `User with id ${req.params.id} not found`
       });
-    }
-
-    if (req.headers.accept && req.headers.accept.includes('text/html')) {
-      return res.status(200).send(`<h1>User Profile</h1><p>Name: ${user.name}</p><p>Email: ${user.email}</p><p>Role: ${user.role || 'alumni'}</p>`);
     }
 
     return res.status(200).json({
@@ -100,8 +81,8 @@ const userController = {
   },
 
   /**
-   * UPDATE: PUT /users/:id or PATCH /users/:id
-   * Updates an existing user's details by ID.
+   * UPDATE: PUT /api/users/:id or PATCH /api/users/:id
+   * Updates existing user fields by numeric ID.
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -111,9 +92,6 @@ const userController = {
     const existingUser = userModel.getById(userId);
 
     if (!existingUser) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(404).send(`<h1>404 Not Found</h1><p>User with id ${req.params.id} not found.</p>`);
-      }
       return res.status(404).json({
         success: false,
         error: `User with id ${req.params.id} not found`
@@ -138,8 +116,8 @@ const userController = {
   },
 
   /**
-   * DELETE: DELETE /users/:id
-   * Removes an existing user from storage by ID.
+   * DELETE: DELETE /api/users/:id
+   * Removes a user by numeric ID.
    * 
    * @param {import('express').Request} req
    * @param {import('express').Response} res
@@ -149,9 +127,6 @@ const userController = {
     const deletedUser = userModel.delete(userId);
 
     if (!deletedUser) {
-      if (req.headers.accept && req.headers.accept.includes('text/html')) {
-        return res.status(404).send(`<h1>404 Not Found</h1><p>User with id ${req.params.id} not found.</p>`);
-      }
       return res.status(404).json({
         success: false,
         error: `User with id ${req.params.id} not found`
@@ -174,4 +149,4 @@ const userController = {
   delete(req, res) { return this.deleteUser(req, res); }
 };
 
-module.exports = userController;
+module.exports = apiUserController;

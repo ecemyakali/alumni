@@ -126,7 +126,7 @@ The codebase is organized into modular directories reflecting each layer of the 
 | :--- | :--- | :--- | :--- |
 | **Model (M)** | `src/models/`<br>`docker/` | `userModel.js`<br>`init.sql` | Encapsulates business data structures, entity state, CRUD manipulation, and database schemas. |
 | **View (V)** | Presentation Layer<br>`src/config/` | `swagger.js`<br>`swagger.json`<br>JSON responses | Formats and delivers data to clients. In our REST API, this includes JSON payloads, Swagger UI documentation, and HTML views. |
-| **Controller (C)** | `src/controllers/` | `userController.js`<br>`healthController.js`<br>`whiteboardController.js` | Receives client HTTP requests, validates input parameters, invokes Model operations, and formats the output View. |
+| **Controller (C)** | `src/controllers/` | `apiUserController.js`<br>`userController.js`<br>`healthController.js`<br>`whiteboardController.js` | Receives client HTTP requests, validates input parameters, invokes Model operations, and formats the output View (REST JSON vs. Web HTML). |
 | **Router / Dispatcher** | `src/routes/` | `index.js`<br>`userRoutes.js`<br>`healthRoutes.js`<br>`whiteboardRoutes.js` | Directs incoming HTTP requests (HTTP method + URI path) to the designated Controller handler. |
 | **Infrastructure & Core** | Root & `src/` | `app.js`<br>`index.js` | Configures Express middlewares (JSON parser, URL-encoded parser), binds port listeners, and registers Swagger UI. |
 
@@ -138,13 +138,15 @@ The codebase is organized into modular directories reflecting each layer of the 
 The **Model** represents the application's domain data, data structures, and the operations allowed upon that data.
 * **`src/models/userModel.js`**:
   * **Entity State:** Maintains the in-memory array of user objects (`users = []`).
-  * **Data Access Operations:** Implements CRUD helper functions decoupled from HTTP logic:
-    * `getAll()`: Retrieves all registered user records.
-    * `getById(id)`: Searches for a user matching a numeric identifier.
+  * **Data Access Operations:** Implements complete CRUD helper functions decoupled from HTTP logic:
     * `create(userData)`: Generates auto-incrementing IDs, appends creation timestamps (`createdAt`), and saves the record.
+    * `findAll()` / `getAll()`: Retrieves all registered user records.
+    * `findById(id)` / `getById(id)`: Searches for a user matching a numeric identifier.
+    * `findByEmail(email)`: Case-insensitive email lookup.
     * `update(id, updateData)`: Merges new field values, preserves immutable IDs, and tracks modification timestamps (`updatedAt`).
-    * `delete(id)`: Removes a user from the collection and returns the deleted record.
+    * `delete(id)` / `remove(id)`: Removes a user from the collection and returns the deleted record.
     * `count()`: Reports the total number of stored users.
+    * `clear()`: Empties in-memory storage (used for isolated unit testing).
 * **`docker/init.sql`**:
   * Defines the relational PostgreSQL schema (`users` table with primary keys, constraints, and timestamps) and initial seed data for persistent database operations.
 
@@ -154,24 +156,29 @@ In a modern headless RESTful backend, the **View** layer is responsible for form
 * **Interactive API Documentation View (`src/config/swagger.js` & `swagger.json`)**:
   * Powered by `swagger-ui-express` and OpenAPI 3.0.
   * Served at `/api/swagger` and `/api/docs` to provide a visual, interactive GUI where human users and developers can inspect schemas, parameters, and execute live requests.
-* **HTML & Plain Text Views**: Browser-oriented endpoints (`/`, `/main`, `/about`, `/hello`) serving direct textual or HTML view representations.
+* **HTML & Plain Text Views**: Browser-oriented endpoints (`/`, `/main`, `/about`, `/hello`, `/users`) serving direct textual or HTML view representations.
 
 #### 3. 🎮 Controller Layer (`src/controllers/`)
-The **Controller** acts as the intermediary between the incoming HTTP request, the Model layer, and the View layer. It contains no direct routing logic and no database engine specifics:
-* **`src/controllers/userController.js`**:
-  * `createUser(req, res)`: Validates incoming request payloads from `req.body` (JSON or form-urlencoded), triggers `userModel.create()`, and returns HTTP `201 Created`.
-  * `getAllUsers(req, res)`: Fetches data via `userModel.getAll()` and formats the JSON list response.
-  * `getUserById(req, res)`: Extracts `req.params.id`, queries `userModel.getById()`, and responds with `200 OK` or `404 Not Found`.
-  * `updateUser(req, res)`: Processes `PUT` (full update) and `PATCH` (partial update) requests, validates non-empty payloads, applies mutations via `userModel.update()`, and responds accordingly.
-  * `deleteUser(req, res)`: Removes a user via `userModel.delete()` and returns confirmation metadata with HTTP `200 OK` or `404 Not Found`.
+The **Controller** acts as the intermediary between the incoming HTTP request, the Model layer, and the View layer. The system provides two specialized user controllers to cleanly separate API serialization from Web views:
+* **`src/controllers/apiUserController.js` (ApiUserController)**:
+  * Dedicated to RESTful API consumers, Postman, mobile clients, and Swagger UI.
+  * `createUser(req, res)`: Validates incoming request payload, calls `userModel.create()`, and returns HTTP `201 Created` with JSON.
+  * `getAllUsers(req, res)`: Fetches data via `userModel.getAll()` and formats the JSON list response with HTTP `200 OK`.
+  * `getUserById(req, res)`: Extracts `req.params.id`, queries `userModel.getById()`, and responds with JSON `200 OK` or `404 Not Found`.
+  * `updateUser(req, res)`: Handles `PUT` / `PATCH` requests, validates non-empty payloads, executes `userModel.update()`, and responds with updated JSON.
+  * `deleteUser(req, res)`: Removes a user via `userModel.delete()` and returns JSON confirmation with HTTP `200 OK` or `404 Not Found`.
+* **`src/controllers/userController.js` (UserController)**:
+  * Dedicated to standard web clients, browser form submissions, and content-negotiated responses.
+  * Implements complete CRUD functions (`createUser`, `getAllUsers`, `getUserById`, `updateUser`, `deleteUser`).
+  * Supports HTML rendering when requested by browsers (`Accept: text/html`), while gracefully supporting JSON fallback.
 * **`src/controllers/healthController.js`**:
   * `getHealth(req, res)`: Computes server health metrics (`uptime`, system timestamp, status string) and formats the response.
 * **`src/controllers/whiteboardController.js`**:
   * Contains request handlers for classroom routes (`getRoot`, `getHello`, `getHelloNamed`, `getSum`, `getMain`, `getAbout`, `getAlumni`), handling URL parameter parsing and response rendering.
 
 #### 4. 🚦 Routing & Dispatching Layer (`src/routes/`)
-Decouples URL route matching from business logic, ensuring that URL changes do not impact controller or model implementation:
-* **`src/routes/userRoutes.js`**: Registers routes for User management (`POST`, `GET`, `PUT`, `PATCH`, `DELETE`) and maps them to `userController`.
+Decouples URL route matching from business logic:
+* **`src/routes/userRoutes.js`**: Dispatches `/api/users` endpoints to `ApiUserController` and `/users` web endpoints to `UserController`.
 * **`src/routes/healthRoutes.js`**: Registers `GET /api/health` and `GET /health` mapped to `healthController.getHealth`.
 * **`src/routes/whiteboardRoutes.js`**: Registers introductory educational routes mapped to `whiteboardController`.
 * **`src/routes/index.js`**: Central aggregator that combines all modular sub-routers and serves the OpenAPI specification endpoints (`/api/swagger.json`, `/swagger.json`).
@@ -179,7 +186,7 @@ Decouples URL route matching from business logic, ensuring that URL changes do n
 #### 5. ⚙️ Application Entry Point & Infrastructure
 * **`src/app.js`**: Configures the Express instance, attaches global middlewares (`express.json()`, `express.urlencoded()`), mounts Swagger UI, and binds the central router.
 * **`index.js`**: Main executable script that initializes the HTTP listeners on both port `5000` (default) and port `3000` (alternate).
-* **`test/routes.test.js`**: Comprehensive automated test suite (19/19 tests) asserting that all MVC components coordinate seamlessly.
+* **`test/`**: Comprehensive automated test suites (39 tests across `routes.test.js`, `userModel.test.js`, and `controllers.test.js`).
 
 ---
 
@@ -189,8 +196,8 @@ To illustrate the MVC flow during execution, consider a client submitting **`POS
 
 1. **Client Request:** The client sends an HTTP `POST` request to `http://localhost:5000/api/users` with payload `{ "name": "Ece Yakali", "email": "ece@example.com" }`.
 2. **Listener & Middleware (`index.js` -> `src/app.js`):** The server receives the request; Express body-parser middleware parses the request body into `req.body`.
-3. **Router Dispatch (`src/routes/index.js` -> `src/routes/userRoutes.js`):** The router matches `POST /api/users` and passes execution to `userController.createUser`.
-4. **Controller Processing (`src/controllers/userController.js`):** The controller validates that the payload is non-empty.
+3. **Router Dispatch (`src/routes/index.js` -> `src/routes/userRoutes.js`):** The router matches `POST /api/users` and passes execution to `apiUserController.createUser`.
+4. **Controller Processing (`src/controllers/apiUserController.js`):** The controller validates that the payload is non-empty.
 5. **Model Mutation (`src/models/userModel.js`):** The controller calls `userModel.create(req.body)`. The model assigns an ID, appends timestamps, stores the record, and returns the entity.
 6. **View Formatting (`res.status(201).json(...)`):** The controller packages the newly created entity into a standardized JSON response view.
 7. **Client Response:** Express transmits the HTTP 201 response back to the client.
@@ -208,8 +215,9 @@ alumni/
 │   ├── config/                         # Environment & API documentation configurations
 │   │   └── swagger.js                  # OpenAPI 3.0 specification definition (View layer)
 │   ├── controllers/                    # Controller Layer (Request orchestration & business flow)
+│   │   ├── apiUserController.js        # Dedicated RESTful API CRUD Controller (JSON responses)
+│   │   ├── userController.js           # Web/Application CRUD Controller (HTML/content-negotiated)
 │   │   ├── healthController.js         # System health & uptime metric handler
-│   │   ├── userController.js           # User CRUD request & response coordinator
 │   │   └── whiteboardController.js     # Classroom introductory routes & calculation handlers
 │   ├── models/                         # Model Layer (Data structures & entity manipulation)
 │   │   └── userModel.js                # User entity data store & CRUD operations
@@ -220,7 +228,9 @@ alumni/
 │   │   └── whiteboardRoutes.js         # Routes for classroom endpoints (/, /hello, /sum, etc.)
 │   └── app.js                          # Express application configuration & middleware setup
 ├── test/                               # Automated test suites (Node.js native test runner)
-│   └── routes.test.js                  # 19 automated tests validating all endpoints & MVC layers
+│   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
+│   ├── routes.test.js                  # 19 integration tests validating all endpoints & MVC layers
+│   └── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
 ├── .dockerignore                       # Files excluded from Docker container build
 ├── .env.example                        # Sample environment variable template
 ├── .gitignore                          # Git tracking exclusion list
