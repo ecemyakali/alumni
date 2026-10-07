@@ -719,6 +719,118 @@
         }
       }
     },
+    "/users/{id}/edit": {
+      "get": {
+        "tags": [
+          "Web Users"
+        ],
+        "summary": "Get Edit User form View (Web / App)",
+        "description": "Renders the pre-filled HTML form to edit user details via UserController.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML Edit User Form"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/users/{id}/update": {
+      "post": {
+        "tags": [
+          "Web Users"
+        ],
+        "summary": "Update user from Web form (Web / App)",
+        "description": "Submits user updates from HTML edit form and renders updated View.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Ece Yakali (Updated)"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "ece.updated@example.com"
+                  },
+                  "department": {
+                    "type": "string",
+                    "example": "Software Engineering"
+                  },
+                  "role": {
+                    "type": "string",
+                    "example": "senior_alumni"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/users/{id}/delete": {
+      "post": {
+        "tags": [
+          "Web Users"
+        ],
+        "summary": "Delete user from Web form (Web / App)",
+        "description": "Deletes user via HTML form submit and renders updated directory View.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "example": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted and directory view rendered"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
     "/hello": {
       "get": {
         "tags": [

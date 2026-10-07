@@ -32,15 +32,18 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **PATCH**| `/api/users/:id` | Partially update user fields (API) | JSON or Form |
 | **DELETE**| `/api/users/:id`| Remove a user from in-memory storage (API) | - |
 
-### 🖥️ Web / Application Endpoints (`UserController` ➡️ `.../users`)
-| Method | Endpoint | Description | Response Format |
+### 🖥️ Web / Application Endpoints (`UserController` ➡️ `.../users` with Dedicated View Layer)
+| Method | Endpoint | Description | Layer / Format |
 | :--- | :--- | :--- | :--- |
-| **GET** | `/users` | List users (HTML view or JSON fallback) | HTML / JSON |
-| **POST** | `/users` | Form submission to create user | HTML / JSON |
-| **GET** | `/users/:id` | User profile page (HTML or JSON) | HTML / JSON |
-| **PUT** | `/users/:id` | Update user details by ID | JSON / Form |
-| **PATCH**| `/users/:id` | Partially update user details by ID | JSON / Form |
-| **DELETE**| `/users/:id`| Delete user by ID | JSON |
+| **GET** | `/users` | **READ ALL:** Users directory table & embedded create form | HTML View / JSON |
+| **POST** | `/users` | **CREATE:** Registration form submit & confirmation view | HTML View / JSON |
+| **GET** | `/users/:id` | **READ ONE:** Individual user profile detail card | HTML View / JSON |
+| **GET** | `/users/:id/edit` | **UPDATE (Form):** Pre-filled Edit User form view | HTML View |
+| **POST** | `/users/:id/update`| **UPDATE (Action):** Submit form edits & render updated view | HTML View / JSON |
+| **PUT** | `/users/:id` | **UPDATE (REST):** Full update user details by ID | JSON / HTML View |
+| **PATCH**| `/users/:id` | **UPDATE (REST):** Partial update user details by ID | JSON / HTML View |
+| **POST** | `/users/:id/delete`| **DELETE (Action):** Form delete submit & render directory view | HTML View / JSON |
+| **DELETE**| `/users/:id`| **DELETE (REST):** Delete user by ID | JSON / HTML View |
 
 ### 📋 Whiteboard Classroom Routes
 | Method | Endpoint | Description | Request Format |
@@ -250,11 +253,11 @@ alumni/
 │   ├── views/                          # View Layer (HTML page templates & UI rendering)
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 46 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 51 tests)
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
 │   ├── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
-│   └── userView.test.js                # Unit and integration tests for HTML View layer (GET/POST /users)
+│   └── userView.test.js                # Unit and integration tests for HTML View layer (all CRUD operations)
 ├── .dockerignore                       # Files excluded from Docker container build
 ├── .env.example                        # Sample environment variable template
 ├── .gitignore                          # Git tracking exclusion list
