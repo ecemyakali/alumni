@@ -430,7 +430,13 @@ cd alumni
    npm install
    ```
 
-2. **Start the Server:**
+2. **Configure Environment Variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   *Customize port numbers and database credentials if required.*
+
+3. **Start the Server:**
    ```bash
    # Development mode with auto-reload (Node.js native watch mode)
    npm run dev
@@ -440,7 +446,7 @@ cd alumni
    ```
    *The server starts listening on both `http://localhost:5000` and `http://localhost:3000`.*
 
-3. **Run Automated Tests:**
+4. **Run Automated Tests:**
    ```bash
    npm test
    ```
