@@ -3,7 +3,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-88_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-98_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -353,12 +353,16 @@ Node.js heap memory is volatile and lifecycle-bound to the running container pro
 alumni/
 ├── docker/                             # Containerization and database assets
 │   └── init.sql                        # Initial PostgreSQL schema & seed data (Model layer)
+├── factories/                          # Mock entity generators & testing factories
+│   ├── announcementFactory.js          # Announcement factory with overrides & batch generators
+│   └── userFactory.js                  # User factory with overrides & batch generators
 ├── migrations/                         # Idempotent SQL database migration files
 │   ├── 001_create_tables.sql           # Schema definition (users, announcements, indexes, triggers)
 │   └── 002_seed_data.sql               # Initial seed data for users and announcements
 ├── postman/                            # Postman workspace environment and collection files
 ├── scripts/                            # Operational & automated administrative scripts
-│   └── migrate.js                      # Database creation & SQL migration runner
+│   ├── migrate.js                      # Database creation & SQL migration runner
+│   └── seed.js                         # Database & in-memory seeder runner using factories
 ├── src/                                # Application source code (MVC Architecture)
 │   ├── config/                         # Environment & API documentation configurations
 │   │   ├── db.js                       # Centralized PostgreSQL connection pool (node-postgres pg.Pool)
@@ -386,11 +390,12 @@ alumni/
 │   │   ├── announcementView.js         # Announcements board, card view & publishing form
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 88 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 98 tests)
 │   ├── announcementControllers.test.js # Unit tests for ApiAnnouncementController & AnnouncementController
 │   ├── announcementModel.test.js       # Unit tests for Announcement Model in-memory CRUD operations
 │   ├── announcementView.test.js        # Unit and integration tests for Announcement HTML View layer
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
+│   ├── factories.test.js               # Unit and integration tests for User & Announcement factories & seeder
 │   ├── forgettingTest.test.js          # The Forgetting Test: memory volatility demonstration
 │   ├── migrations.test.js              # Unit tests for SQL migrations & DB pool architecture
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
@@ -450,7 +455,13 @@ cd alumni
    ```
    *Automatically creates `alumni_db` if needed, generates tracking table, and applies all SQL migrations.*
 
-4. **Start the Server:**
+4. **Seed the Database & In-Memory Store (Factories & Seeder):**
+   ```bash
+   npm run seed
+   ```
+   *Uses `userFactory` and `announcementFactory` to generate and seed realistic mock records into PostgreSQL or in-memory stores.*
+
+5. **Start the Server:**
    ```bash
    # Development mode with auto-reload (Node.js native watch mode)
    npm run dev
@@ -460,11 +471,11 @@ cd alumni
    ```
    *The server starts listening on both `http://localhost:5000` and `http://localhost:3000`.*
 
-5. **Run Automated Tests:**
+6. **Run Automated Tests:**
    ```bash
    npm test
    ```
-   *Executes all 88 automated test cases covering health checks, user & announcement CRUD, The Forgetting Test, SQL migrations, routing, views, and Swagger specs.*
+   *Executes all 98 automated test cases covering health checks, user & announcement CRUD, The Forgetting Test, SQL migrations, factories, seeders, routing, views, and Swagger specs.*
 
 ---
 
@@ -512,7 +523,8 @@ You can:
 - [x] 🧠 The Forgetting Test: In-memory data volatility & container lifecycle demonstration
 - [x] 📊 Data Design Documentation (`ddd.md`): Domain schemas, ERD, and contracts
 - [x] 🗄️ PostgreSQL database creation & automated migration pipeline (`migrations/`, `scripts/migrate.js`)
-- [x] Automated unit and integration testing suite (88/88 tests passing)
+- [x] 🌱 Mock factories & automated database seeder (`factories/`, `scripts/seed.js`, `npm run seed`)
+- [x] Automated unit and integration testing suite (98/98 tests passing)
 - [ ] JWT authentication and role-based authorization middleware
 - [ ] Advanced alumni search, filter, and pagination APIs
 - [ ] GitHub Actions CI/CD deployment pipelines

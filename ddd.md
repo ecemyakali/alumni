@@ -30,6 +30,9 @@
    - [6.3 Persistent Volume Architecture (`postgres_data`)](#63-persistent-volume-architecture-postgres_data)
 7. [Validation, Sanitization & Data Integrity Rules](#7-validation-sanitization--data-integrity-rules)
 8. [Data Query & Controller Action Matrix](#8-data-query--controller-action-matrix)
+9. [Factory & Seeder Pattern Architecture](#9-factory--seeder-pattern-architecture)
+   - [9.1 Entity Factories (`factories/`)](#91-entity-factories-factories)
+   - [9.2 Automated Seeder Runner (`scripts/seed.js`)](#92-automated-seeder-runner-scriptsseedjs)
 
 ---
 
@@ -481,3 +484,41 @@ volumes:
 | **DELETE** | `/api/announcements/:id`| `apiAnnouncementController.deleteAnnouncement` | `announcementModel.delete(id)` | `200 OK` | `404 Not Found` |
 | **GET** | `/announcements` | `announcementController.getAllAnnouncements` | `announcementModel.getAll()` | `200 OK` | - |
 | **POST** | `/announcements` | `announcementController.createAnnouncement` | `announcementModel.create(data)` | `201 Created` | `400 Bad Request` |
+
+---
+
+## 9. Factory & Seeder Pattern Architecture
+
+To streamline automated testing, local development, and database hydration, the project introduces dedicated domain factories and an automated seeder runner.
+
+```mermaid
+graph LR
+  subgraph Factories["Factory Layer (factories/)"]
+    UF["userFactory.js (User Generator)"]
+    AF["announcementFactory.js (Announcement Generator)"]
+  end
+
+  subgraph Seeder["Seeder Runner (scripts/seed.js)"]
+    SR["seed.js (Orchestrator)"]
+  end
+
+  subgraph Targets["Data Storage Targets"]
+    PG[("PostgreSQL Database (alumni_db)")]
+    MEM["In-Memory Stores (userModel / announcementModel)"]
+  end
+
+  UF -->|buildMany(10)| SR
+  AF -->|buildMany(6)| SR
+  SR -->|pg.Client (if online)| PG
+  SR -->|Fallback / Test Isolation| MEM
+```
+
+### 9.1 Entity Factories (`factories/`)
+- **`factories/userFactory.js`**: Generates mock User domain records with realistic alumni attributes (`name`, `email`, `department`, `graduationYear`, `role`). Supports custom property overrides (`build(overrides)`), batch generation (`buildMany(count)`), and counter reset (`reset()`).
+- **`factories/announcementFactory.js`**: Generates mock Announcement domain records with realistic broadcast content (`title`, `content`, `category`, `author`, `priority`). Supports custom property overrides (`build(overrides)`), batch generation (`buildMany(count)`), and counter reset (`reset()`).
+
+### 9.2 Automated Seeder Runner (`scripts/seed.js`)
+- **PostgreSQL Seeding (`seedPostgres`)**: Connects to the PostgreSQL database (`alumni_db`), verifies table availability, and inserts factory-generated records using `INSERT ... ON CONFLICT (email) DO NOTHING`.
+- **In-Memory Fallback Seeding (`seedInMemory`)**: When PostgreSQL is offline or during isolated unit testing, the seeder automatically populates `userModel` and `announcementModel` in memory without throwing unhandled exceptions.
+- **NPM Integration**: Executable via `npm run seed`.
+
