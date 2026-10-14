@@ -227,36 +227,37 @@ Both models implement a uniform, clean CRUD contract providing deterministic inp
 
 ```typescript
 interface UserModelContract {
-  // CREATE
+  // CREATE (PostgreSQL INSERT ... ON CONFLICT / Memory Fallback)
   create(userData: {
     name: string;
     email: string;
     department?: string;
     graduationYear?: number | string;
     role?: string;
-  }): User;
+  }): Promise<User> & User;
 
-  // READ ALL
-  findAll(): User[];
-  getAll(): User[];
+  // READ ALL (PostgreSQL SELECT ... ORDER BY id ASC / Memory)
+  findAll(): Promise<User[]> & User[];
+  getAll(): Promise<User[]> & User[];
 
-  // READ BY ID
-  findById(id: number | string): User | null;
-  getById(id: number | string): User | null;
+  // READ BY ID (PostgreSQL SELECT ... WHERE id = $1)
+  findById(id: number | string): Promise<User | null> & (User | null);
+  getById(id: number | string): Promise<User | null> & (User | null);
 
-  // READ BY EMAIL
-  findByEmail(email: string): User | null;
+  // READ BY EMAIL (PostgreSQL SELECT ... WHERE LOWER(email) = LOWER($1))
+  findByEmail(email: string): Promise<User | null> & (User | null);
 
-  // UPDATE
-  update(id: number | string, updateData: Partial<User>): User | null;
+  // UPDATE (PostgreSQL UPDATE users SET ... WHERE id = $6 RETURNING ...)
+  update(id: number | string, updateData: Partial<User>): Promise<User | null> & (User | null);
 
-  // DELETE
-  delete(id: number | string): User | null;
-  remove(id: number | string): User | null;
+  // DELETE (PostgreSQL DELETE FROM users WHERE id = $1 RETURNING ...)
+  delete(id: number | string): Promise<User | null> & (User | null);
+  remove(id: number | string): Promise<User | null> & (User | null);
 
-  // UTILITIES
+  // UTILITIES & HEALTH
   count(): number;
   clear(): void;
+  isDbConnected(): Promise<boolean>;
 }
 ```
 
@@ -266,36 +267,37 @@ interface UserModelContract {
 
 ```typescript
 interface AnnouncementModelContract {
-  // CREATE
+  // CREATE (PostgreSQL INSERT INTO announcements ... RETURNING ...)
   create(data: {
     title: string;
     content: string;
     category?: string;
     author?: string;
     priority?: 'low' | 'normal' | 'high' | 'urgent';
-  }): Announcement;
+  }): Promise<Announcement> & Announcement;
 
-  // READ ALL
-  findAll(): Announcement[];
-  getAll(): Announcement[];
+  // READ ALL (PostgreSQL SELECT ... ORDER BY id ASC)
+  findAll(): Promise<Announcement[]> & Announcement[];
+  getAll(): Promise<Announcement[]> & Announcement[];
 
-  // READ BY ID
-  findById(id: number | string): Announcement | null;
-  getById(id: number | string): Announcement | null;
+  // READ BY ID (PostgreSQL SELECT ... WHERE id = $1)
+  findById(id: number | string): Promise<Announcement | null> & (Announcement | null);
+  getById(id: number | string): Promise<Announcement | null> & (Announcement | null);
 
-  // READ BY CATEGORY
-  findByCategory(category: string): Announcement[];
+  // READ BY CATEGORY (PostgreSQL SELECT ... WHERE LOWER(category) = LOWER($1))
+  findByCategory(category: string): Promise<Announcement[]> & Announcement[];
 
-  // UPDATE
-  update(id: number | string, updateData: Partial<Announcement>): Announcement | null;
+  // UPDATE (PostgreSQL UPDATE announcements SET ... WHERE id = $6 RETURNING ...)
+  update(id: number | string, updateData: Partial<Announcement>): Promise<Announcement | null> & (Announcement | null);
 
-  // DELETE
-  delete(id: number | string): Announcement | null;
-  remove(id: number | string): Announcement | null;
+  // DELETE (PostgreSQL DELETE FROM announcements WHERE id = $1 RETURNING ...)
+  delete(id: number | string): Promise<Announcement | null> & (Announcement | null);
+  remove(id: number | string): Promise<Announcement | null> & (Announcement | null);
 
-  // UTILITIES
+  // UTILITIES & HEALTH
   count(): number;
   clear(): void;
+  isDbConnected(): Promise<boolean>;
 }
 ```
 

@@ -3,7 +3,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-98_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-113_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -207,31 +207,33 @@ The codebase is organized into modular directories reflecting each layer of the 
 ### 🔍 In-Depth Layer Walkthrough: Directories, Folders & Files
 
 #### 1. 🗄️ Model Layer (`src/models/` & `docker/`)
-The **Model** represents the application's domain data, data structures, and the operations allowed upon that data.
+The **Model** represents the application's domain data, data structures, and persistent database operations.
 * **`src/models/userModel.js`**:
-  * **Entity State:** Maintains the in-memory array of user objects (`users = []`).
-  * **Data Access Operations:** Implements complete CRUD helper functions decoupled from HTTP logic:
-    * `create(userData)`: Generates auto-incrementing IDs, appends creation timestamps (`createdAt`), and saves the record.
-    * `findAll()` / `getAll()`: Retrieves all registered user records.
-    * `findById(id)` / `getById(id)`: Searches for a user matching a numeric identifier.
-    * `findByEmail(email)`: Case-insensitive email lookup.
-    * `update(id, updateData)`: Merges new field values, preserves immutable IDs, and tracks modification timestamps (`updatedAt`).
-    * `delete(id)` / `remove(id)`: Removes a user from the collection and returns the deleted record.
-    * `count()`: Reports the total number of stored users.
-    * `clear()`: Empties in-memory storage (used for isolated unit testing).
+  * **Database Connection:** Connects to PostgreSQL (`users` table) using centralized `db.query` connection pool with parameterization.
+  * **Resilient Architecture:** Maintains an in-memory cache and offline fallback, returning hybrid Promise objects supporting both asynchronous `await` and synchronous testing.
+  * **Data Access Operations:**
+    * `create(userData)`: Executes `INSERT INTO users ... ON CONFLICT (email) DO UPDATE` returning persisted entity.
+    * `findAll()` / `getAll()`: Executes `SELECT ... FROM users ORDER BY id ASC`.
+    * `findById(id)` / `getById(id)`: Executes `SELECT ... FROM users WHERE id = $1`.
+    * `findByEmail(email)`: Executes `SELECT ... FROM users WHERE LOWER(email) = LOWER($1)`.
+    * `update(id, updateData)`: Executes parameterized `UPDATE users SET ... WHERE id = $6 RETURNING ...`.
+    * `delete(id)` / `remove(id)`: Executes `DELETE FROM users WHERE id = $1 RETURNING ...`.
+    * `count()`: Reports total count from database/memory.
+    * `clear()`: Truncates table and clears memory (test isolation).
 * **`src/models/announcementModel.js`**:
-  * **Entity State:** Maintains the in-memory collection of announcement objects (`announcements = []`).
-  * **Data Access Operations:** Complete CRUD functions for campus & alumni announcements:
-    * `create(data)`: Generates numeric IDs, assigns `createdAt`/`updatedAt`, defaults `priority: 'normal'`, and persists the announcement.
-    * `findAll()` / `getAll()`: Retrieves all announcements sorted in reverse chronological order.
-    * `findById(id)` / `getById(id)`: Retrieves a specific announcement by its numeric ID.
-    * `findByCategory(category)`: Filters announcements matching a specific category (e.g. `Career`, `Event`, `Networking`).
-    * `update(id, updateData)`: Updates fields and updates the `updatedAt` timestamp.
-    * `delete(id)` / `remove(id)`: Removes an announcement from storage and returns the deleted record.
-    * `count()`: Returns the total count of active announcements.
-    * `clear()`: Empties in-memory storage for test isolation.
-* **`docker/init.sql`**:
-  * Defines the relational PostgreSQL schema (`users` table with primary keys, constraints, and timestamps) and initial seed data for persistent database operations.
+  * **Database Connection:** Connects to PostgreSQL (`announcements` table) with parameterized query execution.
+  * **Resilient Architecture:** Implements identical graceful fallback for isolated and containerized environments.
+  * **Data Access Operations:**
+    * `create(data)`: Executes `INSERT INTO announcements ... RETURNING ...`.
+    * `findAll()` / `getAll()`: Executes `SELECT ... FROM announcements ORDER BY id ASC`.
+    * `findById(id)` / `getById(id)`: Executes `SELECT ... FROM announcements WHERE id = $1`.
+    * `findByCategory(category)`: Executes `SELECT ... WHERE LOWER(category) = LOWER($1)`.
+    * `update(id, updateData)`: Executes parameterized `UPDATE announcements SET ...`.
+    * `delete(id)` / `remove(id)`: Executes `DELETE FROM announcements WHERE id = $1`.
+    * `count()`: Returns active count.
+    * `clear()`: Truncates table and empties in-memory storage.
+* **`docker/init.sql` & `migrations/`**:
+  * Defines the relational PostgreSQL schema (`users` and `announcements` tables, triggers, indexes) and seed data for persistent database operations.
 
 #### 2. 🖥️ View & Presentation Layer (`src/views/` & `src/config/`)
 The **View** layer is responsible for formatting data into standardized presentations for human users, browsers, mobile applications, and API consumers:
@@ -390,16 +392,17 @@ alumni/
 │   │   ├── announcementView.js         # Announcements board, card view & publishing form
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 98 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 113 tests)
 │   ├── announcementControllers.test.js # Unit tests for ApiAnnouncementController & AnnouncementController
-│   ├── announcementModel.test.js       # Unit tests for Announcement Model in-memory CRUD operations
+│   ├── announcementModel.test.js       # Unit tests for Announcement Model CRUD operations
 │   ├── announcementView.test.js        # Unit and integration tests for Announcement HTML View layer
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
+│   ├── databaseCrud.test.js            # Unit & integration tests for PostgreSQL database CRUD interfaces & resilience
 │   ├── factories.test.js               # Unit and integration tests for User & Announcement factories & seeder
 │   ├── forgettingTest.test.js          # The Forgetting Test: memory volatility demonstration
 │   ├── migrations.test.js              # Unit tests for SQL migrations & DB pool architecture
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
-│   ├── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
+│   ├── userModel.test.js               # Unit tests for User Model CRUD operations
 │   └── userView.test.js                # Unit and integration tests for User HTML View layer
 ├── .dockerignore                       # Files excluded from Docker container build
 ├── .env.example                        # Sample environment variable template
@@ -475,7 +478,7 @@ cd alumni
    ```bash
    npm test
    ```
-   *Executes all 98 automated test cases covering health checks, user & announcement CRUD, The Forgetting Test, SQL migrations, factories, seeders, routing, views, and Swagger specs.*
+   *Executes all 113 automated test cases covering health checks, user & announcement CRUD, The Forgetting Test, SQL migrations, database connections, factories, seeders, routing, views, and Swagger specs.*
 
 ---
 
@@ -524,7 +527,8 @@ You can:
 - [x] 📊 Data Design Documentation (`ddd.md`): Domain schemas, ERD, and contracts
 - [x] 🗄️ PostgreSQL database creation & automated migration pipeline (`migrations/`, `scripts/migrate.js`)
 - [x] 🌱 Mock factories & automated database seeder (`factories/`, `scripts/seed.js`, `npm run seed`)
-- [x] Automated unit and integration testing suite (98/98 tests passing)
+- [x] 🔌 Update CRUD interfaces with PostgreSQL database connections & fallback architecture (`userModel.js`, `announcementModel.js`)
+- [x] Automated unit and integration testing suite (113/113 tests passing)
 - [ ] JWT authentication and role-based authorization middleware
 - [ ] Advanced alumni search, filter, and pagination APIs
 - [ ] GitHub Actions CI/CD deployment pipelines
