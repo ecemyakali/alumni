@@ -1,6 +1,29 @@
 # 🎓 Alumni Tracking System
 
+[![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
+[![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
+[![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
+[![Tests](https://img.shields.io/badge/Tests-83_Passing-brightgreen?style=flat)](./test/)
+
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
+
+---
+
+## 📚 Data Design & Architecture Documentation (DDD)
+
+A dedicated, comprehensive data architecture specification is maintained in **[`ddd.md`](./ddd.md)**:
+
+👉 **[Read the Full Data Design Documentation (ddd.md)](./ddd.md)**
+
+### Key Highlights Covered in `ddd.md`:
+1. **Domain Entities & Information Schema:** Detailed attribute specifications, data types, constraints, defaults, and JSON representations for [`UserModel`](./src/models/userModel.js) and [`AnnouncementModel`](./src/models/announcementModel.js).
+2. **Entity-Relationship Diagram (ERD):** Visualized entity models and structural relationships.
+3. **In-Memory Storage Architecture & Volatility Analysis:** Heap allocation characteristics, process lifecycle, and the architectural breakdown of **The Forgetting Test**.
+4. **Model CRUD Contracts:** TypeScript-style method signatures and return contracts (`create`, `findAll`, `findById`, `findByEmail`, `findByCategory`, `update`, `delete`, `count`, `clear`).
+5. **MVC Data Flow Lifecycles (Sequence Diagrams):** Visualized lifecycles for RESTful JSON API calls and Server-Side Rendered (SSR) HTML form submissions.
+6. **Relational Database (PostgreSQL) Transition Blueprint:** Complete SQL DDL schemas (`CREATE TABLE users`, `CREATE TABLE announcements`), B-Tree indexing, automated `updated_at` triggers, and Docker persistent volume (`postgres_data`) configuration.
+7. **Validation, Sanitization & Data Integrity Rules:** Regex patterns, enum boundary checks, and HTTP error mappings.
+8. **Data Query & Controller Action Matrix:** Quick lookup matrix mapping routes, controllers, and models.
 
 ---
 
@@ -369,6 +392,7 @@ alumni/
 ├── .env.example                        # Sample environment variable template
 ├── .gitignore                          # Git tracking exclusion list
 ├── alumni.postman_collection.json      # Exported Postman collection for automated API testing
+├── ddd.md                              # Comprehensive Data Design Documentation (DDD Specification)
 ├── docker-compose.yml                  # Multi-container orchestration (Node.js API + PostgreSQL)
 ├── Dockerfile                          # Production-ready container image for the Node.js API
 ├── index.js                            # Server entry point (listens on ports 5000 & 3000)
@@ -466,6 +490,7 @@ You can:
 - [x] Homework: Dedicated Announcement View layer with HTML CRUD board (`GET`, `POST`, `PUT`, `DELETE /announcements`)
 - [x] Interactive Swagger UI documentation with User and Announcement APIs (`GET /api/swagger`)
 - [x] 🧠 The Forgetting Test: In-memory data volatility & container lifecycle demonstration
+- [x] 📊 Data Design Documentation (`ddd.md`): Domain schemas, ERD, and contracts
 - [x] Automated unit and integration testing suite (83/83 tests passing)
 - [ ] PostgreSQL schema modeling and persistent database integration
 - [ ] JWT authentication and role-based authorization middleware
