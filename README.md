@@ -279,6 +279,51 @@ To illustrate the MVC flow during execution, consider a client submitting **`POS
 
 ---
 
+## 🧠 The Forgetting Test (Data Volatility Demonstration)
+
+To demonstrate why an in-memory database is insufficient for production systems and to prove the necessity of persistent storage (PostgreSQL with Docker volumes), **The Forgetting Test** was performed.
+
+### 🧪 Test Workflow & Execution:
+
+```text
+Step 1: Initial State Check  -> GET /api/users (Returns in-memory users)
+Step 2: Create a Record      -> POST /api/users {"name":"Forgetting Test User", "email":"forgetting.test@alumni.edu"}
+Step 3: Verify in Memory     -> GET /api/users (Record exists in Node.js RAM / process heap)
+Step 4: Container Teardown   -> docker compose down (or process termination)
+Step 5: Container Restart    -> docker compose up -d (or process restart)
+Step 6: Check the Record     -> GET /api/users -> THE RECORD WAS FORGOTTEN!
+```
+
+### 💻 Empirical Demonstration:
+
+```bash
+# 1. Create a new user record in memory
+curl -X POST http://localhost:5000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Forgetting Test User","email":"forgetting.test@alumni.edu","department":"Computer Engineering"}'
+# Response: HTTP 201 Created -> {"success":true,"user":{"id":1,"name":"Forgetting Test User",...}}
+
+# 2. Verify record exists in RAM
+curl http://localhost:5000/api/users
+# Response: HTTP 200 OK -> [{"id":1,"name":"Forgetting Test User",...}]
+
+# 3. Stop and tear down the container / process
+docker compose down
+
+# 4. Bring the container / process back up
+docker compose up -d
+
+# 5. Check the record again:
+curl http://localhost:5000/api/users
+# Response: HTTP 200 OK -> {"success":true,"count":0,"data":[]}
+# Result: The record was completely wiped out from memory (forgotten)!
+```
+
+### 🎯 Architectural Conclusion:
+Node.js heap memory is volatile and lifecycle-bound to the running container process. When a container restarts, memory is completely reinitialized. This experiment serves as the pedagogical justification for transitioning to a **relational database (PostgreSQL)** backed by **persistent Docker named volumes (`pgdata`)**.
+
+---
+
 ## 📁 Project Directory Structure
 
 ```text
@@ -311,11 +356,12 @@ alumni/
 │   │   ├── announcementView.js         # Announcements board, card view & publishing form
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 80 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 83 tests)
 │   ├── announcementControllers.test.js # Unit tests for ApiAnnouncementController & AnnouncementController
 │   ├── announcementModel.test.js       # Unit tests for Announcement Model in-memory CRUD operations
 │   ├── announcementView.test.js        # Unit and integration tests for Announcement HTML View layer
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
+│   ├── forgettingTest.test.js          # The Forgetting Test: memory volatility demonstration
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
 │   ├── userModel.test.js               # Unit tests for User Model in-memory CRUD operations
 │   └── userView.test.js                # Unit and integration tests for User HTML View layer
@@ -374,7 +420,7 @@ cd alumni
    ```bash
    npm test
    ```
-   *Executes all 80 automated test cases covering health checks, user & announcement CRUD, routing, views, and Swagger specs.*
+   *Executes all 83 automated test cases covering health checks, user & announcement CRUD, The Forgetting Test, routing, views, and Swagger specs.*
 
 ---
 
@@ -419,7 +465,8 @@ You can:
 - [x] Homework: In-memory announcement management without database (`AnnouncementModel`, `AnnouncementController`, `ApiAnnouncementController`)
 - [x] Homework: Dedicated Announcement View layer with HTML CRUD board (`GET`, `POST`, `PUT`, `DELETE /announcements`)
 - [x] Interactive Swagger UI documentation with User and Announcement APIs (`GET /api/swagger`)
-- [x] Automated unit and integration testing suite (80/80 tests passing)
+- [x] 🧠 The Forgetting Test: In-memory data volatility & container lifecycle demonstration
+- [x] Automated unit and integration testing suite (83/83 tests passing)
 - [ ] PostgreSQL schema modeling and persistent database integration
 - [ ] JWT authentication and role-based authorization middleware
 - [ ] Advanced alumni search, filter, and pagination APIs
