@@ -9,7 +9,8 @@
     "test": "node --test",
     "migrate": "node scripts/migrate.js",
     "db:create": "node scripts/migrate.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "db:seed": "node scripts/seed.js"
   },
   "repository": {
     "type": "git",

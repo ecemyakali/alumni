@@ -15,11 +15,11 @@ const announcementFactory = require('../factories/announcementFactory');
 const userModel = require('../src/models/userModel');
 const announcementModel = require('../src/models/announcementModel');
 
-const targetDbName = process.env.DB_NAME || 'alumni_db';
+const targetDbName = process.env.DB_NAME || process.env.POSTGRES_DB || 'alumni_db';
 const dbHost = process.env.DB_HOST || 'localhost';
 const dbPort = Number(process.env.DB_PORT) || 5432;
-const dbUser = process.env.DB_USER || 'postgres';
-const dbPassword = process.env.DB_PASSWORD || 'postgres';
+const dbUser = process.env.DB_USER || process.env.POSTGRES_USER || 'postgres';
+const dbPassword = process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres';
 
 /**
  * Seeds data into PostgreSQL database (if reachable)

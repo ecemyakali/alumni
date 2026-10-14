@@ -109,7 +109,12 @@ const announcementFactory = {
    */
   getSampleAnnouncements() {
     return [...SAMPLE_ANNOUNCEMENTS];
-  }
+  },
+
+  // Aliases for convention interoperability
+  create(overrides) { return this.build(overrides); },
+  createMany(count, overrides) { return this.buildMany(count, overrides); },
+  resetCounter() { return this.reset(); }
 };
 
 module.exports = announcementFactory;
