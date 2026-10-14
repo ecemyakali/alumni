@@ -8,17 +8,23 @@ services:
     container_name: alumni_app
     restart: unless-stopped
     ports:
+      - "5000:5000"
       - "3000:3000"
     environment:
-      - PORT=3000
+      - PORT=5000
+      - ALT_PORT=3000
       - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/alumni_db
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=alumni_db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - alumni_net
 
   db:
     image: postgres:16-alpine
@@ -31,7 +37,24 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: alumni_db
     volumes:
+      # Persistent named volume (resolves The Forgetting Test data volatility)
       - postgres_data:/var/lib/postgresql/data
+      # Automated schema migration and initial seed execution on container bootstrap
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d alumni_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - alumni_net
 
 volumes:
   postgres_data:
+    name: alumni_postgres_data
+    driver: local
+
+networks:
+  alumni_net:
+    name: alumni_network
+    driver: bridge

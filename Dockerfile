@@ -13,12 +13,12 @@ RUN npm install
 # Copy the rest of the application files
 COPY . .
 
-# Expose port (default 3000)
-EXPOSE 3000
+# Expose ports (5000 primary, 3000 secondary)
+EXPOSE 5000 3000
 
 # Set default environment variables
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=5000
 
 # Start the Node.js application
 CMD ["npm", "start"]
