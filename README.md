@@ -3,7 +3,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-113_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-140_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -42,23 +42,28 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 
 ## 🛣️ API Endpoints Summary
 
-### 🌐 RESTful API Endpoints (`ApiUserController` ➡️ `.../api/users`)
+### 🌐 RESTful API Endpoints (`.../api/...`)
 | Method | Endpoint | Description | Request Format |
 | :--- | :--- | :--- | :--- |
 | **GET** | `/api/swagger` | Interactive Swagger UI API documentation | - |
 | **GET** | `/api/swagger.json` | OpenAPI 3.0 specification in JSON format | - |
 | **GET** | `/api/health` | System health check (status, uptime, timestamp) | - |
-| **GET** | `/api/users` | List all users as JSON (in-memory) | - |
+| **GET** | `/api/users` | List all users as JSON | - |
 | **POST** | `/api/users` | Create a new user (JSON API) | Form (`x-www-form-urlencoded`) or JSON |
 | **GET** | `/api/users/:id` | Get single user details by numeric ID | - |
 | **PUT** | `/api/users/:id` | Update all or multiple user details (API) | Form (`x-www-form-urlencoded`) or JSON |
 | **PATCH**| `/api/users/:id` | Partially update user fields (API) | JSON or Form |
-| **DELETE**| `/api/users/:id`| Remove a user from in-memory storage (API) | - |
+| **DELETE**| `/api/users/:id`| Remove a user from storage (API) | - |
 | **GET** | `/api/announcements` | List all announcements as JSON | - |
 | **POST** | `/api/announcements` | Publish new announcement (JSON API) | JSON |
 | **GET** | `/api/announcements/:id` | Get single announcement by ID | - |
 | **PUT** | `/api/announcements/:id` | Update announcement by ID (API) | JSON |
 | **DELETE**| `/api/announcements/:id`| Delete announcement by ID (API) | - |
+| **GET** | `/api/job-postings` | List all career opportunities as JSON (optional `?company=` and `?type=`) | - |
+| **POST** | `/api/job-postings` | Create a new job posting (JSON API) | JSON |
+| **GET** | `/api/job-postings/:id` | Get single job posting details by ID | - |
+| **PUT/PATCH**| `/api/job-postings/:id`| Update job posting details by ID (API) | JSON |
+| **DELETE**| `/api/job-postings/:id`| Delete job posting by ID (API) | - |
 
 ### 🖥️ Web / Application Endpoints (Dedicated View Layers)
 
@@ -87,6 +92,19 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **PATCH**| `/announcements/:id` | **UPDATE (REST):** Partial update announcement details | JSON / HTML View |
 | **POST** | `/announcements/:id/delete`| **DELETE (Action):** Form delete submit & render board view | HTML View / JSON |
 | **DELETE**| `/announcements/:id`| **DELETE (REST):** Delete announcement by ID | JSON / HTML View |
+
+#### 💼 Career Opportunities Board (`JobPostingController` ➡️ `.../job-postings`)
+| Method | Endpoint | Description | Layer / Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/job-postings` | **READ ALL:** Career board & job submission form | HTML View / JSON |
+| **POST** | `/job-postings` | **CREATE:** Post career opportunity & feedback view | HTML View / JSON |
+| **GET** | `/job-postings/:id` | **READ ONE:** Detailed career opportunity card | HTML View / JSON |
+| **GET** | `/job-postings/:id/edit` | **UPDATE (Form):** Pre-filled Edit Job form view | HTML View |
+| **POST** | `/job-postings/:id/update`| **UPDATE (Action):** Submit edits & render updated view | HTML View / JSON |
+| **PUT** | `/job-postings/:id` | **UPDATE (REST):** Full update job opportunity details | JSON / HTML View |
+| **PATCH**| `/job-postings/:id` | **UPDATE (REST):** Partial update job opportunity details | JSON / HTML View |
+| **POST** | `/job-postings/:id/delete`| **DELETE (Action):** Form delete submit & render board view | HTML View / JSON |
+| **DELETE**| `/job-postings/:id`| **DELETE (REST):** Delete job opportunity by ID | JSON / HTML View |
 
 ### 📋 Whiteboard Classroom Routes
 | Method | Endpoint | Description | Request Format |

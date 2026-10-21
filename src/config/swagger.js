@@ -40,6 +40,14 @@ const swaggerDocument = {
       description: 'Web / Application announcement management via AnnouncementController (.../announcements)'
     },
     {
+      name: 'API Job Postings',
+      description: 'RESTful API career opportunity management via ApiJobPostingController (.../api/job-postings)'
+    },
+    {
+      name: 'Web Job Postings',
+      description: 'Web / Application career opportunity management via JobPostingController (.../job-postings)'
+    },
+    {
       name: 'Whiteboard Routes',
       description: 'Introductory classroom routes and endpoints'
     }
@@ -846,6 +854,171 @@ const swaggerDocument = {
           }
         }
       }
+    },
+    '/api/job-postings': {
+      get: {
+        tags: ['API Job Postings'],
+        summary: 'List all job postings',
+        description: 'Returns all career and job opportunities with optional filtering by company or employment type.',
+        parameters: [
+          { name: 'company', in: 'query', schema: { type: 'string' }, description: 'Filter by company name' },
+          { name: 'type', in: 'query', schema: { type: 'string' }, description: 'Filter by employment type' }
+        ],
+        responses: {
+          '200': {
+            description: 'List of job postings',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    count: { type: 'integer', example: 1 },
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/JobPosting' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['API Job Postings'],
+        summary: 'Create a new job posting',
+        description: 'Creates a new career opportunity record in the database.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['title', 'company', 'description'],
+                properties: {
+                  title: { type: 'string', example: 'Software Engineer (Backend)' },
+                  company: { type: 'string', example: 'TechCorp Solutions' },
+                  location: { type: 'string', example: 'Istanbul / Remote' },
+                  type: { type: 'string', example: 'full-time' },
+                  description: { type: 'string', example: 'Building robust microservices' },
+                  requirements: { type: 'string', example: 'Node.js, PostgreSQL' },
+                  salary: { type: 'string', example: '$80,000 - $100,000' },
+                  contactEmail: { type: 'string', example: 'careers@techcorp.com' },
+                  postedBy: { type: 'integer', example: 1 }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: 'Job posting created successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Job posting created successfully' },
+                    jobPosting: { $ref: '#/components/schemas/JobPosting' },
+                    totalJobPostings: { type: 'integer', example: 1 }
+                  }
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Bad request - missing required fields'
+          }
+        }
+      }
+    },
+    '/api/job-postings/{id}': {
+      get: {
+        tags: ['API Job Postings'],
+        summary: 'Get job posting by ID',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          '200': {
+            description: 'Job posting details',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/JobPosting' }
+                  }
+                }
+              }
+            }
+          },
+          '404': { description: 'Job posting not found' }
+        }
+      },
+      put: {
+        tags: ['API Job Postings'],
+        summary: 'Update job posting details',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/JobPosting' }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Job posting updated successfully' },
+          '404': { description: 'Job posting not found' }
+        }
+      },
+      delete: {
+        tags: ['API Job Postings'],
+        summary: 'Delete job posting by ID',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          '200': { description: 'Job posting deleted successfully' },
+          '404': { description: 'Job posting not found' }
+        }
+      }
+    },
+    '/job-postings': {
+      get: {
+        tags: ['Web Job Postings'],
+        summary: 'Render Career Opportunities board',
+        responses: {
+          '200': { description: 'HTML rendered career board' }
+        }
+      },
+      post: {
+        tags: ['Web Job Postings'],
+        summary: 'Submit new job posting form',
+        responses: {
+          '201': { description: 'Job posting created' },
+          '400': { description: 'Validation error' }
+        }
+      }
+    },
+    '/job-postings/{id}': {
+      get: {
+        tags: ['Web Job Postings'],
+        summary: 'Render single job posting detail card',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          '200': { description: 'HTML rendered detail view' },
+          '404': { description: 'Job posting not found' }
+        }
+      }
     }
   },
   components: {
@@ -873,6 +1046,23 @@ const swaggerDocument = {
           priority: { type: 'string', example: 'high' },
           createdAt: { type: 'string', example: '2026-10-07T10:00:00.000Z' },
           updatedAt: { type: 'string', example: '2026-10-07T11:00:00.000Z' }
+        }
+      },
+      JobPosting: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          title: { type: 'string', example: 'Software Engineer (Backend)' },
+          company: { type: 'string', example: 'TechCorp Solutions' },
+          location: { type: 'string', example: 'Remote' },
+          type: { type: 'string', example: 'full-time' },
+          description: { type: 'string', example: 'Designing and developing robust microservices' },
+          requirements: { type: 'string', example: 'Proficiency in Node.js, Express, PostgreSQL' },
+          salary: { type: 'string', example: '$75,000 - $95,000' },
+          contactEmail: { type: 'string', example: 'careers@techcorp.com' },
+          postedBy: { type: 'integer', example: 1 },
+          createdAt: { type: 'string', example: '2026-10-21T20:00:00.000Z' },
+          updatedAt: { type: 'string', example: null }
         }
       }
     }

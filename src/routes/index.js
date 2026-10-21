@@ -20,6 +20,8 @@ const userRoutes = require('./userRoutes');
 const apiUserRoutes = require('./apiUserRoutes');
 const announcementRoutes = require('./announcementRoutes');
 const apiAnnouncementRoutes = require('./apiAnnouncementRoutes');
+const jobPostingRoutes = require('./jobPostingRoutes');
+const apiJobPostingRoutes = require('./apiJobPostingRoutes');
 
 // Mount modular sub-routers
 router.use('/', whiteboardRoutes);
@@ -28,6 +30,8 @@ router.use('/', userRoutes);                // .../users -> UserController
 router.use('/', apiUserRoutes);             // .../api/users -> ApiUserController
 router.use('/', announcementRoutes);        // .../announcements -> AnnouncementController
 router.use('/', apiAnnouncementRoutes);     // .../api/announcements -> ApiAnnouncementController
+router.use('/', jobPostingRoutes);           // .../job-postings -> JobPostingController
+router.use('/', apiJobPostingRoutes);        // .../api/job-postings -> ApiJobPostingController
 
 // Swagger JSON Spec endpoints
 router.get(['/api/swagger.json', '/swagger.json'], (req, res) => {
