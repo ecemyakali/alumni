@@ -3,7 +3,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-174_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-178_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -393,10 +393,13 @@ alumni/
 │   └── init.sql                        # Initial PostgreSQL schema & seed data (Model layer)
 ├── factories/                          # Mock entity generators & testing factories
 │   ├── announcementFactory.js          # Announcement factory with overrides & batch generators
+│   ├── jobPostingFactory.js            # Job posting factory with overrides & batch generators
 │   └── userFactory.js                  # User factory with overrides & batch generators
 ├── migrations/                         # Idempotent SQL database migration files
 │   ├── 001_create_tables.sql           # Schema definition (users, announcements, indexes, triggers)
-│   └── 002_seed_data.sql               # Initial seed data for users and announcements
+│   ├── 002_seed_data.sql               # Initial seed data for users, announcements, and job postings
+│   ├── 003_create_job_postings_table.sql # Schema definition for job_postings table
+│   └── 004_create_applications_table.sql # Schema definition for applications table
 ├── postman/                            # Postman workspace environment and collection files
 ├── scripts/                            # Operational & automated administrative scripts
 │   ├── migrate.js                      # Database creation & SQL migration runner
@@ -526,7 +529,7 @@ cd alumni
    ```bash
    npm test
    ```
-   *Executes all 174 automated test cases covering health checks, user, announcement, job posting, and application CRUD, The Forgetting Test, SQL migrations, database connections, factories, seeders, routing, views, and Swagger specs.*
+   *Executes all 178 automated test cases covering health checks, user, announcement, job posting, and application CRUD, The Forgetting Test, SQL migrations, database connections, factories, seeders, routing, views, and Swagger specs.*
 
 ---
 
@@ -576,7 +579,7 @@ You can:
 - [x] 🗄️ PostgreSQL database creation & automated migration pipeline (`migrations/`, `scripts/migrate.js`)
 - [x] 🌱 Mock factories & automated database seeder (`factories/`, `scripts/seed.js`, `npm run seed`)
 - [x] 🔌 Update CRUD interfaces with PostgreSQL database connections & fallback architecture (`userModel.js`, `announcementModel.js`)
-- [x] Automated unit and integration testing suite (174/174 tests passing)
+- [x] Automated unit and integration testing suite (178/178 tests passing)
 - [x] 💼 Career Opportunities & Job Postings domain (`jobPostingModel.js`, `jobPostingController.js`, `apiJobPostingController.js`, `jobPostingView.js`)
 - [x] 📝 Many-to-Many Job Applications action domain (`applicationModel.js`, `applicationController.js`, `apiApplicationController.js`, `applicationView.js`)
 - [ ] JWT authentication and role-based authorization middleware

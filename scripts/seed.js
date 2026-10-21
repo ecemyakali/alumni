@@ -12,8 +12,10 @@
 const { Client } = require('pg');
 const userFactory = require('../factories/userFactory');
 const announcementFactory = require('../factories/announcementFactory');
+const jobPostingFactory = require('../factories/jobPostingFactory');
 const userModel = require('../src/models/userModel');
 const announcementModel = require('../src/models/announcementModel');
+const jobPostingModel = require('../src/models/jobPostingModel');
 
 const targetDbName = process.env.DB_NAME || process.env.POSTGRES_DB || 'alumni_db';
 const dbHost = process.env.DB_HOST || 'localhost';
@@ -25,9 +27,10 @@ const dbPassword = process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || '
  * Seeds data into PostgreSQL database (if reachable)
  * @param {Array<Object>} users 
  * @param {Array<Object>} announcements 
+ * @param {Array<Object>} jobPostings
  * @returns {Promise<boolean>} True if PostgreSQL was seeded, false if skipped
  */
-async function seedPostgres(users, announcements) {
+async function seedPostgres(users, announcements, jobPostings = []) {
   console.log(`\n🐘 Checking PostgreSQL connection on ${dbHost}:${dbPort}/${targetDbName}...`);
 
   const client = new Client({
@@ -64,6 +67,16 @@ async function seedPostgres(users, announcements) {
       `, [a.title, a.content, a.category, a.author, a.priority]);
     }
 
+    if (jobPostings.length > 0) {
+      console.log(`💼 Seeding ${jobPostings.length} job postings into PostgreSQL...`);
+      for (const j of jobPostings) {
+        await client.query(`
+          INSERT INTO job_postings (title, company, location, type, description, requirements, salary, contact_email, posted_by)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+        `, [j.title, j.company, j.location, j.type, j.description, j.requirements, j.salary, j.contactEmail, j.postedBy]);
+      }
+    }
+
     console.log('✅ PostgreSQL seeding completed successfully!');
     return true;
   } catch (err) {
@@ -79,11 +92,13 @@ async function seedPostgres(users, announcements) {
  * Seeds data into the in-memory models
  * @param {Array<Object>} users 
  * @param {Array<Object>} announcements 
+ * @param {Array<Object>} jobPostings
  */
-function seedInMemory(users, announcements) {
+function seedInMemory(users, announcements, jobPostings = []) {
   console.log(`\n💾 Seeding In-Memory Model Store...`);
   userModel.clear();
   announcementModel.clear();
+  jobPostingModel.clear();
 
   for (const u of users) {
     userModel.create(u);
@@ -93,7 +108,11 @@ function seedInMemory(users, announcements) {
     announcementModel.create(a);
   }
 
-  console.log(`✅ In-Memory Seeded: ${userModel.count()} Users, ${announcementModel.count()} Announcements.`);
+  for (const j of jobPostings) {
+    jobPostingModel.create(j);
+  }
+
+  console.log(`✅ In-Memory Seeded: ${userModel.count()} Users, ${announcementModel.count()} Announcements, ${jobPostingModel.count()} Job Postings.`);
 }
 
 /**
@@ -107,16 +126,18 @@ async function runSeed() {
   // Reset factory counters
   userFactory.reset();
   announcementFactory.reset();
+  jobPostingFactory.reset();
 
   // Generate realistic domain records via factories
   const mockUsers = userFactory.buildMany(10);
   const mockAnnouncements = announcementFactory.buildMany(6);
+  const mockJobPostings = jobPostingFactory.buildMany(6);
 
   // 1. Try seeding PostgreSQL
-  await seedPostgres(mockUsers, mockAnnouncements);
+  await seedPostgres(mockUsers, mockAnnouncements, mockJobPostings);
 
   // 2. Seed In-Memory Store
-  seedInMemory(mockUsers, mockAnnouncements);
+  seedInMemory(mockUsers, mockAnnouncements, mockJobPostings);
 
   console.log('\n✨ All data factories and seeders executed successfully!\n');
 }

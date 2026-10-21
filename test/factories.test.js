@@ -2,16 +2,20 @@ const { test, describe, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const userFactory = require('../factories/userFactory');
 const announcementFactory = require('../factories/announcementFactory');
+const jobPostingFactory = require('../factories/jobPostingFactory');
 const userModel = require('../src/models/userModel');
 const announcementModel = require('../src/models/announcementModel');
+const jobPostingModel = require('../src/models/jobPostingModel');
 const { seedInMemory, runSeed } = require('../scripts/seed');
 
 describe('🏭 Data Factories & Seeding Architecture Tests', () => {
   beforeEach(() => {
     userFactory.reset();
     announcementFactory.reset();
+    jobPostingFactory.reset();
     userModel.clear();
     announcementModel.clear();
+    jobPostingModel.clear();
   });
 
   describe('UserFactory Tests', () => {
@@ -106,19 +110,70 @@ describe('🏭 Data Factories & Seeding Architecture Tests', () => {
     });
   });
 
+  describe('JobPostingFactory Tests', () => {
+    test('build() returns a valid mock job posting with required domain fields', () => {
+      const job = jobPostingFactory.build();
+
+      assert.ok(job.title, 'Job posting must have a title');
+      assert.ok(job.company, 'Job posting must have a company');
+      assert.ok(job.description, 'Job posting must have a description');
+      assert.ok(job.location, 'Job posting must have a location');
+      assert.ok(['full-time', 'part-time', 'contract', 'internship', 'remote'].includes(job.type));
+      assert.ok(job.contactEmail, 'Job posting must have a contactEmail');
+    });
+
+    test('build() applies custom overrides correctly', () => {
+      const job = jobPostingFactory.build({
+        title: 'Lead Architect',
+        company: 'Global Cloud Systems',
+        type: 'remote',
+        salary: '$150,000'
+      });
+
+      assert.strictEqual(job.title, 'Lead Architect');
+      assert.strictEqual(job.company, 'Global Cloud Systems');
+      assert.strictEqual(job.type, 'remote');
+      assert.strictEqual(job.salary, '$150,000');
+    });
+
+    test('buildMany() produces specified number of job postings', () => {
+      const count = 6;
+      const jobs = jobPostingFactory.buildMany(count);
+
+      assert.strictEqual(jobs.length, count);
+      assert.ok(jobs.every(j => j.title && j.company && j.description));
+    });
+
+    test('reset() resets the internal factory counter', () => {
+      const firstJob = jobPostingFactory.build();
+      jobPostingFactory.buildMany(3);
+      jobPostingFactory.reset();
+      const resetJob = jobPostingFactory.build();
+
+      assert.strictEqual(firstJob.title, resetJob.title);
+      assert.strictEqual(firstJob.company, resetJob.company);
+    });
+  });
+
   describe('Seeder Script Automation Tests', () => {
-    test('seedInMemory() populates userModel and announcementModel with factory records', () => {
+    test('seedInMemory() populates userModel, announcementModel, and jobPostingModel with factory records', () => {
       const users = userFactory.buildMany(5);
       const announcements = announcementFactory.buildMany(4);
+      const jobs = jobPostingFactory.buildMany(3);
 
-      seedInMemory(users, announcements);
+      seedInMemory(users, announcements, jobs);
 
       assert.strictEqual(userModel.count(), 5);
       assert.strictEqual(announcementModel.count(), 4);
+      assert.strictEqual(jobPostingModel.count(), 3);
 
       const foundUser = userModel.findByEmail(users[0].email);
       assert.ok(foundUser);
       assert.strictEqual(foundUser.name, users[0].name);
+
+      const foundJob = jobPostingModel.findById(1);
+      assert.ok(foundJob);
+      assert.strictEqual(foundJob.title, jobs[0].title);
     });
 
     test('runSeed() executes without errors and seeds default batches', async () => {
@@ -126,6 +181,7 @@ describe('🏭 Data Factories & Seeding Architecture Tests', () => {
 
       assert.strictEqual(userModel.count(), 10, 'Must seed 10 users into memory');
       assert.strictEqual(announcementModel.count(), 6, 'Must seed 6 announcements into memory');
+      assert.strictEqual(jobPostingModel.count(), 6, 'Must seed 6 job postings into memory');
     });
   });
 });
