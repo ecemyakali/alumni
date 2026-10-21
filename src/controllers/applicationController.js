@@ -15,6 +15,8 @@
  */
 
 const applicationModel = require('../models/applicationModel');
+const jobPostingModel = require('../models/jobPostingModel');
+const userModel = require('../models/userModel');
 const applicationView = require('../views/applicationView');
 
 const VALID_STATUSES = ['pending', 'reviewing', 'accepted', 'rejected', 'withdrawn'];
@@ -119,7 +121,10 @@ const applicationController = {
     }
 
     if (isHtmlRequest(req)) {
-      return res.status(200).send(applicationView.renderApplicationsList(applications));
+      const jobs = await jobPostingModel.getAll();
+      const users = await userModel.getAll();
+      const selectedJobId = req.query ? req.query.jobPostingId : null;
+      return res.status(200).send(applicationView.renderApplicationsList(applications, { jobs, users, selectedJobId }));
     }
 
     return res.status(200).json({
@@ -156,7 +161,9 @@ const applicationController = {
     }
 
     if (expectsHtml) {
-      return res.status(200).send(applicationView.renderApplicationDetail(item));
+      const user = await userModel.getById(item.userId);
+      const job = await jobPostingModel.getById(item.jobPostingId);
+      return res.status(200).send(applicationView.renderApplicationDetail(item, { user, job }));
     }
 
     return res.status(200).json({
@@ -181,7 +188,9 @@ const applicationController = {
       return res.status(404).send(applicationView.renderError(`Application with ID #${req.params.id} not found`, { statusCode: 404 }));
     }
 
-    return res.status(200).send(applicationView.renderEditApplicationForm(item));
+    const user = await userModel.getById(item.userId);
+    const job = await jobPostingModel.getById(item.jobPostingId);
+    return res.status(200).send(applicationView.renderEditApplicationForm(item, { user, job }));
   },
 
   /**

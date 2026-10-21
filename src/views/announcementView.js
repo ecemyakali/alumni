@@ -260,6 +260,8 @@ const announcementView = {
 
     <div class="links">
       <a href="/users">👥 Users Directory</a> |
+      <a href="/job-postings">💼 Job Postings</a> |
+      <a href="/applications">📝 Applications</a> |
       <a href="/api/swagger">📖 Swagger UI Docs</a> |
       <a href="/api/announcements">🌐 REST API (/api/announcements)</a> |
       <a href="/api/health">❤️ Health Check</a>

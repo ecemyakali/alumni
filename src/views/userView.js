@@ -304,6 +304,9 @@ const userView = {
     </section>
 
     <div class="links">
+      <a href="/announcements">📢 Announcements</a> |
+      <a href="/job-postings">💼 Job Postings</a> |
+      <a href="/applications">📝 Applications</a> |
       <a href="/api/swagger">📖 Interactive Swagger UI</a> |
       <a href="/api/health">❤️ System Health Check</a> |
       <a href="/api/users">🌐 REST API (/api/users)</a>

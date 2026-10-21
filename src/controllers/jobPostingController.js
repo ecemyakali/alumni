@@ -15,6 +15,8 @@
  */
 
 const jobPostingModel = require('../models/jobPostingModel');
+const applicationModel = require('../models/applicationModel');
+const userModel = require('../models/userModel');
 const jobPostingView = require('../views/jobPostingView');
 
 /**
@@ -75,7 +77,8 @@ const jobPostingController = {
     const jobs = await jobPostingModel.getAll();
 
     if (isHtmlRequest(req)) {
-      return res.status(200).send(jobPostingView.renderJobPostingsList(jobs));
+      const applications = await applicationModel.getAll();
+      return res.status(200).send(jobPostingView.renderJobPostingsList(jobs, { applications }));
     }
 
     return res.status(200).json({
@@ -112,7 +115,9 @@ const jobPostingController = {
     }
 
     if (expectsHtml) {
-      return res.status(200).send(jobPostingView.renderJobPostingDetail(item));
+      const applications = await applicationModel.findByJobPostingId(id);
+      const users = await userModel.getAll();
+      return res.status(200).send(jobPostingView.renderJobPostingDetail(item, { applications, users }));
     }
 
     return res.status(200).json({
