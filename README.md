@@ -16,12 +16,12 @@ A dedicated, comprehensive data architecture specification is maintained in **[`
 👉 **[Read the Full Data Design Documentation (ddd.md)](./ddd.md)**
 
 ### Key Highlights Covered in `ddd.md`:
-1. **Domain Entities & Information Schema:** Detailed attribute specifications, data types, constraints, defaults, and JSON representations for [`UserModel`](./src/models/userModel.js) and [`AnnouncementModel`](./src/models/announcementModel.js).
-2. **Entity-Relationship Diagram (ERD):** Visualized entity models and structural relationships.
+1. **Domain Entities & Information Schema:** Detailed attribute specifications, data types, constraints, defaults, and JSON representations for [`UserModel`](./src/models/userModel.js), [`AnnouncementModel`](./src/models/announcementModel.js), and `JobPostingModel`.
+2. **Entity-Relationship Diagram (ERD):** Visualized entity models and structural relationships (`users`, `announcements`, `job_postings`).
 3. **In-Memory Storage Architecture & Volatility Analysis:** Heap allocation characteristics, process lifecycle, and the architectural breakdown of **The Forgetting Test**.
-4. **Model CRUD Contracts:** TypeScript-style method signatures and return contracts (`create`, `findAll`, `findById`, `findByEmail`, `findByCategory`, `update`, `delete`, `count`, `clear`).
+4. **Model CRUD Contracts:** TypeScript-style method signatures and return contracts (`create`, `findAll`, `findById`, `findByEmail`, `findByCategory`, `findByCompany`, `findByType`, `update`, `delete`, `count`, `clear`).
 5. **MVC Data Flow Lifecycles (Sequence Diagrams):** Visualized lifecycles for RESTful JSON API calls and Server-Side Rendered (SSR) HTML form submissions.
-6. **Relational Database (PostgreSQL) Transition Blueprint:** Complete SQL DDL schemas (`CREATE TABLE users`, `CREATE TABLE announcements`), B-Tree indexing, automated `updated_at` triggers, and Docker persistent volume (`postgres_data`) configuration.
+6. **Relational Database (PostgreSQL) Transition Blueprint:** Complete SQL DDL schemas (`CREATE TABLE users`, `CREATE TABLE announcements`, `CREATE TABLE job_postings`), B-Tree indexing, automated `updated_at` triggers, and Docker persistent volume (`postgres_data`) configuration.
 7. **Validation, Sanitization & Data Integrity Rules:** Regex patterns, enum boundary checks, and HTTP error mappings.
 8. **Data Query & Controller Action Matrix:** Quick lookup matrix mapping routes, controllers, and models.
 

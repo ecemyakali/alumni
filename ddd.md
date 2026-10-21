@@ -14,13 +14,15 @@
 2. [Domain Entities & Information Schema](#2-domain-entities--information-schema)
    - [2.1 User (Alumni) Entity](#21-user-alumni-entity)
    - [2.2 Announcement Entity](#22-announcement-entity)
-   - [2.3 Entity-Relationship Diagram (ERD)](#23-entity-relationship-diagram-erd)
+   - [2.3 JobPosting Entity](#23-jobposting-entity)
+   - [2.4 Entity-Relationship Diagram (ERD)](#24-entity-relationship-diagram-erd)
 3. [Storage Implementation & Data Volatility Analysis](#3-storage-implementation--data-volatility-analysis)
    - [3.1 In-Memory Storage Architecture](#31-in-memory-storage-architecture)
    - [3.2 The Forgetting Test (Data Volatility Demonstration)](#32-the-forgetting-test-data-volatility-demonstration)
 4. [Model Interface & CRUD Operations Contract](#4-model-interface--crud-operations-contract)
    - [4.1 UserModel CRUD Interface](#41-usermodel-crud-interface)
    - [4.2 AnnouncementModel CRUD Interface](#42-announcementmodel-crud-interface)
+   - [4.3 JobPostingModel CRUD Interface](#43-jobpostingmodel-crud-interface)
 5. [Data Flow & Lifecycle across the MVC Architecture](#5-data-flow--lifecycle-across-the-mvc-architecture)
    - [5.1 RESTful JSON API Data Flow](#51-restful-json-api-data-flow)
    - [5.2 Web Interface Form Submission Data Flow](#52-web-interface-form-submission-data-flow)
@@ -38,10 +40,10 @@
 
 ## 1. Overview & Architectural Context
 
-The **Alumni Tracking System** is architected using the **Model-View-Controller (MVC)** design pattern. In this architecture, the **Model Layer** (`src/models/userModel.js` and `src/models/announcementModel.js`) encapsulates all domain state, entity definitions, validation rules, and data mutation primitives.
+The **Alumni Tracking System** is architected using the **Model-View-Controller (MVC)** design pattern. In this architecture, the **Model Layer** (`src/models/userModel.js`, `src/models/announcementModel.js`, and `src/models/jobPostingModel.js`) encapsulates all domain state, entity definitions, validation rules, and data mutation primitives.
 
 ### Core Architectural Principles:
-* **Decoupled Persistence (Separation of Concerns):** Business controllers (`userController`, `apiUserController`, `announcementController`, `apiAnnouncementController`) interact strictly with model abstractions. Controllers remain agnostic to underlying storage mechanics (whether in-memory heap, JSON files, or PostgreSQL).
+* **Decoupled Persistence (Separation of Concerns):** Business controllers (`userController`, `apiUserController`, `announcementController`, `apiAnnouncementController`, `jobPostingController`, `apiJobPostingController`) interact strictly with model abstractions. Controllers remain agnostic to underlying storage mechanics (whether in-memory heap, JSON files, or PostgreSQL).
 * **Single Source of Truth:** Models operate as singleton instances exported across the application, guaranteeing consistent entity state across both Server-Side Rendered (SSR) HTML views and RESTful JSON APIs.
 * **Deterministic Contract:** Every mutation and query method enforces consistent return types, standardized timestamp formatting (ISO 8601 UTC), and deterministic primary key increments.
 
@@ -49,7 +51,7 @@ The **Alumni Tracking System** is architected using the **Model-View-Controller 
 
 ## 2. Domain Entities & Information Schema
 
-The application models two primary business domains: **User (Alumni Profile)** and **Announcement (Campus & Alumni Broadcasts)**.
+The application models three primary business domains: **User (Alumni Profile)**, **Announcement (Campus & Alumni Broadcasts)**, and **JobPosting (Career Opportunities)**.
 
 ### 2.1 User (Alumni) Entity
 
@@ -113,11 +115,51 @@ Represents broadcast communications, job opportunities, reunion invitations, and
 
 ---
 
-### 2.3 Entity-Relationship Diagram (ERD)
+### 2.3 JobPosting Entity
+
+Represents employment vacancies, internship opportunities, and career announcements shared across the alumni network.
+
+| Attribute | Data Type | Nullable | Default | Description |
+| :--- | :--- | :---: | :--- | :--- |
+| **`id`** | `INTEGER` | ❌ No | Auto-increment (`1, 2, ...`) | Unique job posting primary identifier. |
+| **`title`** | `VARCHAR(255)` | ❌ No | - | Role / position headline (e.g. 'Software Engineer'). |
+| **`company`** | `VARCHAR(255)` | ❌ No | - | Hiring organization or employer name. |
+| **`location`** | `VARCHAR(255)` | ❌ No | `'Remote'` | Geographic work location, city, or remote policy. |
+| **`type`** | `VARCHAR(50)` | ❌ No | `'full-time'` | Employment type (`'full-time'`, `'part-time'`, `'contract'`, `'internship'`, `'remote'`). |
+| **`description`** | `TEXT` | ❌ No | - | In-depth role responsibilities and specifications. |
+| **`requirements`** | `TEXT` | ✅ Yes | `null` | Candidate qualifications, technical skills, and experience prerequisites. |
+| **`salary`** | `VARCHAR(100)` | ✅ Yes | `null` | Compensation range or terms (e.g. `'$80k - $100k'` or `'Competitive'`). |
+| **`contactEmail`** | `VARCHAR(255)` | ✅ Yes | `null` | Application submission or inquiry email address. |
+| **`postedBy`** | `INTEGER` | ✅ Yes | `null` | User ID of the alumnus/recruiter creating the posting (`FK -> users.id`). |
+| **`createdAt`** | `TIMESTAMP (ISO 8601)` | ❌ No | `CURRENT_TIMESTAMP` | System record creation timestamp. |
+| **`updatedAt`** | `TIMESTAMP (ISO 8601)` | ✅ Yes | `null` | Timestamp of last modification. |
+
+#### JobPosting JSON Representation:
+```json
+{
+  "id": 1,
+  "title": "Software Engineer (Backend)",
+  "company": "TechCorp Solutions",
+  "location": "Istanbul / Remote",
+  "type": "full-time",
+  "description": "Designing and developing robust microservices and high-throughput REST APIs.",
+  "requirements": "Proficiency in Node.js, Express, PostgreSQL, and Docker.",
+  "salary": "$75,000 - $95,000",
+  "contactEmail": "careers@techcorp.com",
+  "postedBy": 1,
+  "createdAt": "2026-10-21T20:00:00.000Z",
+  "updatedAt": null
+}
+```
+
+---
+
+### 2.4 Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
     USER ||--o{ ANNOUNCEMENT : "publishes / authors"
+    USER ||--o{ JOB_POSTING : "posts / shares"
     USER {
         int id PK
         string name
@@ -138,6 +180,20 @@ erDiagram
         timestamp createdAt
         timestamp updatedAt
     }
+    JOB_POSTING {
+        int id PK
+        string title
+        string company
+        string location
+        string type
+        string description
+        string requirements
+        string salary
+        string contactEmail
+        int postedBy FK
+        timestamp createdAt
+        timestamp updatedAt
+    }
 ```
 
 ---
@@ -153,6 +209,9 @@ let users = [];
 
 // Internal memory storage (src/models/announcementModel.js)
 let announcements = [];
+
+// Internal memory storage (src/models/jobPostingModel.js)
+let jobPostings = [];
 ```
 
 #### Lifecycle & Concurrency Characteristics:
@@ -221,7 +280,7 @@ curl http://localhost:5000/api/users
 
 ## 4. Model Interface & CRUD Operations Contract
 
-Both models implement a uniform, clean CRUD contract providing deterministic inputs and outputs.
+All models implement a uniform, clean CRUD contract providing deterministic inputs and outputs.
 
 ### 4.1 UserModel CRUD Interface
 
@@ -293,6 +352,53 @@ interface AnnouncementModelContract {
   // DELETE (PostgreSQL DELETE FROM announcements WHERE id = $1 RETURNING ...)
   delete(id: number | string): Promise<Announcement | null> & (Announcement | null);
   remove(id: number | string): Promise<Announcement | null> & (Announcement | null);
+
+  // UTILITIES & HEALTH
+  count(): number;
+  clear(): void;
+  isDbConnected(): Promise<boolean>;
+}
+```
+
+---
+
+### 4.3 JobPostingModel CRUD Interface
+
+```typescript
+interface JobPostingModelContract {
+  // CREATE (PostgreSQL INSERT INTO job_postings ... RETURNING ...)
+  create(data: {
+    title: string;
+    company: string;
+    location?: string;
+    type?: 'full-time' | 'part-time' | 'contract' | 'internship' | 'remote';
+    description: string;
+    requirements?: string;
+    salary?: string;
+    contactEmail?: string;
+    postedBy?: number | string;
+  }): Promise<JobPosting> & JobPosting;
+
+  // READ ALL (PostgreSQL SELECT ... ORDER BY id ASC)
+  findAll(): Promise<JobPosting[]> & JobPosting[];
+  getAll(): Promise<JobPosting[]> & JobPosting[];
+
+  // READ BY ID (PostgreSQL SELECT ... WHERE id = $1)
+  findById(id: number | string): Promise<JobPosting | null> & (JobPosting | null);
+  getById(id: number | string): Promise<JobPosting | null> & (JobPosting | null);
+
+  // READ BY COMPANY (PostgreSQL SELECT ... WHERE LOWER(company) = LOWER($1))
+  findByCompany(company: string): Promise<JobPosting[]> & JobPosting[];
+
+  // READ BY EMPLOYMENT TYPE (PostgreSQL SELECT ... WHERE type = $1)
+  findByType(type: string): Promise<JobPosting[]> & JobPosting[];
+
+  // UPDATE (PostgreSQL UPDATE job_postings SET ... WHERE id = $X RETURNING ...)
+  update(id: number | string, updateData: Partial<JobPosting>): Promise<JobPosting | null> & (JobPosting | null);
+
+  // DELETE (PostgreSQL DELETE FROM job_postings WHERE id = $1 RETURNING ...)
+  delete(id: number | string): Promise<JobPosting | null> & (JobPosting | null);
+  remove(id: number | string): Promise<JobPosting | null> & (JobPosting | null);
 
   // UTILITIES & HEALTH
   count(): number;
@@ -387,6 +493,21 @@ CREATE TABLE IF NOT EXISTS announcements (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS job_postings (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    location VARCHAR(255) DEFAULT 'Remote',
+    type VARCHAR(50) DEFAULT 'full-time' CHECK (type IN ('full-time', 'part-time', 'contract', 'internship', 'remote')),
+    description TEXT NOT NULL,
+    requirements TEXT,
+    salary VARCHAR(100),
+    contact_email VARCHAR(255),
+    posted_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ---
@@ -402,7 +523,14 @@ CREATE TABLE IF NOT EXISTS announcements (
    CREATE INDEX idx_announcements_category ON announcements (category);
    CREATE INDEX idx_announcements_created_at ON announcements (created_at DESC);
    ```
-3. **Automated `updated_at` Timestamp Trigger:**
+3. **Job Posting Search, Filter & Foreign Key Indexes:**
+   ```sql
+   CREATE INDEX idx_job_postings_company ON job_postings (LOWER(company));
+   CREATE INDEX idx_job_postings_type ON job_postings (type);
+   CREATE INDEX idx_job_postings_posted_by ON job_postings (posted_by);
+   CREATE INDEX idx_job_postings_created_at ON job_postings (created_at DESC);
+   ```
+4. **Automated `updated_at` Timestamp Trigger:**
    ```sql
    CREATE OR REPLACE FUNCTION update_timestamp_column()
    RETURNS TRIGGER AS $$
@@ -419,6 +547,11 @@ CREATE TABLE IF NOT EXISTS announcements (
 
    CREATE TRIGGER trg_announcements_updated_at
        BEFORE UPDATE ON announcements
+       FOR EACH ROW
+       EXECUTE FUNCTION update_timestamp_column();
+
+   CREATE TRIGGER trg_job_postings_updated_at
+       BEFORE UPDATE ON job_postings
        FOR EACH ROW
        EXECUTE FUNCTION update_timestamp_column();
    ```
@@ -464,6 +597,11 @@ volumes:
 | **`Announcement.title`** | Non-empty string, min length 3, max length 255. | HTTP `400 Bad Request` |
 | **`Announcement.content`** | Non-empty text, min length 5. | HTTP `400 Bad Request` |
 | **`Announcement.priority`** | Must match: `'low' \| 'normal' \| 'high' \| 'urgent'`. | Defaults to `'normal'` |
+| **`JobPosting.title`** | Non-empty string, min length 3, max length 255. | HTTP `400 Bad Request` |
+| **`JobPosting.company`** | Non-empty string, min length 2, max length 255. | HTTP `400 Bad Request` |
+| **`JobPosting.description`** | Non-empty text, min length 10. | HTTP `400 Bad Request` |
+| **`JobPosting.type`** | Must match: `'full-time' \| 'part-time' \| 'contract' \| 'internship' \| 'remote'`. | Defaults to `'full-time'` |
+| **`JobPosting.contactEmail`** | Valid RFC 5322 format if provided. | HTTP `400 Bad Request` |
 
 ---
 
@@ -486,6 +624,14 @@ volumes:
 | **DELETE** | `/api/announcements/:id`| `apiAnnouncementController.deleteAnnouncement` | `announcementModel.delete(id)` | `200 OK` | `404 Not Found` |
 | **GET** | `/announcements` | `announcementController.getAllAnnouncements` | `announcementModel.getAll()` | `200 OK` | - |
 | **POST** | `/announcements` | `announcementController.createAnnouncement` | `announcementModel.create(data)` | `201 Created` | `400 Bad Request` |
+| **GET** | `/api/job-postings` | `apiJobPostingController.getAllJobPostings` | `jobPostingModel.getAll()` | `200 OK` | - |
+| **POST** | `/api/job-postings` | `apiJobPostingController.createJobPosting` | `jobPostingModel.create(data)` | `201 Created` | `400 Bad Request` |
+| **GET** | `/api/job-postings/:id` | `apiJobPostingController.getJobPostingById` | `jobPostingModel.getById(id)` | `200 OK` | `404 Not Found` |
+| **PUT/PATCH**| `/api/job-postings/:id`| `apiJobPostingController.updateJobPosting` | `jobPostingModel.update(id, data)` | `200 OK` | `404 Not Found` |
+| **DELETE** | `/api/job-postings/:id`| `apiJobPostingController.deleteJobPosting` | `jobPostingModel.delete(id)` | `200 OK` | `404 Not Found` |
+| **GET** | `/job-postings` | `jobPostingController.getAllJobPostings` | `jobPostingModel.getAll()` | `200 OK` | - |
+| **POST** | `/job-postings` | `jobPostingController.createJobPosting` | `jobPostingModel.create(data)` | `201 Created` | `400 Bad Request` |
+| **GET** | `/job-postings/:id` | `jobPostingController.getJobPostingById` | `jobPostingModel.getById(id)` | `200 OK` | `404 Not Found` |
 
 ---
 
@@ -498,6 +644,7 @@ graph LR
   subgraph Factories["Factory Layer (factories/)"]
     UF["userFactory.js (User Generator)"]
     AF["announcementFactory.js (Announcement Generator)"]
+    JF["jobPostingFactory.js (Job Posting Generator)"]
   end
 
   subgraph Seeder["Seeder Runner (scripts/seed.js)"]
@@ -506,11 +653,12 @@ graph LR
 
   subgraph Targets["Data Storage Targets"]
     PG[("PostgreSQL Database (alumni_db)")]
-    MEM["In-Memory Stores (userModel / announcementModel)"]
+    MEM["In-Memory Stores (user / announcement / jobPosting)"]
   end
 
   UF -->|buildMany(10)| SR
   AF -->|buildMany(6)| SR
+  JF -->|buildMany(5)| SR
   SR -->|pg.Client (if online)| PG
   SR -->|Fallback / Test Isolation| MEM
 ```
@@ -518,9 +666,10 @@ graph LR
 ### 9.1 Entity Factories (`factories/`)
 - **`factories/userFactory.js`**: Generates mock User domain records with realistic alumni attributes (`name`, `email`, `department`, `graduationYear`, `role`). Supports custom property overrides (`build(overrides)`), batch generation (`buildMany(count)`), and counter reset (`reset()`).
 - **`factories/announcementFactory.js`**: Generates mock Announcement domain records with realistic broadcast content (`title`, `content`, `category`, `author`, `priority`). Supports custom property overrides (`build(overrides)`), batch generation (`buildMany(count)`), and counter reset (`reset()`).
+- **`factories/jobPostingFactory.js`**: Generates mock JobPosting domain records with realistic career data (`title`, `company`, `location`, `type`, `description`, `requirements`, `salary`, `contactEmail`). Supports custom property overrides (`build(overrides)`), batch generation (`buildMany(count)`), and counter reset (`reset()`).
 
 ### 9.2 Automated Seeder Runner (`scripts/seed.js`)
-- **PostgreSQL Seeding (`seedPostgres`)**: Connects to the PostgreSQL database (`alumni_db`), verifies table availability, and inserts factory-generated records using `INSERT ... ON CONFLICT (email) DO NOTHING`.
-- **In-Memory Fallback Seeding (`seedInMemory`)**: When PostgreSQL is offline or during isolated unit testing, the seeder automatically populates `userModel` and `announcementModel` in memory without throwing unhandled exceptions.
+- **PostgreSQL Seeding (`seedPostgres`)**: Connects to the PostgreSQL database (`alumni_db`), verifies table availability, and inserts factory-generated records using `INSERT ... ON CONFLICT DO NOTHING`.
+- **In-Memory Fallback Seeding (`seedInMemory`)**: When PostgreSQL is offline or during isolated unit testing, the seeder automatically populates `userModel`, `announcementModel`, and `jobPostingModel` in memory without throwing unhandled exceptions.
 - **NPM Integration**: Executable via `npm run seed`.
 
