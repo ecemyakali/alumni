@@ -16,9 +16,20 @@ describe('🗄️ Database Migrations & Pool Architecture Tests', () => {
       .filter(f => f.endsWith('.sql'))
       .sort();
 
-    assert.ok(files.length >= 2, 'Must have at least 2 migration files');
+    assert.ok(files.length >= 3, 'Must have at least 3 migration files');
     assert.strictEqual(files[0], '001_create_tables.sql');
     assert.strictEqual(files[1], '002_seed_data.sql');
+    assert.strictEqual(files[2], '003_create_job_postings_table.sql');
+  });
+
+  test('003_create_job_postings_table.sql contains DDL for job_postings, triggers and indexes', () => {
+    const ddl = fs.readFileSync(path.join(migrationsDir, '003_create_job_postings_table.sql'), 'utf-8');
+
+    assert.ok(ddl.includes('CREATE TABLE IF NOT EXISTS job_postings'), 'Must create job_postings table');
+    assert.ok(ddl.includes('idx_job_postings_company'), 'Must create job_postings company index');
+    assert.ok(ddl.includes('idx_job_postings_type'), 'Must create job_postings type index');
+    assert.ok(ddl.includes('idx_job_postings_posted_by'), 'Must create job_postings posted_by index');
+    assert.ok(ddl.includes('trg_job_postings_updated_at'), 'Must create job_postings updated_at trigger');
   });
 
   test('001_create_tables.sql contains DDL for users, announcements, triggers and indexes', () => {
