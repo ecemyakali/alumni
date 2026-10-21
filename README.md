@@ -3,7 +3,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-140_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-174_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -64,6 +64,11 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **GET** | `/api/job-postings/:id` | Get single job posting details by ID | - |
 | **PUT/PATCH**| `/api/job-postings/:id`| Update job posting details by ID (API) | JSON |
 | **DELETE**| `/api/job-postings/:id`| Delete job posting by ID (API) | - |
+| **GET** | `/api/applications` | List all job applications as JSON (optional `?userId=` and `?jobPostingId=`) | - |
+| **POST** | `/api/applications` | Submit new job application (JSON API) | JSON |
+| **GET** | `/api/applications/:id` | Get single job application details by ID | - |
+| **PUT/PATCH**| `/api/applications/:id`| Update job application details by ID (API) | JSON |
+| **DELETE**| `/api/applications/:id`| Delete job application by ID (API) | - |
 
 ### 🖥️ Web / Application Endpoints (Dedicated View Layers)
 
@@ -105,6 +110,19 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **PATCH**| `/job-postings/:id` | **UPDATE (REST):** Partial update job opportunity details | JSON / HTML View |
 | **POST** | `/job-postings/:id/delete`| **DELETE (Action):** Form delete submit & render board view | HTML View / JSON |
 | **DELETE**| `/job-postings/:id`| **DELETE (REST):** Delete job opportunity by ID | JSON / HTML View |
+
+#### 📝 Job Applications Management (`ApplicationController` ➡️ `.../applications`)
+| Method | Endpoint | Description | Layer / Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/applications` | **READ ALL:** Applications table & submission form | HTML View / JSON |
+| **POST** | `/applications` | **CREATE:** Submit application form & feedback view | HTML View / JSON |
+| **GET** | `/applications/:id` | **READ ONE:** Detailed application card | HTML View / JSON |
+| **GET** | `/applications/:id/edit`| **UPDATE (Form):** Pre-filled Edit Application form view | HTML View |
+| **POST** | `/applications/:id/update`| **UPDATE (Action):** Submit edits & render updated view | HTML View / JSON |
+| **PUT** | `/applications/:id` | **UPDATE (REST):** Full update application details | JSON / HTML View |
+| **PATCH**| `/applications/:id` | **UPDATE (REST):** Partial update application details | JSON / HTML View |
+| **POST** | `/applications/:id/delete`| **DELETE (Action):** Form delete submit & render list view | HTML View / JSON |
+| **DELETE**| `/applications/:id`| **DELETE (REST):** Delete application by ID | JSON / HTML View |
 
 ### 📋 Whiteboard Classroom Routes
 | Method | Endpoint | Description | Request Format |
@@ -396,11 +414,17 @@ alumni/
 │   │   └── whiteboardController.js     # Classroom introductory routes & calculation handlers
 │   ├── models/                         # Model Layer (Data structures & entity manipulation)
 │   │   ├── announcementModel.js        # Announcement entity data store & CRUD operations
+│   │   ├── applicationModel.js         # Application entity data store & M:N relations
 │   │   ├── db.js                       # Database connection pool export alias
+│   │   ├── jobPostingModel.js          # JobPosting entity data store & CRUD operations
 │   │   └── userModel.js                # User entity data store & CRUD operations
 │   ├── routes/                         # Router Layer (HTTP verb & URL route definitions)
 │   │   ├── apiAnnouncementRoutes.js    # Routes for .../api/announcements -> ApiAnnouncementController
 │   │   ├── announcementRoutes.js       # Routes for .../announcements -> AnnouncementController
+│   │   ├── apiApplicationRoutes.js     # Routes for .../api/applications -> ApiApplicationController
+│   │   ├── applicationRoutes.js        # Routes for .../applications -> ApplicationController
+│   │   ├── apiJobPostingRoutes.js      # Routes for .../api/job-postings -> ApiJobPostingController
+│   │   ├── jobPostingRoutes.js         # Routes for .../job-postings -> JobPostingController
 │   │   ├── apiUserRoutes.js            # Routes for .../api/users -> ApiUserController
 │   │   ├── healthRoutes.js             # Routes for /api/health -> HealthController
 │   │   ├── index.js                    # Aggregated master router & Swagger JSON endpoints
@@ -408,16 +432,22 @@ alumni/
 │   │   └── whiteboardRoutes.js         # Routes for classroom endpoints (/, /hello, /sum, etc.)
 │   ├── views/                          # View Layer (HTML page templates & UI rendering)
 │   │   ├── announcementView.js         # Announcements board, card view & publishing form
+│   │   ├── applicationView.js          # Job Applications board, detail view & submission form
+│   │   ├── jobPostingView.js           # Career opportunities board, card view & posting form
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 113 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 174 tests)
 │   ├── announcementControllers.test.js # Unit tests for ApiAnnouncementController & AnnouncementController
 │   ├── announcementModel.test.js       # Unit tests for Announcement Model CRUD operations
 │   ├── announcementView.test.js        # Unit and integration tests for Announcement HTML View layer
+│   ├── applicationControllers.test.js  # Unit tests for ApiApplicationController & ApplicationController
+│   ├── applicationModel.test.js        # Unit tests for Application Model CRUD & M:N relations
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
 │   ├── databaseCrud.test.js            # Unit & integration tests for PostgreSQL database CRUD interfaces & resilience
 │   ├── factories.test.js               # Unit and integration tests for User & Announcement factories & seeder
 │   ├── forgettingTest.test.js          # The Forgetting Test: memory volatility demonstration
+│   ├── jobPostingControllers.test.js   # Unit tests for ApiJobPostingController & JobPostingController
+│   ├── jobPostingModel.test.js         # Unit tests for JobPosting Model CRUD operations
 │   ├── migrations.test.js              # Unit tests for SQL migrations & DB pool architecture
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
 │   ├── userModel.test.js               # Unit tests for User Model CRUD operations
@@ -496,7 +526,7 @@ cd alumni
    ```bash
    npm test
    ```
-   *Executes all 113 automated test cases covering health checks, user & announcement CRUD, The Forgetting Test, SQL migrations, database connections, factories, seeders, routing, views, and Swagger specs.*
+   *Executes all 174 automated test cases covering health checks, user, announcement, job posting, and application CRUD, The Forgetting Test, SQL migrations, database connections, factories, seeders, routing, views, and Swagger specs.*
 
 ---
 
@@ -546,7 +576,9 @@ You can:
 - [x] 🗄️ PostgreSQL database creation & automated migration pipeline (`migrations/`, `scripts/migrate.js`)
 - [x] 🌱 Mock factories & automated database seeder (`factories/`, `scripts/seed.js`, `npm run seed`)
 - [x] 🔌 Update CRUD interfaces with PostgreSQL database connections & fallback architecture (`userModel.js`, `announcementModel.js`)
-- [x] Automated unit and integration testing suite (113/113 tests passing)
+- [x] Automated unit and integration testing suite (174/174 tests passing)
+- [x] 💼 Career Opportunities & Job Postings domain (`jobPostingModel.js`, `jobPostingController.js`, `apiJobPostingController.js`, `jobPostingView.js`)
+- [x] 📝 Many-to-Many Job Applications action domain (`applicationModel.js`, `applicationController.js`, `apiApplicationController.js`, `applicationView.js`)
 - [ ] JWT authentication and role-based authorization middleware
 - [ ] Advanced alumni search, filter, and pagination APIs
 - [ ] GitHub Actions CI/CD deployment pipelines

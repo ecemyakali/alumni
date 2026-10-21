@@ -15,7 +15,8 @@
    - [2.1 User (Alumni) Entity](#21-user-alumni-entity)
    - [2.2 Announcement Entity](#22-announcement-entity)
    - [2.3 JobPosting Entity](#23-jobposting-entity)
-   - [2.4 Entity-Relationship Diagram (ERD)](#24-entity-relationship-diagram-erd)
+   - [2.4 Application Entity (Many-to-Many Action Table)](#24-application-entity-many-to-many-action-table)
+   - [2.5 Entity-Relationship Diagram (ERD)](#25-entity-relationship-diagram-erd)
 3. [Storage Implementation & Data Volatility Analysis](#3-storage-implementation--data-volatility-analysis)
    - [3.1 In-Memory Storage Architecture](#31-in-memory-storage-architecture)
    - [3.2 The Forgetting Test (Data Volatility Demonstration)](#32-the-forgetting-test-data-volatility-demonstration)
@@ -23,6 +24,7 @@
    - [4.1 UserModel CRUD Interface](#41-usermodel-crud-interface)
    - [4.2 AnnouncementModel CRUD Interface](#42-announcementmodel-crud-interface)
    - [4.3 JobPostingModel CRUD Interface](#43-jobpostingmodel-crud-interface)
+   - [4.4 ApplicationModel CRUD Interface](#44-applicationmodel-crud-interface)
 5. [Data Flow & Lifecycle across the MVC Architecture](#5-data-flow--lifecycle-across-the-mvc-architecture)
    - [5.1 RESTful JSON API Data Flow](#51-restful-json-api-data-flow)
    - [5.2 Web Interface Form Submission Data Flow](#52-web-interface-form-submission-data-flow)
@@ -40,10 +42,10 @@
 
 ## 1. Overview & Architectural Context
 
-The **Alumni Tracking System** is architected using the **Model-View-Controller (MVC)** design pattern. In this architecture, the **Model Layer** (`src/models/userModel.js`, `src/models/announcementModel.js`, and `src/models/jobPostingModel.js`) encapsulates all domain state, entity definitions, validation rules, and data mutation primitives.
+The **Alumni Tracking System** is architected using the **Model-View-Controller (MVC)** design pattern. In this architecture, the **Model Layer** (`src/models/userModel.js`, `src/models/announcementModel.js`, `src/models/jobPostingModel.js`, and `src/models/applicationModel.js`) encapsulates all domain state, entity definitions, validation rules, and data mutation primitives.
 
 ### Core Architectural Principles:
-* **Decoupled Persistence (Separation of Concerns):** Business controllers (`userController`, `apiUserController`, `announcementController`, `apiAnnouncementController`, `jobPostingController`, `apiJobPostingController`) interact strictly with model abstractions. Controllers remain agnostic to underlying storage mechanics (whether in-memory heap, JSON files, or PostgreSQL).
+* **Decoupled Persistence (Separation of Concerns):** Business controllers (`userController`, `apiUserController`, `announcementController`, `apiAnnouncementController`, `jobPostingController`, `apiJobPostingController`, `applicationController`, `apiApplicationController`) interact strictly with model abstractions. Controllers remain agnostic to underlying storage mechanics (whether in-memory heap, JSON files, or PostgreSQL).
 * **Single Source of Truth:** Models operate as singleton instances exported across the application, guaranteeing consistent entity state across both Server-Side Rendered (SSR) HTML views and RESTful JSON APIs.
 * **Deterministic Contract:** Every mutation and query method enforces consistent return types, standardized timestamp formatting (ISO 8601 UTC), and deterministic primary key increments.
 
@@ -51,7 +53,7 @@ The **Alumni Tracking System** is architected using the **Model-View-Controller 
 
 ## 2. Domain Entities & Information Schema
 
-The application models three primary business domains: **User (Alumni Profile)**, **Announcement (Campus & Alumni Broadcasts)**, and **JobPosting (Career Opportunities)**.
+The application models four primary business domains: **User (Alumni Profile)**, **Announcement (Campus & Alumni Broadcasts)**, **JobPosting (Career Opportunities)**, and **Application (Many-to-Many Job Applications)**.
 
 ### 2.1 User (Alumni) Entity
 
@@ -154,12 +156,47 @@ Represents employment vacancies, internship opportunities, and career announceme
 
 ---
 
-### 2.4 Entity-Relationship Diagram (ERD)
+### 2.4 Application Entity (Many-to-Many Action Table)
+
+Serves as the **relational action and junction table** representing the **Many-to-Many ($M:N$)** relationship between **Users (Alumni applicants)** and **JobPostings (Career opportunities)**. Each record tracks the application lifecycle, cover note, candidate resume link, and current evaluation status.
+
+| Attribute | Data Type | Nullable | Default | Description |
+| :--- | :--- | :---: | :--- | :--- |
+| **`id`** | `INTEGER` | ❌ No | Auto-increment (`1, 2, ...`) | Unique application primary identifier. |
+| **`userId`** | `INTEGER` | ❌ No | - | Foreign Key referencing `users.id` (applicant). |
+| **`jobPostingId`**| `INTEGER` | ❌ No | - | Foreign Key referencing `job_postings.id` (opportunity). |
+| **`status`** | `VARCHAR(50)` | ❌ No | `'pending'` | Application state (`'pending'`, `'reviewing'`, `'accepted'`, `'rejected'`, `'withdrawn'`). |
+| **`resumeUrl`** | `VARCHAR(500)`| ✅ Yes | `null` | URL or document path pointing to applicant CV/portfolio. |
+| **`coverNote`** | `TEXT` | ✅ Yes | `null` | Candidate cover letter, motivation pitch, or personal note. |
+| **`createdAt`** | `TIMESTAMP (ISO 8601)` | ❌ No | `CURRENT_TIMESTAMP` | System application submission timestamp. |
+| **`updatedAt`** | `TIMESTAMP (ISO 8601)` | ✅ Yes | `null` | Timestamp of last review or status change. |
+
+> **Relational Integrity Constraint:** A unique composite constraint `UNIQUE(user_id, job_posting_id)` prevents duplicate applications by the same alumnus to the same job opening.
+
+#### Application JSON Representation:
+```json
+{
+  "id": 1,
+  "userId": 1,
+  "jobPostingId": 1,
+  "status": "pending",
+  "resumeUrl": "https://alumni.edu/resumes/ece-yakali-cv.pdf",
+  "coverNote": "I am deeply passionate about backend microservices and distributed databases.",
+  "createdAt": "2026-10-22T00:10:00.000Z",
+  "updatedAt": null
+}
+```
+
+---
+
+### 2.5 Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
     USER ||--o{ ANNOUNCEMENT : "publishes / authors"
     USER ||--o{ JOB_POSTING : "posts / shares"
+    USER ||--o{ APPLICATION : "submits"
+    JOB_POSTING ||--o{ APPLICATION : "receives"
     USER {
         int id PK
         string name
@@ -194,6 +231,16 @@ erDiagram
         timestamp createdAt
         timestamp updatedAt
     }
+    APPLICATION {
+        int id PK
+        int userId FK
+        int jobPostingId FK
+        string status
+        string resumeUrl
+        string coverNote
+        timestamp createdAt
+        timestamp updatedAt
+    }
 ```
 
 ---
@@ -212,6 +259,9 @@ let announcements = [];
 
 // Internal memory storage (src/models/jobPostingModel.js)
 let jobPostings = [];
+
+// Internal memory storage (src/models/applicationModel.js)
+let applications = [];
 ```
 
 #### Lifecycle & Concurrency Characteristics:
@@ -409,6 +459,52 @@ interface JobPostingModelContract {
 
 ---
 
+### 4.4 ApplicationModel CRUD Interface
+
+```typescript
+interface ApplicationModelContract {
+  // CREATE (PostgreSQL INSERT INTO applications ... RETURNING ...)
+  create(data: {
+    userId: number | string;
+    jobPostingId: number | string;
+    status?: 'pending' | 'reviewing' | 'accepted' | 'rejected' | 'withdrawn';
+    resumeUrl?: string;
+    coverNote?: string;
+  }): Promise<Application> & Application;
+
+  // READ ALL (PostgreSQL SELECT ... ORDER BY id ASC)
+  findAll(): Promise<Application[]> & Application[];
+  getAll(): Promise<Application[]> & Application[];
+
+  // READ BY ID (PostgreSQL SELECT ... WHERE id = $1)
+  findById(id: number | string): Promise<Application | null> & (Application | null);
+  getById(id: number | string): Promise<Application | null> & (Application | null);
+
+  // READ BY USER ID (PostgreSQL SELECT ... WHERE user_id = $1)
+  findByUserId(userId: number | string): Promise<Application[]> & Application[];
+
+  // READ BY JOB POSTING ID (PostgreSQL SELECT ... WHERE job_posting_id = $1)
+  findByJobPostingId(jobPostingId: number | string): Promise<Application[]> & Application[];
+
+  // READ BY USER AND JOB (PostgreSQL SELECT ... WHERE user_id = $1 AND job_posting_id = $2)
+  findByUserAndJob(userId: number | string, jobPostingId: number | string): Promise<Application | null> & (Application | null);
+
+  // UPDATE (PostgreSQL UPDATE applications SET ... WHERE id = $X RETURNING ...)
+  update(id: number | string, updateData: Partial<Application>): Promise<Application | null> & (Application | null);
+
+  // DELETE (PostgreSQL DELETE FROM applications WHERE id = $1 RETURNING ...)
+  delete(id: number | string): Promise<Application | null> & (Application | null);
+  remove(id: number | string): Promise<Application | null> & (Application | null);
+
+  // UTILITIES & HEALTH
+  count(): number;
+  clear(): void;
+  isDbConnected(): Promise<boolean>;
+}
+```
+
+---
+
 ## 5. Data Flow & Lifecycle across the MVC Architecture
 
 ### 5.1 RESTful JSON API Data Flow
@@ -508,6 +604,18 @@ CREATE TABLE IF NOT EXISTS job_postings (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS applications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    job_posting_id INTEGER NOT NULL REFERENCES job_postings(id) ON DELETE CASCADE,
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'reviewing', 'accepted', 'rejected', 'withdrawn')),
+    resume_url VARCHAR(500),
+    cover_note TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_job_application UNIQUE (user_id, job_posting_id)
+);
 ```
 
 ---
@@ -530,7 +638,14 @@ CREATE TABLE IF NOT EXISTS job_postings (
    CREATE INDEX idx_job_postings_posted_by ON job_postings (posted_by);
    CREATE INDEX idx_job_postings_created_at ON job_postings (created_at DESC);
    ```
-4. **Automated `updated_at` Timestamp Trigger:**
+4. **Application Foreign Keys, Status & Chronological Indexes:**
+   ```sql
+   CREATE INDEX idx_applications_user_id ON applications (user_id);
+   CREATE INDEX idx_applications_job_posting_id ON applications (job_posting_id);
+   CREATE INDEX idx_applications_status ON applications (status);
+   CREATE INDEX idx_applications_created_at ON applications (created_at DESC);
+   ```
+5. **Automated `updated_at` Timestamp Trigger:**
    ```sql
    CREATE OR REPLACE FUNCTION update_timestamp_column()
    RETURNS TRIGGER AS $$
@@ -552,6 +667,11 @@ CREATE TABLE IF NOT EXISTS job_postings (
 
    CREATE TRIGGER trg_job_postings_updated_at
        BEFORE UPDATE ON job_postings
+       FOR EACH ROW
+       EXECUTE FUNCTION update_timestamp_column();
+
+   CREATE TRIGGER trg_applications_updated_at
+       BEFORE UPDATE ON applications
        FOR EACH ROW
        EXECUTE FUNCTION update_timestamp_column();
    ```
@@ -602,6 +722,10 @@ volumes:
 | **`JobPosting.description`** | Non-empty text, min length 10. | HTTP `400 Bad Request` |
 | **`JobPosting.type`** | Must match: `'full-time' \| 'part-time' \| 'contract' \| 'internship' \| 'remote'`. | Defaults to `'full-time'` |
 | **`JobPosting.contactEmail`** | Valid RFC 5322 format if provided. | HTTP `400 Bad Request` |
+| **`Application.userId`** | Valid numeric User primary key reference. | HTTP `400 Bad Request` |
+| **`Application.jobPostingId`**| Valid numeric JobPosting primary key reference. | HTTP `400 Bad Request` |
+| **`Application.status`** | Must match: `'pending' \| 'reviewing' \| 'accepted' \| 'rejected' \| 'withdrawn'`. | Defaults to `'pending'` |
+| **`Application.composite`** | Unique combination of `(userId, jobPostingId)` (No duplicates). | HTTP `409 Conflict` |
 
 ---
 
@@ -632,6 +756,14 @@ volumes:
 | **GET** | `/job-postings` | `jobPostingController.getAllJobPostings` | `jobPostingModel.getAll()` | `200 OK` | - |
 | **POST** | `/job-postings` | `jobPostingController.createJobPosting` | `jobPostingModel.create(data)` | `201 Created` | `400 Bad Request` |
 | **GET** | `/job-postings/:id` | `jobPostingController.getJobPostingById` | `jobPostingModel.getById(id)` | `200 OK` | `404 Not Found` |
+| **GET** | `/api/applications` | `apiApplicationController.getAllApplications` | `applicationModel.getAll()` | `200 OK` | - |
+| **POST** | `/api/applications` | `apiApplicationController.createApplication` | `applicationModel.create(data)` | `201 Created` | `400 / 409` |
+| **GET** | `/api/applications/:id` | `apiApplicationController.getApplicationById` | `applicationModel.getById(id)` | `200 OK` | `404 Not Found` |
+| **PUT/PATCH**| `/api/applications/:id`| `apiApplicationController.updateApplication` | `applicationModel.update(id, data)` | `200 OK` | `404 Not Found` |
+| **DELETE** | `/api/applications/:id`| `apiApplicationController.deleteApplication` | `applicationModel.delete(id)` | `200 OK` | `404 Not Found` |
+| **GET** | `/applications` | `applicationController.getAllApplications` | `applicationModel.getAll()` | `200 OK` | - |
+| **POST** | `/applications` | `applicationController.createApplication` | `applicationModel.create(data)` | `201 Created` | `400 Bad Request` |
+| **GET** | `/applications/:id` | `applicationController.getApplicationById` | `applicationModel.getById(id)` | `200 OK` | `404 Not Found` |
 
 ---
 

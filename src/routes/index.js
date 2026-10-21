@@ -22,6 +22,8 @@ const announcementRoutes = require('./announcementRoutes');
 const apiAnnouncementRoutes = require('./apiAnnouncementRoutes');
 const jobPostingRoutes = require('./jobPostingRoutes');
 const apiJobPostingRoutes = require('./apiJobPostingRoutes');
+const applicationRoutes = require('./applicationRoutes');
+const apiApplicationRoutes = require('./apiApplicationRoutes');
 
 // Mount modular sub-routers
 router.use('/', whiteboardRoutes);
@@ -32,6 +34,8 @@ router.use('/', announcementRoutes);        // .../announcements -> Announcement
 router.use('/', apiAnnouncementRoutes);     // .../api/announcements -> ApiAnnouncementController
 router.use('/', jobPostingRoutes);           // .../job-postings -> JobPostingController
 router.use('/', apiJobPostingRoutes);        // .../api/job-postings -> ApiJobPostingController
+router.use('/', applicationRoutes);          // .../applications -> ApplicationController
+router.use('/', apiApplicationRoutes);       // .../api/applications -> ApiApplicationController
 
 // Swagger JSON Spec endpoints
 router.get(['/api/swagger.json', '/swagger.json'], (req, res) => {

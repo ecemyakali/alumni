@@ -220,5 +220,10 @@ test('Whiteboard Routes Test Suite', async (t) => {
     assert.strictEqual(spec.info.title, 'Alumni Tracking System API');
     assert.ok(spec.paths['/api/users'], 'spec must define /api/users');
     assert.ok(spec.paths['/users'], 'spec must define /users');
+    assert.ok(spec.paths['/api/job-postings'], 'spec must define /api/job-postings');
+    assert.ok(spec.paths['/job-postings'], 'spec must define /job-postings');
+    assert.ok(spec.paths['/api/applications'], 'spec must define /api/applications');
+    assert.ok(spec.paths['/applications'], 'spec must define /applications');
+    assert.ok(spec.components.schemas.Application, 'spec must define Application schema');
   });
 });

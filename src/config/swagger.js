@@ -48,6 +48,14 @@ const swaggerDocument = {
       description: 'Web / Application career opportunity management via JobPostingController (.../job-postings)'
     },
     {
+      name: 'API Applications',
+      description: 'RESTful API job application management via ApiApplicationController (.../api/applications)'
+    },
+    {
+      name: 'Web Applications',
+      description: 'Web / Application job application management via ApplicationController (.../applications)'
+    },
+    {
       name: 'Whiteboard Routes',
       description: 'Introductory classroom routes and endpoints'
     }
@@ -1019,6 +1027,160 @@ const swaggerDocument = {
           '404': { description: 'Job posting not found' }
         }
       }
+    },
+    '/api/applications': {
+      get: {
+        tags: ['API Applications'],
+        summary: 'List all job applications (API)',
+        description: 'Retrieves all job applications as JSON. Supports optional ?userId= and ?jobPostingId= query filters.',
+        parameters: [
+          { name: 'userId', in: 'query', required: false, schema: { type: 'integer' }, description: 'Filter by applicant user ID' },
+          { name: 'jobPostingId', in: 'query', required: false, schema: { type: 'integer' }, description: 'Filter by job posting ID' }
+        ],
+        responses: {
+          '200': {
+            description: 'List of applications',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    count: { type: 'integer', example: 1 },
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Application' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['API Applications'],
+        summary: 'Submit new job application (API)',
+        description: 'Submits a new application linking an applicant (userId) to a jobPosting (jobPostingId). Enforces composite uniqueness.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['userId', 'jobPostingId'],
+                properties: {
+                  userId: { type: 'integer', example: 1 },
+                  jobPostingId: { type: 'integer', example: 2 },
+                  status: { type: 'string', example: 'pending', enum: ['pending', 'reviewing', 'accepted', 'rejected', 'withdrawn'] },
+                  resumeUrl: { type: 'string', example: 'https://cdn.example.com/resumes/cv.pdf' },
+                  coverNote: { type: 'string', example: 'Excited about backend microservices role.' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': { description: 'Application submitted successfully' },
+          '400': { description: 'Missing required fields or invalid status' },
+          '409': { description: 'Conflict: user has already applied for this job' }
+        }
+      }
+    },
+    '/api/applications/{id}': {
+      get: {
+        tags: ['API Applications'],
+        summary: 'Get application by ID',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          '200': {
+            description: 'Application details',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/Application' }
+                  }
+                }
+              }
+            }
+          },
+          '404': { description: 'Application not found' }
+        }
+      },
+      put: {
+        tags: ['API Applications'],
+        summary: 'Update application by ID',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  status: { type: 'string', enum: ['pending', 'reviewing', 'accepted', 'rejected', 'withdrawn'] },
+                  resumeUrl: { type: 'string' },
+                  coverNote: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Application updated successfully' },
+          '400': { description: 'Invalid data' },
+          '404': { description: 'Application not found' }
+        }
+      },
+      delete: {
+        tags: ['API Applications'],
+        summary: 'Delete application by ID',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          '200': { description: 'Application deleted successfully' },
+          '404': { description: 'Application not found' }
+        }
+      }
+    },
+    '/applications': {
+      get: {
+        tags: ['Web Applications'],
+        summary: 'Render Job Applications management board',
+        responses: {
+          '200': { description: 'HTML rendered applications board' }
+        }
+      },
+      post: {
+        tags: ['Web Applications'],
+        summary: 'Submit new job application form',
+        responses: {
+          '201': { description: 'Application created' },
+          '400': { description: 'Validation error' },
+          '409': { description: 'Duplicate application conflict' }
+        }
+      }
+    },
+    '/applications/{id}': {
+      get: {
+        tags: ['Web Applications'],
+        summary: 'Render single application detail card',
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: {
+          '200': { description: 'HTML rendered detail view' },
+          '404': { description: 'Application not found' }
+        }
+      }
     }
   },
   components: {
@@ -1062,6 +1224,19 @@ const swaggerDocument = {
           contactEmail: { type: 'string', example: 'careers@techcorp.com' },
           postedBy: { type: 'integer', example: 1 },
           createdAt: { type: 'string', example: '2026-10-21T20:00:00.000Z' },
+          updatedAt: { type: 'string', example: null }
+        }
+      },
+      Application: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer', example: 1 },
+          userId: { type: 'integer', example: 1 },
+          jobPostingId: { type: 'integer', example: 2 },
+          status: { type: 'string', example: 'pending', enum: ['pending', 'reviewing', 'accepted', 'rejected', 'withdrawn'] },
+          resumeUrl: { type: 'string', example: 'https://cdn.example.com/resumes/john_doe_cv.pdf' },
+          coverNote: { type: 'string', example: 'Strong background in Node.js and PostgreSQL.' },
+          createdAt: { type: 'string', example: '2026-10-21T21:00:00.000Z' },
           updatedAt: { type: 'string', example: null }
         }
       }

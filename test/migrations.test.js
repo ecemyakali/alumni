@@ -16,10 +16,23 @@ describe('🗄️ Database Migrations & Pool Architecture Tests', () => {
       .filter(f => f.endsWith('.sql'))
       .sort();
 
-    assert.ok(files.length >= 3, 'Must have at least 3 migration files');
+    assert.ok(files.length >= 4, 'Must have at least 4 migration files');
     assert.strictEqual(files[0], '001_create_tables.sql');
     assert.strictEqual(files[1], '002_seed_data.sql');
     assert.strictEqual(files[2], '003_create_job_postings_table.sql');
+    assert.strictEqual(files[3], '004_create_applications_table.sql');
+  });
+
+  test('004_create_applications_table.sql contains DDL for applications, foreign keys, triggers and indexes', () => {
+    const ddl = fs.readFileSync(path.join(migrationsDir, '004_create_applications_table.sql'), 'utf-8');
+
+    assert.ok(ddl.includes('CREATE TABLE IF NOT EXISTS applications'), 'Must create applications table');
+    assert.ok(ddl.includes('REFERENCES users(id)'), 'Must reference users table');
+    assert.ok(ddl.includes('REFERENCES job_postings(id)'), 'Must reference job_postings table');
+    assert.ok(ddl.includes('idx_applications_user_id'), 'Must create user_id index');
+    assert.ok(ddl.includes('idx_applications_job_posting_id'), 'Must create job_posting_id index');
+    assert.ok(ddl.includes('uq_user_job_application'), 'Must enforce unique composite constraint');
+    assert.ok(ddl.includes('trg_applications_updated_at'), 'Must create applications updated_at trigger');
   });
 
   test('003_create_job_postings_table.sql contains DDL for job_postings, triggers and indexes', () => {

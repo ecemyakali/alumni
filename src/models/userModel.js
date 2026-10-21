@@ -371,6 +371,15 @@ const userModel = {
    */
   async isDbConnected() {
     return db.testConnection();
+  },
+
+  /**
+   * RELATIONS: Returns all job applications submitted by a user
+   * @param {number|string} userId
+   */
+  getApplications(userId) {
+    const applicationModel = require('./applicationModel');
+    return applicationModel.findByUserId(userId);
   }
 };
 

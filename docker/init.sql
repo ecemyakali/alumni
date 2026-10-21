@@ -84,7 +84,32 @@ CREATE TRIGGER trg_job_postings_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp_column();
 
--- 4. Initial Seed Data
+-- 4. Applications Action / Junction Table (Many-to-Many Users & JobPostings)
+CREATE TABLE IF NOT EXISTS applications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    job_posting_id INTEGER NOT NULL REFERENCES job_postings(id) ON DELETE CASCADE,
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'reviewing', 'accepted', 'rejected', 'withdrawn')),
+    resume_url VARCHAR(500),
+    cover_note TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_job_application UNIQUE (user_id, job_posting_id)
+);
+
+-- Indexes for applications
+CREATE INDEX IF NOT EXISTS idx_applications_user_id ON applications (user_id);
+CREATE INDEX IF NOT EXISTS idx_applications_job_posting_id ON applications (job_posting_id);
+CREATE INDEX IF NOT EXISTS idx_applications_status ON applications (status);
+CREATE INDEX IF NOT EXISTS idx_applications_created_at ON applications (created_at DESC);
+
+DROP TRIGGER IF EXISTS trg_applications_updated_at ON applications;
+CREATE TRIGGER trg_applications_updated_at
+    BEFORE UPDATE ON applications
+    FOR EACH ROW
+    EXECUTE FUNCTION update_timestamp_column();
+
+-- 5. Initial Seed Data
 INSERT INTO users (name, email, department, graduation_year, role)
 VALUES
     ('Ece Yakali', 'ece@example.com', 'Computer Engineering', 2024, 'alumni'),

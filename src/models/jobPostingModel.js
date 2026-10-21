@@ -441,6 +441,15 @@ const jobPostingModel = {
    */
   async isDbConnected() {
     return db.testConnection();
+  },
+
+  /**
+   * RELATIONS: Returns all applications submitted for this job posting
+   * @param {number|string} jobPostingId
+   */
+  getApplications(jobPostingId) {
+    const applicationModel = require('./applicationModel');
+    return applicationModel.findByJobPostingId(jobPostingId);
   }
 };
 

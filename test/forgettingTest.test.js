@@ -3,12 +3,14 @@ const assert = require('node:assert');
 const userModel = require('../src/models/userModel');
 const announcementModel = require('../src/models/announcementModel');
 const jobPostingModel = require('../src/models/jobPostingModel');
+const applicationModel = require('../src/models/applicationModel');
 
 describe('🧠 The Forgetting Test (Data Volatility Demonstration)', () => {
   beforeEach(() => {
     userModel.clear();
     announcementModel.clear();
     jobPostingModel.clear();
+    applicationModel.clear();
   });
 
   test('Step 1 & 2: Create a record and verify it exists in memory (RAM / Heap)', () => {
@@ -82,5 +84,24 @@ describe('🧠 The Forgetting Test (Data Volatility Demonstration)', () => {
     const checkJob = jobPostingModel.findById(job.id);
     assert.strictEqual(checkJob, null);
     assert.strictEqual(jobPostingModel.count(), 0);
+  });
+
+  test('Application Model: Verify volatility behavior on application records', () => {
+    // 1. Create application
+    const app = applicationModel.create({
+      userId: 1,
+      jobPostingId: 1,
+      status: 'pending',
+      resumeUrl: 'https://cdn.example.com/resumes/volatile.pdf'
+    });
+    assert.strictEqual(applicationModel.count(), 1);
+
+    // 2. Simulate container restart (docker down -> docker up)
+    applicationModel.clear();
+
+    // 3. Verify record was forgotten
+    const checkApp = applicationModel.findById(app.id);
+    assert.strictEqual(checkApp, null);
+    assert.strictEqual(applicationModel.count(), 0);
   });
 });

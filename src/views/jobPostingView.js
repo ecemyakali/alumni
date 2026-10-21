@@ -227,6 +227,7 @@ const jobPostingView = {
       <div class="nav-links">
         <a href="/users">👥 Alumni Directory</a>
         <a href="/announcements">📢 Announcements</a>
+        <a href="/applications">📝 Applications</a>
         <a href="/api/job-postings" target="_blank">🌐 REST API</a>
         <a href="/api/swagger" target="_blank">📘 Swagger Docs</a>
       </div>
