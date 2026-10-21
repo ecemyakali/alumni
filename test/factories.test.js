@@ -3,6 +3,7 @@ const assert = require('node:assert');
 const userFactory = require('../factories/userFactory');
 const announcementFactory = require('../factories/announcementFactory');
 const jobPostingFactory = require('../factories/jobPostingFactory');
+const applicationFactory = require('../factories/applicationFactory');
 const userModel = require('../src/models/userModel');
 const announcementModel = require('../src/models/announcementModel');
 const jobPostingModel = require('../src/models/jobPostingModel');
@@ -13,6 +14,7 @@ describe('🏭 Data Factories & Seeding Architecture Tests', () => {
     userFactory.reset();
     announcementFactory.reset();
     jobPostingFactory.reset();
+    applicationFactory.reset();
     userModel.clear();
     announcementModel.clear();
     jobPostingModel.clear();
@@ -152,6 +154,52 @@ describe('🏭 Data Factories & Seeding Architecture Tests', () => {
 
       assert.strictEqual(firstJob.title, resetJob.title);
       assert.strictEqual(firstJob.company, resetJob.company);
+    });
+  });
+
+  describe('ApplicationFactory Tests', () => {
+    test('build() returns a valid mock application with required domain fields', () => {
+      const app = applicationFactory.build();
+
+      assert.ok(app.userId, 'Application must have a userId');
+      assert.ok(app.jobPostingId, 'Application must have a jobPostingId');
+      assert.ok(app.status, 'Application must have a status');
+      assert.ok(['pending', 'reviewing', 'accepted', 'rejected', 'withdrawn'].includes(app.status));
+      assert.ok(app.resumeUrl, 'Application must have a resumeUrl');
+      assert.ok(app.coverNote, 'Application must have a coverNote');
+      assert.ok(app.appliedAt, 'Application must have appliedAt');
+    });
+
+    test('build() applies custom overrides correctly', () => {
+      const app = applicationFactory.build({
+        userId: 99,
+        jobPostingId: 42,
+        status: 'accepted',
+        coverNote: 'Custom cover letter'
+      });
+
+      assert.strictEqual(app.userId, 99);
+      assert.strictEqual(app.jobPostingId, 42);
+      assert.strictEqual(app.status, 'accepted');
+      assert.strictEqual(app.coverNote, 'Custom cover letter');
+    });
+
+    test('buildMany() produces specified number of applications', () => {
+      const count = 4;
+      const apps = applicationFactory.buildMany(count);
+
+      assert.strictEqual(apps.length, count);
+      assert.ok(apps.every(a => a.userId && a.jobPostingId && a.coverNote));
+    });
+
+    test('reset() resets the internal factory counter', () => {
+      const firstApp = applicationFactory.build();
+      applicationFactory.buildMany(3);
+      applicationFactory.reset();
+      const resetApp = applicationFactory.build();
+
+      assert.strictEqual(firstApp.coverNote, resetApp.coverNote);
+      assert.strictEqual(firstApp.status, resetApp.status);
     });
   });
 

@@ -63,11 +63,13 @@ const apiApplicationController = {
    */
   async getAllApplications(req, res) {
     let applications;
+    const targetUserId = (req.params && req.params.userId) || (req.query && req.query.userId);
+    const targetJobId = (req.params && (req.params.jobPostingId || req.params.jobId)) || (req.query && (req.query.jobPostingId || req.query.jobId));
 
-    if (req.query && req.query.userId) {
-      applications = await applicationModel.findByUserId(req.query.userId);
-    } else if (req.query && req.query.jobPostingId) {
-      applications = await applicationModel.findByJobPostingId(req.query.jobPostingId);
+    if (targetUserId) {
+      applications = await applicationModel.findByUserId(targetUserId);
+    } else if (targetJobId) {
+      applications = await applicationModel.findByJobPostingId(targetJobId);
     } else {
       applications = await applicationModel.getAll();
     }

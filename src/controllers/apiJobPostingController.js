@@ -40,8 +40,12 @@ const apiJobPostingController = {
    */
   async getAllJobPostings(req, res) {
     let jobs;
+    const userId = (req.params && req.params.userId) || (req.query && req.query.postedBy);
 
-    if (req.query && req.query.company) {
+    if (userId) {
+      const all = await jobPostingModel.getAll();
+      jobs = all.filter(j => Number(j.postedBy) === Number(userId));
+    } else if (req.query && req.query.company) {
       jobs = await jobPostingModel.findByCompany(req.query.company);
     } else if (req.query && req.query.type) {
       jobs = await jobPostingModel.findByType(req.query.type);

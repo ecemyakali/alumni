@@ -20,4 +20,8 @@ router.put('/api/applications/:id', (req, res) => apiApplicationController.updat
 router.patch('/api/applications/:id', (req, res) => apiApplicationController.updateApplication(req, res));
 router.delete('/api/applications/:id', (req, res) => apiApplicationController.deleteApplication(req, res));
 
+// Nested Routes: /api/users/:userId/applications & /api/jobs/:jobId/applications
+router.get('/api/users/:userId/applications', (req, res) => apiApplicationController.getAllApplications(req, res));
+router.get(['/api/jobs/:jobId/applications', '/api/job-postings/:jobPostingId/applications'], (req, res) => apiApplicationController.getAllApplications(req, res));
+
 module.exports = router;
