@@ -22,6 +22,7 @@ class JobPosting {
     id,
     title,
     company,
+    city = null,
     location = 'Remote',
     type = 'full-time',
     description = '',
@@ -34,7 +35,8 @@ class JobPosting {
     this.id = id;
     this.title = title;
     this.company = company;
-    this.location = location;
+    this.city = city;
+    this.location = location || city || 'Remote';
     this.type = type;
     this.description = description;
     this.requirements = requirements;
@@ -59,7 +61,8 @@ function formatJobPosting(row) {
     id: Number(row.id),
     title: row.title,
     company: row.company,
-    location: row.location || 'Remote',
+    city: row.city || null,
+    location: row.location || row.city || 'Remote',
     type: row.type || 'full-time',
     description: row.description || '',
     requirements: row.requirements || null,
@@ -124,13 +127,18 @@ const jobPostingModel = {
       ? (data.postedBy !== null ? Number(data.postedBy) : null)
       : (data.posted_by !== undefined && data.posted_by !== null ? Number(data.posted_by) : null);
 
+    const city = data.city ? String(data.city).trim() : null;
+    const location = data.location ? String(data.location).trim() : (city || 'Remote');
+    const description = data.description !== undefined && data.description !== null ? String(data.description).trim() : '';
+
     const memItem = {
       id: data.id ? Number(data.id) : generatedId,
-      title: data.title || '',
-      company: data.company || '',
-      location: data.location || 'Remote',
+      title: data.title ? String(data.title).trim() : '',
+      company: data.company ? String(data.company).trim() : '',
+      city,
+      location,
       type: data.type || 'full-time',
-      description: data.description || '',
+      description,
       requirements: data.requirements || null,
       salary: data.salary || null,
       contactEmail,
@@ -145,12 +153,13 @@ const jobPostingModel = {
     const asyncOp = (async () => {
       try {
         const res = await db.query(
-          `INSERT INTO job_postings (title, company, location, type, description, requirements, salary, contact_email, posted_by)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-           RETURNING id, title, company, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt";`,
+          `INSERT INTO job_postings (title, company, city, location, type, description, requirements, salary, contact_email, posted_by)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           RETURNING id, title, company, city, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt";`,
           [
             memItem.title,
             memItem.company,
+            memItem.city,
             memItem.location,
             memItem.type,
             memItem.description,
@@ -187,7 +196,7 @@ const jobPostingModel = {
     const asyncOp = (async () => {
       try {
         const res = await db.query(
-          `SELECT id, title, company, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
+          `SELECT id, title, company, city, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
            FROM job_postings
            ORDER BY id ASC;`
         );
@@ -225,7 +234,7 @@ const jobPostingModel = {
     const asyncOp = (async () => {
       try {
         const res = await db.query(
-          `SELECT id, title, company, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
+          `SELECT id, title, company, city, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
            FROM job_postings
            WHERE id = $1;`,
           [numericId]
@@ -263,7 +272,7 @@ const jobPostingModel = {
     const asyncOp = (async () => {
       try {
         const res = await db.query(
-          `SELECT id, title, company, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
+          `SELECT id, title, company, city, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
            FROM job_postings
            WHERE LOWER(company) = LOWER($1)
            ORDER BY id ASC;`,
@@ -295,7 +304,7 @@ const jobPostingModel = {
     const asyncOp = (async () => {
       try {
         const res = await db.query(
-          `SELECT id, title, company, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
+          `SELECT id, title, company, city, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt"
            FROM job_postings
            WHERE LOWER(type) = LOWER($1)
            ORDER BY id ASC;`,
@@ -341,7 +350,8 @@ const jobPostingModel = {
       try {
         const title = updateData.title !== undefined ? updateData.title : memItem.title;
         const company = updateData.company !== undefined ? updateData.company : memItem.company;
-        const location = updateData.location !== undefined ? updateData.location : memItem.location;
+        const city = updateData.city !== undefined ? updateData.city : memItem.city;
+        const location = updateData.location !== undefined ? updateData.location : (city || memItem.location);
         const type = updateData.type !== undefined ? updateData.type : memItem.type;
         const description = updateData.description !== undefined ? updateData.description : memItem.description;
         const requirements = updateData.requirements !== undefined ? updateData.requirements : memItem.requirements;
@@ -355,10 +365,10 @@ const jobPostingModel = {
 
         const res = await db.query(
           `UPDATE job_postings
-           SET title = $1, company = $2, location = $3, type = $4, description = $5, requirements = $6, salary = $7, contact_email = $8, posted_by = $9, updated_at = CURRENT_TIMESTAMP
-           WHERE id = $10
-           RETURNING id, title, company, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt";`,
-          [title, company, location, type, description, requirements, salary, contactEmail, postedBy, numericId]
+           SET title = $1, company = $2, city = $3, location = $4, type = $5, description = $6, requirements = $7, salary = $8, contact_email = $9, posted_by = $10, updated_at = CURRENT_TIMESTAMP
+           WHERE id = $11
+           RETURNING id, title, company, city, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt";`,
+          [title, company, city, location, type, description, requirements, salary, contactEmail, postedBy, numericId]
         );
 
         if (res && res.rows && res.rows[0]) {
@@ -397,7 +407,7 @@ const jobPostingModel = {
         const res = await db.query(
           `DELETE FROM job_postings
            WHERE id = $1
-           RETURNING id, title, company, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt";`,
+           RETURNING id, title, company, city, location, type, description, requirements, salary, contact_email AS "contactEmail", posted_by AS "postedBy", created_at AS "createdAt", updated_at AS "updatedAt";`,
           [numericId]
         );
         if (res && res.rows && res.rows[0]) {

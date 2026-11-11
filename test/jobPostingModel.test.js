@@ -56,6 +56,21 @@ test('JobPosting Model (In-Memory & Database Fallback CRUD) Unit Tests', async (
     assert.strictEqual(jobPostingModel.count(), 1);
   });
 
+  await t.test('CREATE: supports optional city and optional description', async () => {
+    const item = await jobPostingModel.create({
+      title: 'DevOps Specialist',
+      company: 'OpsWorks',
+      city: 'Izmir'
+    });
+
+    assert.strictEqual(item.city, 'Izmir');
+    assert.strictEqual(item.location, 'Izmir');
+    assert.strictEqual(item.description, '');
+
+    const updated = await jobPostingModel.update(item.id, { city: 'Istanbul' });
+    assert.strictEqual(updated.city, 'Istanbul');
+  });
+
   await t.test('CREATE: throws error if data is missing or not an object', () => {
     assert.throws(() => jobPostingModel.create(null), /must be an object/);
     assert.throws(() => jobPostingModel.create('invalid'), /must be an object/);

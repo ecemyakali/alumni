@@ -424,15 +424,19 @@ const jobPostingView = {
           <div class="form-grid">
             <div class="form-group">
               <label for="title">Position Title *</label>
-              <input type="text" id="title" name="title" required placeholder="e.g. Senior Backend Engineer">
+              <input type="text" id="title" name="title" required maxlength="120" placeholder="e.g. Senior Backend Engineer (Max 120 chars)">
             </div>
             <div class="form-group">
               <label for="company">Company / Organization *</label>
               <input type="text" id="company" name="company" required placeholder="e.g. TechCorp Solutions">
             </div>
             <div class="form-group">
-              <label for="location">Location</label>
-              <input type="text" id="location" name="location" placeholder="e.g. Remote or Istanbul, Turkey">
+              <label for="city">City (Optional)</label>
+              <input type="text" id="city" name="city" placeholder="e.g. Istanbul, Ankara">
+            </div>
+            <div class="form-group">
+              <label for="location">Location / Work Policy (Optional)</label>
+              <input type="text" id="location" name="location" placeholder="e.g. Remote or Hybrid">
             </div>
             <div class="form-group">
               <label for="type">Employment Type</label>
@@ -457,8 +461,8 @@ const jobPostingView = {
               <input type="text" id="requirements" name="requirements" placeholder="e.g. Node.js, Express, PostgreSQL, Docker, Git">
             </div>
             <div class="form-group full-width">
-              <label for="description">Role Description *</label>
-              <textarea id="description" name="description" rows="4" required placeholder="Describe key responsibilities, team impact, and day-to-day work..."></textarea>
+              <label for="description">Role Description (Optional)</label>
+              <textarea id="description" name="description" rows="4" placeholder="Describe key responsibilities, team impact, and day-to-day work (Optional)..."></textarea>
             </div>
           </div>
           <button type="submit" class="btn-submit">Publish Career Opportunity</button>
@@ -949,14 +953,18 @@ const jobPostingView = {
         <div class="form-grid">
           <div class="form-group">
             <label for="title">Position Title *</label>
-            <input type="text" id="title" name="title" value="${this.escapeHtml(job.title)}" required>
+            <input type="text" id="title" name="title" value="${this.escapeHtml(job.title)}" required maxlength="120">
           </div>
           <div class="form-group">
             <label for="company">Company / Organization *</label>
             <input type="text" id="company" name="company" value="${this.escapeHtml(job.company)}" required>
           </div>
           <div class="form-group">
-            <label for="location">Location</label>
+            <label for="city">City (Optional)</label>
+            <input type="text" id="city" name="city" value="${this.escapeHtml(job.city || '')}" placeholder="e.g. Istanbul">
+          </div>
+          <div class="form-group">
+            <label for="location">Location / Work Policy (Optional)</label>
             <input type="text" id="location" name="location" value="${this.escapeHtml(job.location || '')}">
           </div>
           <div class="form-group">
@@ -982,8 +990,8 @@ const jobPostingView = {
             <input type="text" id="requirements" name="requirements" value="${this.escapeHtml(job.requirements || '')}">
           </div>
           <div class="form-group full-width">
-            <label for="description">Role Description *</label>
-            <textarea id="description" name="description" rows="5" required>${this.escapeHtml(job.description || '')}</textarea>
+            <label for="description">Role Description (Optional)</label>
+            <textarea id="description" name="description" rows="5">${this.escapeHtml(job.description || '')}</textarea>
           </div>
         </div>
         <div class="actions">

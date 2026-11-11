@@ -124,11 +124,12 @@ Represents employment vacancies, internship opportunities, and career announceme
 | Attribute | Data Type | Nullable | Default | Description |
 | :--- | :--- | :---: | :--- | :--- |
 | **`id`** | `INTEGER` | ❌ No | Auto-increment (`1, 2, ...`) | Unique job posting primary identifier. |
-| **`title`** | `VARCHAR(255)` | ❌ No | - | Role / position headline (e.g. 'Software Engineer'). |
-| **`company`** | `VARCHAR(255)` | ❌ No | - | Hiring organization or employer name. |
-| **`location`** | `VARCHAR(255)` | ❌ No | `'Remote'` | Geographic work location, city, or remote policy. |
+| **`title`** | `VARCHAR(120)` | ❌ No | - | **Required**, non-empty role headline. **Max 120 characters**. |
+| **`company`** | `VARCHAR(255)` | ❌ No | - | **Required**, non-empty hiring organization or employer name. |
+| **`city`** | `VARCHAR(100)` | ✅ Yes | `null` | **Optional** workplace municipality or city (e.g. `'Istanbul'`, `'Ankara'`). |
+| **`location`** | `VARCHAR(255)` | ✅ Yes | `'Remote'` | **Optional** geographic work location or policy (defaults to `city` or `'Remote'`). |
 | **`type`** | `VARCHAR(50)` | ❌ No | `'full-time'` | Employment type (`'full-time'`, `'part-time'`, `'contract'`, `'internship'`, `'remote'`). |
-| **`description`** | `TEXT` | ❌ No | - | In-depth role responsibilities and specifications. |
+| **`description`** | `TEXT` | ✅ Yes | `""` | **Optional** in-depth role responsibilities, overview, and specifications. |
 | **`requirements`** | `TEXT` | ✅ Yes | `null` | Candidate qualifications, technical skills, and experience prerequisites. |
 | **`salary`** | `VARCHAR(100)` | ✅ Yes | `null` | Compensation range or terms (e.g. `'$80k - $100k'` or `'Competitive'`). |
 | **`contactEmail`** | `VARCHAR(255)` | ✅ Yes | `null` | Application submission or inquiry email address. |
@@ -136,13 +137,20 @@ Represents employment vacancies, internship opportunities, and career announceme
 | **`createdAt`** | `TIMESTAMP (ISO 8601)` | ❌ No | `CURRENT_TIMESTAMP` | System record creation timestamp. |
 | **`updatedAt`** | `TIMESTAMP (ISO 8601)` | ✅ Yes | `null` | Timestamp of last modification. |
 
+> **Validation & Integrity Rules (JobPosting):**
+> 1. **`title` (Required, Max 120 chars):** Cannot be empty/whitespace; strict length limit of $\le 120$ characters. Failure triggers `HTTP 400 Bad Request`.
+> 2. **`company` (Required):** Cannot be empty/whitespace. Failure triggers `HTTP 400 Bad Request`.
+> 3. **`city` (Optional):** Optional string indicating city location.
+> 4. **`description` (Optional):** Optional text; defaults to empty string `""` if not provided.
+
 #### JobPosting JSON Representation:
 ```json
 {
   "id": 1,
   "title": "Software Engineer (Backend)",
   "company": "TechCorp Solutions",
-  "location": "Istanbul / Remote",
+  "city": "Istanbul",
+  "location": "Istanbul (Hybrid)",
   "type": "full-time",
   "description": "Designing and developing robust microservices and high-throughput REST APIs.",
   "requirements": "Proficiency in Node.js, Express, PostgreSQL, and Docker.",
@@ -219,14 +227,15 @@ erDiagram
     }
     JOB_POSTING {
         int id PK
-        string title
-        string company
-        string location
+        string title "required, max 120 chars"
+        string company "required"
+        string city "optional"
+        string location "optional"
         string type
-        string description
-        string requirements
-        string salary
-        string contactEmail
+        string description "optional"
+        string requirements "optional"
+        string salary "optional"
+        string contactEmail "optional"
         int postedBy FK
         timestamp createdAt
         timestamp updatedAt
@@ -418,11 +427,12 @@ interface AnnouncementModelContract {
 interface JobPostingModelContract {
   // CREATE (PostgreSQL INSERT INTO job_postings ... RETURNING ...)
   create(data: {
-    title: string;
-    company: string;
-    location?: string;
+    title: string; // Required, non-empty, max 120 chars
+    company: string; // Required, non-empty
+    city?: string; // Optional
+    location?: string; // Optional (defaults to city or 'Remote')
     type?: 'full-time' | 'part-time' | 'contract' | 'internship' | 'remote';
-    description: string;
+    description?: string; // Optional (defaults to "")
     requirements?: string;
     salary?: string;
     contactEmail?: string;
@@ -592,11 +602,12 @@ CREATE TABLE IF NOT EXISTS announcements (
 
 CREATE TABLE IF NOT EXISTS job_postings (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(120) NOT NULL,
     company VARCHAR(255) NOT NULL,
+    city VARCHAR(100),
     location VARCHAR(255) DEFAULT 'Remote',
     type VARCHAR(50) DEFAULT 'full-time' CHECK (type IN ('full-time', 'part-time', 'contract', 'internship', 'remote')),
-    description TEXT NOT NULL,
+    description TEXT,
     requirements TEXT,
     salary VARCHAR(100),
     contact_email VARCHAR(255),
@@ -717,9 +728,11 @@ volumes:
 | **`Announcement.title`** | Non-empty string, min length 3, max length 255. | HTTP `400 Bad Request` |
 | **`Announcement.content`** | Non-empty text, min length 5. | HTTP `400 Bad Request` |
 | **`Announcement.priority`** | Must match: `'low' \| 'normal' \| 'high' \| 'urgent'`. | Defaults to `'normal'` |
-| **`JobPosting.title`** | Non-empty string, min length 3, max length 255. | HTTP `400 Bad Request` |
-| **`JobPosting.company`** | Non-empty string, min length 2, max length 255. | HTTP `400 Bad Request` |
-| **`JobPosting.description`** | Non-empty text, min length 10. | HTTP `400 Bad Request` |
+| **`JobPosting.title`** | **Required** non-empty string, **max length 120 characters** (`1 <= length <= 120`). | HTTP `400 Bad Request` |
+| **`JobPosting.company`** | **Required** non-empty string, max length 255 characters. | HTTP `400 Bad Request` |
+| **`JobPosting.city`** | **Optional** string indicating workplace city (e.g. `'Istanbul'`, `'Ankara'`). | Allowed to be omitted / `null` |
+| **`JobPosting.location`** | **Optional** string, defaults to `city` or `'Remote'`. | Defaults to `'Remote'` |
+| **`JobPosting.description`** | **Optional** role description/responsibilities (defaults to `""` or `null`). | Allowed to be omitted |
 | **`JobPosting.type`** | Must match: `'full-time' \| 'part-time' \| 'contract' \| 'internship' \| 'remote'`. | Defaults to `'full-time'` |
 | **`JobPosting.contactEmail`** | Valid RFC 5322 format if provided. | HTTP `400 Bad Request` |
 | **`Application.userId`** | Valid numeric User primary key reference. | HTTP `400 Bad Request` |

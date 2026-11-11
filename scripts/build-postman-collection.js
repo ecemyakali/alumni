@@ -1,0 +1,1088 @@
+const fs = require('fs');
+const path = require('path');
+
+// Base collection definition
+const collection = {
+  info: {
+    _postman_id: 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
+    name: 'Alumni Tracking System API',
+    description: 'Postman collection with automated test scripts for Alumni Tracking System Express backend, including full validation tests for JobPostings and Applications.',
+    schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
+  },
+  item: [
+    // ----------------------------------------------------
+    // FOLDER 1: Job Postings - Invalid Requests & Validation (Task Rules)
+    // ----------------------------------------------------
+    {
+      name: 'Job Postings - Invalid Requests (Validation Rules)',
+      description: 'Test cases demonstrating 400 Bad Request error responses when JobPosting domain validation rules are violated (title required, max 120 chars, company required).',
+      item: [
+        {
+          name: 'POST /api/job-postings - Missing Title (400 Bad Request)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 400 Bad Request", function () {',
+                  '    pm.response.to.have.status(400);',
+                  '});',
+                  'pm.test("Error message indicates title is required", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(false);',
+                  '    pm.expect(jsonData.error).to.include("Title is a required field");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                company: 'TechCorp Solutions',
+                city: 'Istanbul',
+                description: 'We are hiring backend engineers.'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'POST /api/job-postings - Title Exceeds 120 Characters (400 Bad Request)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 400 Bad Request", function () {',
+                  '    pm.response.to.have.status(400);',
+                  '});',
+                  'pm.test("Error message indicates title cannot exceed 120 characters", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(false);',
+                  '    pm.expect(jsonData.error).to.include("Title must not exceed 120 characters");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                title: 'Senior Staff Principal Cloud Native Distributed Systems Architect and Enterprise Infrastructure Engineering Team Director 2026',
+                company: 'TechCorp Solutions',
+                city: 'Istanbul'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'POST /api/job-postings - Missing Company (400 Bad Request)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 400 Bad Request", function () {',
+                  '    pm.response.to.have.status(400);',
+                  '});',
+                  'pm.test("Error message indicates company is required", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(false);',
+                  '    pm.expect(jsonData.error).to.include("Company is a required field");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                title: 'Software Engineer (Backend)',
+                city: 'Ankara',
+                description: 'Golang & Node.js development'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'POST /api/job-postings - Empty / Blank Strings (400 Bad Request)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 400 Bad Request", function () {',
+                  '    pm.response.to.have.status(400);',
+                  '});',
+                  'pm.test("Rejects empty whitespace title", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(false);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                title: '   ',
+                company: '   '
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'PUT /api/job-postings/:id - Update Title Exceeds 120 Characters (400 Bad Request)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 400 Bad Request", function () {',
+                  '    pm.response.to.have.status(400);',
+                  '});',
+                  'pm.test("Rejects overlength title during update", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(false);',
+                  '    pm.expect(jsonData.error).to.include("Title must not exceed 120 characters");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'PUT',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                title: 'Senior Staff Principal Cloud Native Distributed Systems Architect and Enterprise Infrastructure Engineering Team Director 2026'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'PUT /api/job-postings/:id - Update with Empty Company (400 Bad Request)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 400 Bad Request", function () {',
+                  '    pm.response.to.have.status(400);',
+                  '});',
+                  'pm.test("Rejects empty whitespace company on update", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(false);',
+                  '    pm.expect(jsonData.error).to.include("Company cannot be empty");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'PUT',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                company: '   '
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings', '1']
+            }
+          },
+          response: []
+        }
+      ]
+    },
+
+    // ----------------------------------------------------
+    // FOLDER 2: Job Postings - Valid Requests (Domain Rules Verified)
+    // ----------------------------------------------------
+    {
+      name: 'Job Postings - Valid Requests',
+      description: 'Valid CRUD operations for career opportunities verifying optional city and optional description behavior.',
+      item: [
+        {
+          name: 'POST /api/job-postings - Minimal (City & Description Omitted) (201 Created)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 201 Created", function () {',
+                  '    pm.response.to.have.status(201);',
+                  '});',
+                  'pm.test("Successfully created without optional city and description", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(jsonData.jobPosting.title).to.eql("Senior Backend Engineer");',
+                  '    pm.expect(jsonData.jobPosting.company).to.eql("Acme Innovations");',
+                  '    pm.expect(jsonData.jobPosting.location).to.eql("Remote");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                title: 'Senior Backend Engineer',
+                company: 'Acme Innovations'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'POST /api/job-postings - With Optional City (201 Created)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 201 Created", function () {',
+                  '    pm.response.to.have.status(201);',
+                  '});',
+                  'pm.test("Job posting includes city in payload", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(jsonData.jobPosting.city).to.eql("Istanbul");',
+                  '    pm.expect(jsonData.jobPosting.location).to.eql("Istanbul");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                title: 'Frontend React Developer',
+                company: 'Trendyol Tech',
+                city: 'Istanbul',
+                description: 'Building micro-frontends with React and TypeScript'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/job-postings (List All Job Postings)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Returns list of career opportunities", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(Array.isArray(jsonData.data)).to.eql(true);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/job-postings',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/job-postings/:id (Get Job Posting By ID)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Returns specific job posting record", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(jsonData.data).to.have.property("title");',
+                  '    pm.expect(jsonData.data).to.have.property("company");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/job-postings/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'PUT /api/job-postings/:id (Update Job Posting)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Updates city and salary", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(jsonData.jobPosting.city).to.eql("Izmir");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'PUT',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                city: 'Izmir',
+                salary: '$85,000 - $110,000'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/job-postings/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'DELETE /api/job-postings/:id (Delete Job Posting)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Confirms deletion", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'DELETE',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/job-postings/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'job-postings', '1']
+            }
+          },
+          response: []
+        }
+      ]
+    },
+
+    // ----------------------------------------------------
+    // FOLDER 3: Applications - Career Action Table
+    // ----------------------------------------------------
+    {
+      name: 'Applications - Career Applications',
+      description: 'API endpoints managing user applications to job postings (Many-to-Many action table).',
+      item: [
+        {
+          name: 'POST /api/applications (Submit Application)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 201 Created", function () {',
+                  '    pm.response.to.have.status(201);',
+                  '});',
+                  'pm.test("Returns created application record", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(jsonData.application).to.have.property("id");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                userId: 1,
+                jobPostingId: 1,
+                resumeUrl: 'https://cdn.example.com/resumes/ece_cv.pdf',
+                coverNote: 'Excited about the role and tech stack!'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/applications',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'applications']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'POST /api/applications - Missing Required Fields (400 Bad Request)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 400 Bad Request", function () {',
+                  '    pm.response.to.have.status(400);',
+                  '});',
+                  'pm.test("Returns missing field error", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(false);',
+                  '    pm.expect(jsonData.error).to.include("userId and jobPostingId are required");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                resumeUrl: 'https://cdn.example.com/resumes/incomplete.pdf'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/applications',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'applications']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/applications (List Applications)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Returns array of applications", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(Array.isArray(jsonData.data)).to.eql(true);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/applications',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'applications']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/applications/:id (Get Application By ID)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/applications/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'applications', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'PUT /api/applications/:id/status (Update Application Status)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Updates application status to reviewing", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(jsonData.application.status).to.eql("reviewing");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'PUT',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            body: {
+              mode: 'raw',
+              raw: JSON.stringify({
+                status: 'reviewing'
+              }, null, 2)
+            },
+            url: {
+              raw: 'http://localhost:5000/api/applications/1/status',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'applications', '1', 'status']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'DELETE /api/applications/:id (Withdraw Application)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'DELETE',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/applications/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'applications', '1']
+            }
+          },
+          response: []
+        }
+      ]
+    },
+
+    // ----------------------------------------------------
+    // FOLDER 4: Existing API Users & Health Endpoints
+    // ----------------------------------------------------
+    {
+      name: 'Users & System',
+      description: 'System health check, OpenAPI documentation, and user directory endpoints.',
+      item: [
+        {
+          name: 'GET /api/health',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Response contains system status", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.status).to.eql("ok");',
+                  '    pm.expect(jsonData).to.have.property("uptime");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/health',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'health']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'POST /api/users (Add User - Form Data)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 201 Created", function () {',
+                  '    pm.response.to.have.status(201);',
+                  '});',
+                  'pm.test("User created successfully", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(jsonData.user).to.have.property("id");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/x-www-form-urlencoded' }],
+            body: {
+              mode: 'urlencoded',
+              urlencoded: [
+                { key: 'name', value: 'Ece Yakali', type: 'text' },
+                { key: 'email', value: 'ece@example.com', type: 'text' },
+                { key: 'role', value: 'alumni', type: 'text' },
+                { key: 'department', value: 'Computer Engineering', type: 'text' }
+              ]
+            },
+            url: {
+              raw: 'http://localhost:5000/api/users',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'users']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/users (List Users)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Returns user list", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.success).to.eql(true);',
+                  '    pm.expect(Array.isArray(jsonData.data)).to.eql(true);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/users',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'users']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'PUT /api/users/:id (Update User Details)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'PUT',
+            header: [{ key: 'Content-Type', value: 'application/x-www-form-urlencoded' }],
+            body: {
+              mode: 'urlencoded',
+              urlencoded: [
+                { key: 'name', value: 'Ece Yakali (Updated)', type: 'text' },
+                { key: 'department', value: 'Software Engineering', type: 'text' }
+              ]
+            },
+            url: {
+              raw: 'http://localhost:5000/api/users/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'users', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'PATCH /api/users/:id (Partial Update User)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'PATCH',
+            header: [{ key: 'Content-Type', value: 'application/x-www-form-urlencoded' }],
+            body: {
+              mode: 'urlencoded',
+              urlencoded: [
+                { key: 'role', value: 'admin', type: 'text' }
+              ]
+            },
+            url: {
+              raw: 'http://localhost:5000/api/users/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'users', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/users/:id (Get User By ID)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/users/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'users', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'DELETE /api/users/:id (Delete User)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'DELETE',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/users/1',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'users', '1']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/swagger (Swagger UI Docs)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK or 301 Redirect", function () {',
+                  '    pm.expect([200, 301]).to.include(pm.response.code);',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/swagger',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'swagger']
+            }
+          },
+          response: []
+        },
+        {
+          name: 'GET /api/swagger.json (OpenAPI Spec)',
+          event: [
+            {
+              listen: 'test',
+              script: {
+                exec: [
+                  'pm.test("Status code is 200 OK", function () {',
+                  '    pm.response.to.have.status(200);',
+                  '});',
+                  'pm.test("Returns valid OpenAPI 3.0 spec", function () {',
+                  '    var jsonData = pm.response.json();',
+                  '    pm.expect(jsonData.openapi).to.eql("3.0.0");',
+                  '    pm.expect(jsonData.info.title).to.include("Alumni");',
+                  '});'
+                ],
+                type: 'text/javascript'
+              }
+            }
+          ],
+          request: {
+            method: 'GET',
+            header: [],
+            url: {
+              raw: 'http://localhost:5000/api/swagger.json',
+              protocol: 'http',
+              host: ['localhost'],
+              port: '5000',
+              path: ['api', 'swagger.json']
+            }
+          },
+          response: []
+        }
+      ]
+    },
+
+    // ----------------------------------------------------
+    // FOLDER 5: Introductory Whiteboard Routes
+    // ----------------------------------------------------
+    {
+      name: 'Whiteboard & Classroom Routes',
+      description: 'Introductory classroom routes (/hello, /sum, etc.)',
+      item: [
+        {
+          name: 'GET /',
+          request: {
+            method: 'GET',
+            header: [],
+            url: { raw: 'http://localhost:5000/', protocol: 'http', host: ['localhost'], port: '5000', path: [''] }
+          },
+          response: []
+        },
+        {
+          name: 'GET /hello',
+          request: {
+            method: 'GET',
+            header: [],
+            url: { raw: 'http://localhost:5000/hello', protocol: 'http', host: ['localhost'], port: '5000', path: ['hello'] }
+          },
+          response: []
+        },
+        {
+          name: 'GET /hello/:name',
+          request: {
+            method: 'GET',
+            header: [],
+            url: { raw: 'http://localhost:5000/hello/ece', protocol: 'http', host: ['localhost'], port: '5000', path: ['hello', 'ece'] }
+          },
+          response: []
+        },
+        {
+          name: 'GET /sum/:number1/:number2',
+          request: {
+            method: 'GET',
+            header: [],
+            url: { raw: 'http://localhost:5000/sum/15/25', protocol: 'http', host: ['localhost'], port: '5000', path: ['sum', '15', '25'] }
+          },
+          response: []
+        },
+        {
+          name: 'GET /about',
+          request: {
+            method: 'GET',
+            header: [],
+            url: { raw: 'http://localhost:5000/about', protocol: 'http', host: ['localhost'], port: '5000', path: ['about'] }
+          },
+          response: []
+        }
+      ]
+    }
+  ]
+};
+
+// Write out to all 3 collection locations
+const targets = [
+  path.join(__dirname, '..', 'alumni.postman_collection.json'),
+  path.join(__dirname, '..', 'alumni_postman_collection.json'),
+  path.join(__dirname, '..', 'postman', 'collections', 'alumni.postman_collection.json')
+];
+
+for (const target of targets) {
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, JSON.stringify(collection, null, 2) + '\n', 'utf8');
+  console.log(`Updated: ${target}`);
+}

@@ -6,11 +6,12 @@
 -- 1. Create Job Postings Table
 CREATE TABLE IF NOT EXISTS job_postings (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(120) NOT NULL,
     company VARCHAR(255) NOT NULL,
+    city VARCHAR(100),
     location VARCHAR(255) DEFAULT 'Remote',
     type VARCHAR(50) DEFAULT 'full-time' CHECK (type IN ('full-time', 'part-time', 'contract', 'internship', 'remote')),
-    description TEXT NOT NULL,
+    description TEXT,
     requirements TEXT,
     salary VARCHAR(100),
     contact_email VARCHAR(255),

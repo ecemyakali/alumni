@@ -18,14 +18,36 @@ const apiJobPostingController = {
   async createJobPosting(req, res) {
     const data = req.body;
 
-    if (!data || !data.title || !data.company || !data.description) {
+    if (!data || !data.title || typeof data.title !== 'string' || data.title.trim().length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Title, company, and description are required fields for creating a job posting.'
+        error: 'Title is a required field.'
       });
     }
 
-    const newJob = await jobPostingModel.create(data);
+    if (data.title.trim().length > 120) {
+      return res.status(400).json({
+        success: false,
+        error: 'Title must not exceed 120 characters.'
+      });
+    }
+
+    if (!data.company || typeof data.company !== 'string' || data.company.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Company is a required field.'
+      });
+    }
+
+    // city and description are optional
+    const newJob = await jobPostingModel.create({
+      ...data,
+      title: data.title.trim(),
+      company: data.company.trim(),
+      city: data.city ? data.city.trim() : null,
+      location: data.location ? data.location.trim() : (data.city ? data.city.trim() : 'Remote'),
+      description: data.description ? data.description.trim() : ''
+    });
 
     return res.status(201).json({
       success: true,
@@ -113,6 +135,39 @@ const apiJobPostingController = {
         success: false,
         error: 'No update data provided.'
       });
+    }
+
+    if (updateData.title !== undefined) {
+      if (typeof updateData.title !== 'string' || updateData.title.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Title cannot be empty.'
+        });
+      }
+      if (updateData.title.trim().length > 120) {
+        return res.status(400).json({
+          success: false,
+          error: 'Title must not exceed 120 characters.'
+        });
+      }
+      updateData.title = updateData.title.trim();
+    }
+
+    if (updateData.company !== undefined) {
+      if (typeof updateData.company !== 'string' || updateData.company.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Company cannot be empty.'
+        });
+      }
+      updateData.company = updateData.company.trim();
+    }
+
+    if (updateData.city !== undefined && updateData.city) {
+      updateData.city = updateData.city.trim();
+      if (!updateData.location) {
+        updateData.location = updateData.city;
+      }
     }
 
     const updated = await jobPostingModel.update(id, updateData);

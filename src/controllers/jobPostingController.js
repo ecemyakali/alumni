@@ -43,19 +43,45 @@ const jobPostingController = {
     const data = req.body;
     const expectsHtml = isHtmlRequest(req);
 
-    if (!data || !data.title || !data.company || !data.description) {
+    if (!data || !data.title || typeof data.title !== 'string' || data.title.trim().length === 0) {
+      const msg = 'Title is a required field.';
       if (expectsHtml) {
         return res.status(400).send(jobPostingView.renderJobPostingsList(await jobPostingModel.getAll(), {
-          errorMessage: 'Title, Company, and Description are required fields.'
+          errorMessage: msg
         }));
       }
-      return res.status(400).json({
-        success: false,
-        error: 'Title, Company, and Description are required fields.'
-      });
+      return res.status(400).json({ success: false, error: msg });
     }
 
-    const newJob = await jobPostingModel.create(data);
+    if (data.title.trim().length > 120) {
+      const msg = 'Title must not exceed 120 characters.';
+      if (expectsHtml) {
+        return res.status(400).send(jobPostingView.renderJobPostingsList(await jobPostingModel.getAll(), {
+          errorMessage: msg
+        }));
+      }
+      return res.status(400).json({ success: false, error: msg });
+    }
+
+    if (!data.company || typeof data.company !== 'string' || data.company.trim().length === 0) {
+      const msg = 'Company is a required field.';
+      if (expectsHtml) {
+        return res.status(400).send(jobPostingView.renderJobPostingsList(await jobPostingModel.getAll(), {
+          errorMessage: msg
+        }));
+      }
+      return res.status(400).json({ success: false, error: msg });
+    }
+
+    // city and description are optional
+    const newJob = await jobPostingModel.create({
+      ...data,
+      title: data.title.trim(),
+      company: data.company.trim(),
+      city: data.city ? data.city.trim() : null,
+      location: data.location ? data.location.trim() : (data.city ? data.city.trim() : 'Remote'),
+      description: data.description ? data.description.trim() : ''
+    });
 
     if (expectsHtml) {
       return res.status(201).send(jobPostingView.renderJobPostingsList(await jobPostingModel.getAll(), {

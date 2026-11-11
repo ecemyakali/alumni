@@ -40,6 +40,22 @@
       "description": "Web / Application announcement management via AnnouncementController (.../announcements)"
     },
     {
+      "name": "API Job Postings",
+      "description": "RESTful API career opportunity management via ApiJobPostingController (.../api/job-postings)"
+    },
+    {
+      "name": "Web Job Postings",
+      "description": "Web / Application career opportunity management via JobPostingController (.../job-postings)"
+    },
+    {
+      "name": "API Applications",
+      "description": "RESTful API job application management via ApiApplicationController (.../api/applications)"
+    },
+    {
+      "name": "Web Applications",
+      "description": "Web / Application job application management via ApplicationController (.../applications)"
+    },
+    {
       "name": "Whiteboard Routes",
       "description": "Introductory classroom routes and endpoints"
     }
@@ -1259,6 +1275,605 @@
           }
         }
       }
+    },
+    "/api/job-postings": {
+      "get": {
+        "tags": [
+          "API Job Postings"
+        ],
+        "summary": "List all job postings",
+        "description": "Returns all career and job opportunities with optional filtering by company or employment type.",
+        "parameters": [
+          {
+            "name": "company",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by company name"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by employment type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of job postings",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/JobPosting"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "API Job Postings"
+        ],
+        "summary": "Create a new job posting",
+        "description": "Creates a new career opportunity record in the database.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "company"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "example": "Software Engineer (Backend)"
+                  },
+                  "company": {
+                    "type": "string",
+                    "example": "TechCorp Solutions"
+                  },
+                  "city": {
+                    "type": "string",
+                    "example": "Istanbul"
+                  },
+                  "location": {
+                    "type": "string",
+                    "example": "Istanbul / Remote"
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "full-time"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Building robust microservices"
+                  },
+                  "requirements": {
+                    "type": "string",
+                    "example": "Node.js, PostgreSQL"
+                  },
+                  "salary": {
+                    "type": "string",
+                    "example": "$80,000 - $100,000"
+                  },
+                  "contactEmail": {
+                    "type": "string",
+                    "example": "careers@techcorp.com"
+                  },
+                  "postedBy": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Job posting created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Job posting created successfully"
+                    },
+                    "jobPosting": {
+                      "$ref": "#/components/schemas/JobPosting"
+                    },
+                    "totalJobPostings": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing required fields"
+          }
+        }
+      }
+    },
+    "/api/job-postings/{id}": {
+      "get": {
+        "tags": [
+          "API Job Postings"
+        ],
+        "summary": "Get job posting by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job posting details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/JobPosting"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job posting not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "API Job Postings"
+        ],
+        "summary": "Update job posting details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobPosting"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job posting updated successfully"
+          },
+          "404": {
+            "description": "Job posting not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "API Job Postings"
+        ],
+        "summary": "Delete job posting by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job posting deleted successfully"
+          },
+          "404": {
+            "description": "Job posting not found"
+          }
+        }
+      }
+    },
+    "/job-postings": {
+      "get": {
+        "tags": [
+          "Web Job Postings"
+        ],
+        "summary": "Render Career Opportunities board",
+        "responses": {
+          "200": {
+            "description": "HTML rendered career board"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Web Job Postings"
+        ],
+        "summary": "Submit new job posting form",
+        "responses": {
+          "201": {
+            "description": "Job posting created"
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/job-postings/{id}": {
+      "get": {
+        "tags": [
+          "Web Job Postings"
+        ],
+        "summary": "Render single job posting detail card",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML rendered detail view"
+          },
+          "404": {
+            "description": "Job posting not found"
+          }
+        }
+      }
+    },
+    "/api/applications": {
+      "get": {
+        "tags": [
+          "API Applications"
+        ],
+        "summary": "List all job applications (API)",
+        "description": "Retrieves all job applications as JSON. Supports optional ?userId= and ?jobPostingId= query filters.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by applicant user ID"
+          },
+          {
+            "name": "jobPostingId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by job posting ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of applications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "count": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Application"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "API Applications"
+        ],
+        "summary": "Submit new job application (API)",
+        "description": "Submits a new application linking an applicant (userId) to a jobPosting (jobPostingId). Enforces composite uniqueness.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "userId",
+                  "jobPostingId"
+                ],
+                "properties": {
+                  "userId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "jobPostingId": {
+                    "type": "integer",
+                    "example": 2
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "pending",
+                    "enum": [
+                      "pending",
+                      "reviewing",
+                      "accepted",
+                      "rejected",
+                      "withdrawn"
+                    ]
+                  },
+                  "resumeUrl": {
+                    "type": "string",
+                    "example": "https://cdn.example.com/resumes/cv.pdf"
+                  },
+                  "coverNote": {
+                    "type": "string",
+                    "example": "Excited about backend microservices role."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Application submitted successfully"
+          },
+          "400": {
+            "description": "Missing required fields or invalid status"
+          },
+          "409": {
+            "description": "Conflict: user has already applied for this job"
+          }
+        }
+      }
+    },
+    "/api/applications/{id}": {
+      "get": {
+        "tags": [
+          "API Applications"
+        ],
+        "summary": "Get application by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Application details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Application"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "API Applications"
+        ],
+        "summary": "Update application by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "reviewing",
+                      "accepted",
+                      "rejected",
+                      "withdrawn"
+                    ]
+                  },
+                  "resumeUrl": {
+                    "type": "string"
+                  },
+                  "coverNote": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application updated successfully"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "404": {
+            "description": "Application not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "API Applications"
+        ],
+        "summary": "Delete application by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Application deleted successfully"
+          },
+          "404": {
+            "description": "Application not found"
+          }
+        }
+      }
+    },
+    "/applications": {
+      "get": {
+        "tags": [
+          "Web Applications"
+        ],
+        "summary": "Render Job Applications management board",
+        "responses": {
+          "200": {
+            "description": "HTML rendered applications board"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Web Applications"
+        ],
+        "summary": "Submit new job application form",
+        "responses": {
+          "201": {
+            "description": "Application created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Duplicate application conflict"
+          }
+        }
+      }
+    },
+    "/applications/{id}": {
+      "get": {
+        "tags": [
+          "Web Applications"
+        ],
+        "summary": "Render single application detail card",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTML rendered detail view"
+          },
+          "404": {
+            "description": "Application not found"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1330,6 +1945,112 @@
           "updatedAt": {
             "type": "string",
             "example": "2026-10-07T11:00:00.000Z"
+          }
+        }
+      },
+      "JobPosting": {
+        "type": "object",
+        "required": [
+          "title",
+          "company"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "Software Engineer (Backend)"
+          },
+          "company": {
+            "type": "string",
+            "example": "TechCorp Solutions"
+          },
+          "city": {
+            "type": "string",
+            "example": "Istanbul"
+          },
+          "location": {
+            "type": "string",
+            "example": "Remote"
+          },
+          "type": {
+            "type": "string",
+            "example": "full-time"
+          },
+          "description": {
+            "type": "string",
+            "example": "Designing and developing robust microservices"
+          },
+          "requirements": {
+            "type": "string",
+            "example": "Proficiency in Node.js, Express, PostgreSQL"
+          },
+          "salary": {
+            "type": "string",
+            "example": "$75,000 - $95,000"
+          },
+          "contactEmail": {
+            "type": "string",
+            "example": "careers@techcorp.com"
+          },
+          "postedBy": {
+            "type": "integer",
+            "example": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-21T20:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": null
+          }
+        }
+      },
+      "Application": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "userId": {
+            "type": "integer",
+            "example": 1
+          },
+          "jobPostingId": {
+            "type": "integer",
+            "example": 2
+          },
+          "status": {
+            "type": "string",
+            "example": "pending",
+            "enum": [
+              "pending",
+              "reviewing",
+              "accepted",
+              "rejected",
+              "withdrawn"
+            ]
+          },
+          "resumeUrl": {
+            "type": "string",
+            "example": "https://cdn.example.com/resumes/john_doe_cv.pdf"
+          },
+          "coverNote": {
+            "type": "string",
+            "example": "Strong background in Node.js and PostgreSQL."
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-21T21:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": null
           }
         }
       }

@@ -903,10 +903,11 @@ const swaggerDocument = {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['title', 'company', 'description'],
+                required: ['title', 'company'],
                 properties: {
-                  title: { type: 'string', example: 'Software Engineer (Backend)' },
+                  title: { type: 'string', maxLength: 120, example: 'Software Engineer (Backend)' },
                   company: { type: 'string', example: 'TechCorp Solutions' },
+                  city: { type: 'string', example: 'Istanbul' },
                   location: { type: 'string', example: 'Istanbul / Remote' },
                   type: { type: 'string', example: 'full-time' },
                   description: { type: 'string', example: 'Building robust microservices' },
@@ -1212,10 +1213,12 @@ const swaggerDocument = {
       },
       JobPosting: {
         type: 'object',
+        required: ['title', 'company'],
         properties: {
           id: { type: 'integer', example: 1 },
-          title: { type: 'string', example: 'Software Engineer (Backend)' },
+          title: { type: 'string', maxLength: 120, example: 'Software Engineer (Backend)' },
           company: { type: 'string', example: 'TechCorp Solutions' },
+          city: { type: 'string', example: 'Istanbul' },
           location: { type: 'string', example: 'Remote' },
           type: { type: 'string', example: 'full-time' },
           description: { type: 'string', example: 'Designing and developing robust microservices' },

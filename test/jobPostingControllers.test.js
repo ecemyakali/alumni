@@ -49,13 +49,66 @@ test('JobPosting Controllers & Routes Test Suite', async (t) => {
       assert.strictEqual(res.body.jobPosting.company, 'Acme Corp');
     });
 
-    await st.test('CREATE: should return 400 if title, company, or description missing', async () => {
-      const req = { body: { title: 'Only Title' } };
+    await st.test('CREATE: should return 400 if title or company is missing', async () => {
+      // Missing company
+      const reqNoCompany = { body: { title: 'Only Title' } };
+      const resNoCompany = createMockRes();
+      await apiJobPostingController.createJobPosting(reqNoCompany, resNoCompany);
+      assert.strictEqual(resNoCompany.statusCode, 400);
+      assert.strictEqual(resNoCompany.body.success, false);
+      assert.strictEqual(resNoCompany.body.error, 'Company is a required field.');
+
+      // Missing title
+      const reqNoTitle = { body: { company: 'Only Company' } };
+      const resNoTitle = createMockRes();
+      await apiJobPostingController.createJobPosting(reqNoTitle, resNoTitle);
+      assert.strictEqual(resNoTitle.statusCode, 400);
+      assert.strictEqual(resNoTitle.body.success, false);
+      assert.strictEqual(resNoTitle.body.error, 'Title is a required field.');
+    });
+
+    await st.test('CREATE: should return 400 if title exceeds 120 characters', async () => {
+      const longTitle = 'A'.repeat(121);
+      const req = { body: { title: longTitle, company: 'Acme Corp' } };
       const res = createMockRes();
 
       await apiJobPostingController.createJobPosting(req, res);
       assert.strictEqual(res.statusCode, 400);
       assert.strictEqual(res.body.success, false);
+      assert.strictEqual(res.body.error, 'Title must not exceed 120 characters.');
+    });
+
+    await st.test('CREATE: should succeed when city and description are omitted (optional fields)', async () => {
+      const req = {
+        body: {
+          title: 'DevOps Engineer',
+          company: 'Cloud Native Inc'
+        }
+      };
+      const res = createMockRes();
+
+      await apiJobPostingController.createJobPosting(req, res);
+      assert.strictEqual(res.statusCode, 201);
+      assert.strictEqual(res.body.success, true);
+      assert.strictEqual(res.body.jobPosting.title, 'DevOps Engineer');
+      assert.strictEqual(res.body.jobPosting.company, 'Cloud Native Inc');
+      assert.strictEqual(res.body.jobPosting.description, '');
+    });
+
+    await st.test('CREATE: should support optional city and assign location default', async () => {
+      const req = {
+        body: {
+          title: 'Site Reliability Engineer',
+          company: 'Global Infra',
+          city: 'Ankara'
+        }
+      };
+      const res = createMockRes();
+
+      await apiJobPostingController.createJobPosting(req, res);
+      assert.strictEqual(res.statusCode, 201);
+      assert.strictEqual(res.body.jobPosting.city, 'Ankara');
+      assert.strictEqual(res.body.jobPosting.location, 'Ankara');
     });
 
     await st.test('READ (All & ID): should retrieve all and single items', async () => {
@@ -113,6 +166,23 @@ test('JobPosting Controllers & Routes Test Suite', async (t) => {
         body: { title: 'Ghost' }
       }, res404);
       assert.strictEqual(res404.statusCode, 404);
+
+      // Validation in update
+      const resLongTitle = createMockRes();
+      await apiJobPostingController.updateJobPosting({
+        params: { id: item.id.toString() },
+        body: { title: 'T'.repeat(121) }
+      }, resLongTitle);
+      assert.strictEqual(resLongTitle.statusCode, 400);
+      assert.strictEqual(resLongTitle.body.error, 'Title must not exceed 120 characters.');
+
+      const resEmptyComp = createMockRes();
+      await apiJobPostingController.updateJobPosting({
+        params: { id: item.id.toString() },
+        body: { company: '   ' }
+      }, resEmptyComp);
+      assert.strictEqual(resEmptyComp.statusCode, 400);
+      assert.strictEqual(resEmptyComp.body.error, 'Company cannot be empty.');
     });
 
     await st.test('DELETE: should delete job posting or return 404', async () => {
