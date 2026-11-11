@@ -10,10 +10,15 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./config/swagger');
 const routes = require('./routes');
+const logger = require('./middlewares/logger');
 
 const app = express();
 
-// Global Middlewares (JSON and URL-encoded body parsing)
+// Global Middlewares
+// 1. Terminal Request Logger (logs method, route, res type, duration, time)
+app.use(logger);
+
+// 2. Body Parsing (JSON and URL-encoded)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

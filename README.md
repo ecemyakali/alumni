@@ -236,7 +236,8 @@ The codebase is organized into modular directories reflecting each layer of the 
 | **View (V)** | `src/views/`<br>`src/config/` | `userView.js`<br>`announcementView.js`<br>`swagger.js`<br>`swagger.json`<br>JSON responses | Formats and delivers presentations to clients. Includes dedicated HTML templates (`userView.js` for users, `announcementView.js` for announcements), Swagger UI documentation, and JSON payloads. |
 | **Controller (C)** | `src/controllers/` | `apiUserController.js`<br>`userController.js`<br>`apiAnnouncementController.js`<br>`announcementController.js`<br>`healthController.js`<br>`whiteboardController.js` | Receives client HTTP requests, validates input parameters, invokes Model operations, and formats the output View (REST JSON vs. Web HTML). |
 | **Router / Dispatcher** | `src/routes/` | `index.js`<br>`apiUserRoutes.js`<br>`userRoutes.js`<br>`apiAnnouncementRoutes.js`<br>`announcementRoutes.js`<br>`healthRoutes.js`<br>`whiteboardRoutes.js` | Directs incoming HTTP requests (HTTP method + URI path) to the designated Controller handler. |
-| **Infrastructure & Core** | Root & `src/` | `app.js`<br>`index.js` | Configures Express middlewares (JSON parser, URL-encoded parser), binds port listeners, and registers Swagger UI. |
+| **Middlewares** | `src/middlewares/` | `logger.js` | Intercepts requests/responses globally to log terminal execution records (`time(...) method(...) route(...) res type(...) duration(...)`). |
+| **Infrastructure & Core** | Root & `src/` | `app.js`<br>`index.js` | Configures Express middlewares (terminal logger, JSON parser, URL-encoded parser), binds port listeners, and registers Swagger UI. |
 
 ---
 
@@ -415,6 +416,8 @@ alumni/
 │   │   ├── userController.js           # Web/Application CRUD Controller for Users (HTML/content-negotiated)
 │   │   ├── healthController.js         # System health & uptime metric handler
 │   │   └── whiteboardController.js     # Classroom introductory routes & calculation handlers
+│   ├── middlewares/                    # Middleware Layer (Request interception & terminal logging)
+│   │   └── logger.js                   # Terminal logger middleware: time(...) method(...) route(...) res type(...) duration(...)
 │   ├── models/                         # Model Layer (Data structures & entity manipulation)
 │   │   ├── announcementModel.js        # Announcement entity data store & CRUD operations
 │   │   ├── applicationModel.js         # Application entity data store & M:N relations
@@ -448,6 +451,7 @@ alumni/
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
 │   ├── databaseCrud.test.js            # Unit & integration tests for PostgreSQL database CRUD interfaces & resilience
 │   ├── factories.test.js               # Unit and integration tests for User & Announcement factories & seeder
+│   ├── loggerMiddleware.test.js        # Unit and integration tests for terminal request logger middleware
 │   ├── forgettingTest.test.js          # The Forgetting Test: memory volatility demonstration
 │   ├── jobPostingControllers.test.js   # Unit tests for ApiJobPostingController & JobPostingController
 │   ├── jobPostingModel.test.js         # Unit tests for JobPosting Model CRUD operations

@@ -568,6 +568,40 @@ sequenceDiagram
 
 ---
 
+### 5.3 Global Middleware Pipeline & Terminal Request Logger
+
+All incoming HTTP requests pass through the global middleware pipeline before reaching router dispatchers:
+
+```mermaid
+flowchart LR
+    Client(["HTTP Client"]) --> Logger["Logger Middleware<br/>(src/middlewares/logger.js)"]
+    Logger --> BodyParser["Body Parsers<br/>(express.json & urlencoded)"]
+    BodyParser --> Router["Modular Routers<br/>(src/routes/)"]
+    Router --> Handler["Controller Handlers"]
+    Handler --> Response(["HTTP Response"])
+    Response -.->|"res.on('finish')"| Logger
+    Logger -.->|"Terminal stdout"| Terminal["Terminal Log Row<br/>time(...) method(...) route(...) res type(...) duration(...)"]
+```
+
+#### Terminal Logger Output Specification
+The logger captures execution time and response metadata upon response completion (`res.on('finish')`), outputting formatted logs to terminal `stdout`:
+
+* **Log Row Format:**
+  `time(HH:MM:SS ) method (METHOD) route( PATH)  res type(STATUS) duration (X ms)`
+* **Specification Breakdown:**
+  * `time`: 24-hour clock formatted timestamp (`HH:MM:SS`) with a trailing space before the closing parenthesis.
+  * `method`: Lowercase HTTP method name (e.g. `post`, `get`, `put`, `delete`, `patch`).
+  * `route`: Target route path with a leading space before the initial slash (e.g. ` /user`, ` /api/users`).
+  * `res type`: Final HTTP response status code (e.g. `200`, `201`, `400`, `404`, `500`), preceded by two spaces.
+  * `duration`: Total round-trip request processing latency in milliseconds (e.g. `18 ms`).
+
+* **Example Row:**
+  ```text
+  time(10:20:30 ) method (post) route( /user)  res type(201) duration (18 ms)
+  ```
+
+---
+
 ## 6. Relational Database (PostgreSQL) Transition Blueprint
 
 To transition from in-memory volatile storage to production-grade persistent storage, the following relational database architecture is defined.
