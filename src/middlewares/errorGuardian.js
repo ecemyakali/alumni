@@ -104,7 +104,10 @@ function errorGuardian(err, req, res, next) {
 
 // Aliases and helpers
 errorGuardian.errorGuardian = errorGuardian;
+errorGuardian.serverErrorGuardian = errorGuardian;
 errorGuardian.guardian5xx = errorGuardian;
+errorGuardian.createServerErrorGuardian = () => errorGuardian;
 errorGuardian.logErrorToFile = logErrorToFile;
+errorGuardian.appendLogLine = logErrorToFile;
 
 module.exports = errorGuardian;

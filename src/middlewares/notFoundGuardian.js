@@ -62,6 +62,8 @@ function notFoundGuardian(req, res, next) {
 // Aliases
 notFoundGuardian.notFoundGuardian = notFoundGuardian;
 notFoundGuardian.guardian404 = notFoundGuardian;
+notFoundGuardian.createNotFoundGuardian = () => notFoundGuardian;
+notFoundGuardian.genericNotFoundPageHandler = notFoundGuardian;
 notFoundGuardian.buildNotFoundReason = buildNotFoundReason;
 
 module.exports = notFoundGuardian;
