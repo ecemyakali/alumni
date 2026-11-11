@@ -3,7 +3,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-178_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-203_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -123,6 +123,11 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **PATCH**| `/applications/:id` | **UPDATE (REST):** Partial update application details | JSON / HTML View |
 | **POST** | `/applications/:id/delete`| **DELETE (Action):** Form delete submit & render list view | HTML View / JSON |
 | **DELETE**| `/applications/:id`| **DELETE (REST):** Delete application by ID | JSON / HTML View |
+
+#### 🛡️ Error & Guardian Endpoints
+| Method | Endpoint | Description | Layer / Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/404` | **Generic 404:** Branded Page Not Found view with reason & navigation shortcuts | HTML View / JSON |
 
 ### 📋 Whiteboard Classroom Routes
 | Method | Endpoint | Description | Request Format |
@@ -316,14 +321,35 @@ Decouples URL route matching from business logic:
 * **`src/routes/userRoutes.js`**: Maps `.../users` web endpoints to `UserController`.
 * **`src/routes/apiAnnouncementRoutes.js`**: Maps `.../api/announcements` endpoints to `ApiAnnouncementController`.
 * **`src/routes/announcementRoutes.js`**: Maps `.../announcements` web endpoints to `AnnouncementController`.
+* **`src/routes/apiJobPostingRoutes.js`**: Maps `.../api/job-postings` endpoints to `ApiJobPostingController`.
+* **`src/routes/jobPostingRoutes.js`**: Maps `.../job-postings` web endpoints to `JobPostingController`.
+* **`src/routes/apiApplicationRoutes.js`**: Maps `.../api/applications` endpoints to `ApiApplicationController`.
+* **`src/routes/applicationRoutes.js`**: Maps `.../applications` web endpoints to `ApplicationController`.
 * **`src/routes/healthRoutes.js`**: Registers `GET /api/health` and `GET /health` mapped to `healthController.getHealth`.
 * **`src/routes/whiteboardRoutes.js`**: Registers introductory educational routes mapped to `whiteboardController`.
 * **`src/routes/index.js`**: Central aggregator that combines all modular sub-routers and serves the OpenAPI specification endpoints (`/api/swagger.json`, `/swagger.json`).
 
-#### 5. ⚙️ Application Entry Point & Infrastructure
-* **`src/app.js`**: Configures the Express instance, attaches global middlewares (`express.json()`, `express.urlencoded()`), mounts Swagger UI, and binds the central router.
-* **`index.js`**: Main executable script that initializes the HTTP listeners on both port `5000` (default) and port `3000` (alternate).
-* **`test/`**: Comprehensive automated test suites (80 tests across all model, controller, route, and view test files).
+#### 5. 🛡️ Middleware & Guardian Layer (`src/middlewares/`)
+Intercepts HTTP traffic globally to enforce logging, routing integrity, and resilient error recovery:
+* **`src/middlewares/logger.js` (Terminal Request Logger)**:
+  * Intercepts every incoming request and calculates exact round-trip processing duration upon response completion (`res.on('finish')`).
+  * Emits standardized log entries directly to terminal `stdout`:
+    ```text
+    time(10:20:30 ) method (post) route( /user)  res type(201) duration (18 ms)
+    ```
+* **`src/middlewares/notFoundGuardian.js` (404 Guardian)**:
+  * Catches unhandled routes and returns 404 responses with explicit diagnostic `reason`.
+  * For API / JSON clients: returns `{ success: false, status: 404, error: "Not Found", reason: "..." }`.
+  * For browser / web clients: automatically redirects invalid requests (`302`) to `/404?from=...&reason=...`.
+* **`src/middlewares/errorGuardian.js` (5xx Server Error Guardian)**:
+  * Express 4-argument error-handling middleware `(err, req, res, next)` catching unhandled runtime exceptions.
+  * Writes persistent, structured diagnostic logs to `logs/error.logs` with timestamp, status code, method, route, client IP, reason, and full stack trace.
+  * Formats friendly 500 JSON payloads for API clients and renders semantic 500 HTML views for web browsers.
+
+#### 6. ⚙️ Application Entry Point & Infrastructure
+* **`src/app.js`**: Configures Express, mounts global middlewares in order (`logger` ➡️ body parsers ➡️ Swagger ➡️ routes ➡️ `/404` ➡️ `notFoundGuardian` ➡️ `errorGuardian`), and exports the application instance.
+* **`index.js`**: Main executable script that initializes HTTP listeners on ports `5000` (default) and `3000` (alternate).
+* **`test/`**: Comprehensive automated test suites (203 passing tests across 12 test suites with 100% pass rate).
 
 ---
 
@@ -534,11 +560,17 @@ cd alumni
    ```
    *The server starts listening on both `http://localhost:5000` and `http://localhost:3000`.*
 
-6. **Run Automated Tests:**
+6. **Run Automated Test Suite:**
    ```bash
    npm test
    ```
-   *Executes all 178 automated test cases covering health checks, user, announcement, job posting, and application CRUD, The Forgetting Test, SQL migrations, database connections, factories, seeders, routing, views, and Swagger specs.*
+   *Executes all 203 automated test cases across 12 test suites covering health checks, user, announcement, job posting, and application CRUD, terminal logger, 404 guardian, 5xx guardian, error log file persistence, SQL migrations, database connections, factories, seeders, routing, views, and Swagger specs.*
+
+7. **Run Postman Validation Runner Script:**
+   ```bash
+   npm run test:postman
+   ```
+   *Spins up an ephemeral backend instance and executes all invalid request scenarios (missing title, title > 120 chars, missing company, blank strings) and optional field edge cases against the Postman collection suite.*
 
 ---
 
@@ -563,10 +595,22 @@ The API service will be accessible at `http://localhost:3000` / `http://localhos
 A complete Postman collection is maintained in the root directory:
 * **`alumni.postman_collection.json`**
 
-You can:
-1. **Import in Postman:** Click **Import** in Postman Desktop and select `alumni.postman_collection.json` to immediately access all pre-configured requests with automated test assertions.
-2. **Run via Newman CLI:**
+### Collection Highlights:
+1. **Job Postings - Invalid Requests (Validation Rules):** Dedicated test suite with pre-configured assertions verifying 400 Bad Request responses on:
+   - Missing required `title`
+   - `title` exceeding maximum 120 characters limit
+   - Missing required `company`
+   - Whitespace / empty string payloads
+   - Mutation updates violating `title` length or `company` existence
+2. **Job Postings - Valid Requests (Domain Rules Verified):**
+   - Creation when optional `city` and `description` are omitted (defaults location to `Remote`)
+   - Creation when optional `city` is provided
+3. **Automated Collection Execution:**
    ```bash
+   # Automated CLI test runner
+   npm run test:postman
+
+   # Newman CLI collection execution
    npx newman run alumni.postman_collection.json
    ```
 
@@ -588,9 +632,16 @@ You can:
 - [x] 🗄️ PostgreSQL database creation & automated migration pipeline (`migrations/`, `scripts/migrate.js`)
 - [x] 🌱 Mock factories & automated database seeder (`factories/`, `scripts/seed.js`, `npm run seed`)
 - [x] 🔌 Update CRUD interfaces with PostgreSQL database connections & fallback architecture (`userModel.js`, `announcementModel.js`)
-- [x] Automated unit and integration testing suite (178/178 tests passing)
 - [x] 💼 Career Opportunities & Job Postings domain (`jobPostingModel.js`, `jobPostingController.js`, `apiJobPostingController.js`, `jobPostingView.js`)
 - [x] 📝 Many-to-Many Job Applications action domain (`applicationModel.js`, `applicationController.js`, `apiApplicationController.js`, `applicationView.js`)
+- [x] 🛡️ JobPosting Domain Validation Rules (`title` max 120 chars, `company` required, `city` & `description` optional)
+- [x] 🧪 Postman negative test suite for invalid requests (`npm run test:postman`)
+- [x] 📜 Terminal Request Logger Middleware (`src/middlewares/logger.js`)
+- [x] 🚨 404 Guardian Middleware with explicit reason reporting (`src/middlewares/notFoundGuardian.js`)
+- [x] 💥 5xx Server Error Guardian Middleware (`src/middlewares/errorGuardian.js`)
+- [x] 📝 Persistent error logging to `logs/error.logs`
+- [x] 🌐 Generic 404 HTML Page & automatic browser invalid request redirection (`/404`)
+- [x] Automated unit and integration testing suite (203/203 tests passing - 100% pass rate)
 - [ ] JWT authentication and role-based authorization middleware
 - [ ] Advanced alumni search, filter, and pagination APIs
 - [ ] GitHub Actions CI/CD deployment pipelines
