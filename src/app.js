@@ -10,7 +10,7 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./config/swagger');
 const routes = require('./routes');
-const logger = require('./middlewares/logger');
+const { logger, notFoundGuardian, errorGuardian } = require('./middlewares');
 
 const app = express();
 
@@ -33,5 +33,14 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOp
 // Mount routes at both root and /alumni prefix for maximum flexibility
 app.use('/', routes);
 app.use('/alumni', routes);
+
+// Generic 404 View Route: GET /404
+app.get('/404', notFoundGuardian);
+
+// 404 Guardian Middleware: Catches all unhandled routes, returns reason, redirects invalid web requests
+app.use(notFoundGuardian);
+
+// 5xx Guardian Middleware: Intercepts unhandled errors, logs to logs/error.logs, returns 500 with reason
+app.use(errorGuardian);
 
 module.exports = app;

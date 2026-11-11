@@ -602,6 +602,59 @@ The logger captures execution time and response metadata upon response completio
 
 ---
 
+### 5.4 404 Guardian Middleware & Generic 404 Page (Task 4 & Task 7)
+
+The **404 Guardian Middleware** (`src/middlewares/notFoundGuardian.js`) catches all requests that do not match any defined router or controller handler, providing clean, content-negotiated error responses:
+
+```mermaid
+flowchart TD
+    Req(["Incoming Unmatched Route"]) --> Check{"Is Browser / HTML Request?<br/>(Accept: text/html & not /api/*)"}
+    Check -- Yes --> Redirect["302 Redirect to /404<br/>(/404?from=...&reason=...)"]
+    Redirect --> Page["Generic 404 HTML Page<br/>(src/views/notFoundView.js)"]
+    Page --> HtmlResponse(["404 Not Found HTML Page"])
+    Check -- No --> JsonResponse["404 JSON with Explicit Reason<br/>{ success: false, status: 404, error: 'Not Found', reason: '...' }"]
+```
+
+* **API / JSON Client Response (404 with Explicit Reason):**
+  ```json
+  {
+    "success": false,
+    "status": 404,
+    "error": "Not Found",
+    "reason": "The requested endpoint 'GET /api/non-existent' does not exist on this server.",
+    "method": "GET",
+    "path": "/api/non-existent",
+    "timestamp": "2026-11-11T18:15:00.000Z"
+  }
+  ```
+* **Browser / Web Client Redirection & Generic 404 Page:**
+  * Invalid browser requests are redirected (`302`) to `/404?from=...&reason=...`.
+  * The generic 404 view (`src/views/notFoundView.js`) renders a branded error card with:
+    * Clear `404` status badge.
+    * Explicit error reason and attempted URL display.
+    * Navigation grid with direct shortcuts to `/main`, `/users`, `/job-postings`, `/announcements`, and `/api/swagger`.
+
+---
+
+### 5.5 5xx Guardian Middleware & Error File Logging (Task 5 & Task 6)
+
+The **5xx Guardian Middleware** (`src/middlewares/errorGuardian.js`) is an Express 4-argument error handler `(err, req, res, next)` that intercepts unexpected server failures, formats client responses, and appends diagnostic logs to `logs/error.logs`:
+
+* **Error Log Persistence (`logs/error.logs`):**
+  Every unhandled 5xx exception is formatted with timestamp, HTTP status, request method, route, client IP, error reason, and full stack trace:
+  ```text
+  [2026-11-11T18:15:02.660Z] [STATUS 500] [GET /api/simulate-crash] IP: 127.0.0.1
+  Reason: Database cluster connection failed
+  Details: Error: Database cluster connection failed
+      at ...
+  --------------------------------------------------------------------------------
+  ```
+* **Client Response Delivery:**
+  * **API Clients:** Returns structured 500 JSON payload with error reason, message, path, and timestamp.
+  * **Web Browsers:** Renders semantic 500 server error view (`src/views/serverErrorView.js`).
+
+---
+
 ## 6. Relational Database (PostgreSQL) Transition Blueprint
 
 To transition from in-memory volatile storage to production-grade persistent storage, the following relational database architecture is defined.
