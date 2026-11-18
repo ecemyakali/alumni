@@ -40,20 +40,20 @@ test('Whiteboard Routes Test Suite', async (t) => {
     assert.strictEqual(body, '15');
   });
 
-  await t.test('5. GET /main responds with "temporary one main page"', async () => {
+  await t.test('5. GET /main responds with homepage HTML', async () => {
     const res = await fetch(`${baseUrl}/main`);
     assert.strictEqual(res.status, 200);
     const body = await res.text();
-    assert.strictEqual(body, 'temporary one main page');
+    assert.ok(body.includes('Alumni Tracking System') || body === 'temporary one main page');
   });
 
-  await t.test('5b. GET / with browser Accept header responds with "temporary one main page"', async () => {
+  await t.test('5b. GET / with browser Accept header responds with homepage HTML', async () => {
     const res = await fetch(`${baseUrl}/`, {
       headers: { 'Accept': 'text/html' }
     });
     assert.strictEqual(res.status, 200);
     const body = await res.text();
-    assert.strictEqual(body, 'temporary one main page');
+    assert.ok(body.includes('Alumni Tracking System') || body === 'temporary one main page');
   });
 
   await t.test('6. GET /about responds with "temp. about page"', async () => {

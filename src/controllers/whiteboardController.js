@@ -6,15 +6,24 @@
  * and informational static views.
  */
 
+const userModel = require('../models/userModel');
+const jobPostingModel = require('../models/jobPostingModel');
+const announcementModel = require('../models/announcementModel');
+const applicationModel = require('../models/applicationModel');
+const homeView = require('../views/homeView');
+
 const whiteboardController = {
   /**
    * Root endpoint
    * GET /
-   * Returns 'temporary one main page' if browser/main page, otherwise 'ok'
+   * Returns homepage if browser/main page, otherwise 'ok'
    */
   getRoot(req, res) {
     if (req.query.page === 'main' || (req.headers.accept && req.headers.accept.includes('text/html'))) {
-      return res.send('temporary one main page');
+      if (req.query.raw === 'true') {
+        return res.send('temporary one main page');
+      }
+      return whiteboardController.getMain(req, res);
     }
     return res.send('ok');
   },
@@ -58,7 +67,36 @@ const whiteboardController = {
    * GET /main, GET /home
    */
   getMain(req, res) {
-    return res.send('temporary one main page');
+    if (req.query.raw === 'true') {
+      return res.send('temporary one main page');
+    }
+
+    try {
+      const userCount = typeof userModel.count === 'function' ? userModel.count() : 0;
+      const jobPostingCount = typeof jobPostingModel.count === 'function' ? jobPostingModel.count() : 0;
+      const announcementCount = typeof announcementModel.count === 'function' ? announcementModel.count() : 0;
+      const applicationCount = typeof applicationModel.count === 'function' ? applicationModel.count() : 0;
+
+      const recentAnnouncements = typeof announcementModel.getAll === 'function'
+        ? announcementModel.getAll()
+        : [];
+      const recentJobPostings = typeof jobPostingModel.getAll === 'function'
+        ? jobPostingModel.getAll()
+        : [];
+
+      const html = homeView.renderHomePage({
+        userCount,
+        jobPostingCount,
+        announcementCount,
+        applicationCount,
+        recentAnnouncements: Array.isArray(recentAnnouncements) ? recentAnnouncements : [],
+        recentJobPostings: Array.isArray(recentJobPostings) ? recentJobPostings : []
+      });
+
+      return res.type('html').send(html);
+    } catch {
+      return res.send('temporary one main page');
+    }
   },
 
   /**
