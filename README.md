@@ -2,6 +2,7 @@
 
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
+[![Brand Identity](https://img.shields.io/badge/Brand-Guidelines_&_Identity-blue?style=flat)](./brand.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
 [![Tests](https://img.shields.io/badge/Tests-203_Passing-brightgreen?style=flat)](./test/)
 
@@ -24,6 +25,23 @@ A dedicated, comprehensive data architecture specification is maintained in **[`
 6. **Relational Database (PostgreSQL) Transition Blueprint:** Complete SQL DDL schemas (`CREATE TABLE users`, `CREATE TABLE announcements`, `CREATE TABLE job_postings`), B-Tree indexing, automated `updated_at` triggers, and Docker persistent volume (`postgres_data`) configuration.
 7. **Validation, Sanitization & Data Integrity Rules:** Regex patterns, enum boundary checks, and HTTP error mappings.
 8. **Data Query & Controller Action Matrix:** Quick lookup matrix mapping routes, controllers, and models.
+
+---
+
+## 🎨 Brand Guidelines & Design System (`brand.md`)
+
+A comprehensive brand identity manual, UI design tokens, color palette, typography scales, voice & tone principles, and accessibility standards (WCAG 2.1 AA) are documented in **[`brand.md`](./brand.md)**:
+
+👉 **[Read the Full Brand Guidelines & Identity Manual (brand.md)](./brand.md)**
+
+### Key Highlights Covered in `brand.md`:
+1. **Brand Mission & Core Values:** Core purpose, vision statement, and institutional pillars (Empowerment, Trust, Collaboration).
+2. **Logo & Brandmark Architecture:** Primary logo lockup (`🎓 Alumni Tracking System`), minimum clearspace, and monochrome/dark variants.
+3. **Color Palette & CSS Design Tokens:** Primary Blue (`#2563eb`), Dark Slate (`#0f172a`), Light Neutral (`#f8fafc`), and WCAG AA status colors.
+4. **Typography & Hierarchy:** Native zero-latency system font stack, type scale (Hero down to Small/Mono), and tracking.
+5. **Voice, Tone & Messaging:** Action-oriented, welcoming, and institutionally credible copywriting guidelines with real-world examples.
+6. **Component Tokens & Elevational Shadows:** Button styles, elevation tokens (`--shadow-sm`, `--shadow-md`, `--shadow-lg`), and role badges.
+7. **Accessibility & Contrast Compliance:** 15.8:1 body text contrast ratio, keyboard `:focus-visible` outlines, and semantic HTML landmarks.
 
 ---
 
