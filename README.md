@@ -2,8 +2,8 @@
 
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
-[![Brand Identity](https://img.shields.io/badge/Brand-Guidelines_&_Identity-blue?style=flat)](./brand.md)
-[![Design System](https://img.shields.io/badge/Design_System-Tokens_&_UI_Spec-ff4d8b?style=flat)](./design.md)
+[![Brand Identity](https://img.shields.io/badge/Brand-Guidelines_&_Identity-5e6ad2?style=flat)](./brand.md)
+[![Design System](https://img.shields.io/badge/Design_System-Mintlify_&_Linear_Hybrid-10b981?style=flat)](./DESIGN.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
 [![Tests](https://img.shields.io/badge/Tests-208_Passing-brightgreen?style=flat)](./test/)
 
@@ -14,8 +14,8 @@ A modern, scalable, and secure **Alumni Tracking & Networking System** designed 
 ## 📑 Quick Navigation & Documentation Anchors
 
 * 📚 **[Data Architecture & DDD Specification (`ddd.md`)](#-data-design--architecture-documentation-ddd)** · [Direct File Link (`ddd.md`)](./ddd.md)
-* 🎨 **[Brand Guidelines & Identity Manual (`brand.md`)](#-brand-guidelines--design-system-brandmd)** · [Direct File Link (`brand.md`)](./brand.md)
-* 📐 **[Master Design System & Tactile UI Tokens (`design.md`)](#-master-design-system--ui-tokens-designmd)** · [Direct File Link (`design.md`)](./design.md)
+* 🎨 **[Brand Guidelines & Identity Manual (`brand.md`)](#-brand-guidelines--identity-manual-brandmd)** · [Direct File Link (`brand.md`)](./brand.md)
+* 📐 **[Master Design System & UI Specification (`DESIGN.md`)](#-master-design-system--ui-specification-designmd)** · [Direct File Link (`DESIGN.md`)](./DESIGN.md)
 * 📖 **[API Documentation (Swagger UI)](#-api-documentation-swagger-ui)**
 * 🛣️ **[API Endpoints Summary](#️-api-endpoints-summary)**
 * 🏗️ **[Architecture: Model-View-Controller (MVC) Pattern](#-architecture-model-view-controller-mvc-pattern)**
@@ -41,33 +41,38 @@ A dedicated, comprehensive data architecture specification is maintained in **[`
 
 ---
 
-## 🎨 Brand Guidelines & Design System (`brand.md`)
+## 🎨 Brand Guidelines & Identity Manual (`brand.md`)
 
-A comprehensive brand identity manual, UI design tokens, color palette, typography scales, voice & tone principles, and accessibility standards (WCAG 2.1 AA) are documented in **[`brand.md`](./brand.md)**:
+A comprehensive brand identity manual, audience personas, voice & tone principles, logo architecture, and community governance standards are documented in **[`brand.md`](./brand.md)**:
 
 👉 **[Read the Full Brand Guidelines & Identity Manual (brand.md)](./brand.md)**
 
 ### Key Highlights Covered in `brand.md`:
-1. **Brand Mission & Core Values:** Core purpose, vision statement, and institutional pillars (Empowerment, Trust, Collaboration).
-2. **Logo & Brandmark Architecture:** Primary logo lockup (`🎓 Alumni Tracking System`), minimum clearspace, and monochrome/dark variants.
-3. **Color Palette & CSS Design Tokens:** Primary Blue (`#2563eb`), Dark Slate (`#0f172a`), Light Neutral (`#f8fafc`), and WCAG AA status colors.
-4. **Typography & Hierarchy:** Native zero-latency system font stack, type scale (Hero down to Small/Mono), and tracking.
-5. **Voice, Tone & Messaging:** Action-oriented, welcoming, and institutionally credible copywriting guidelines with real-world examples.
-6. **Component Tokens & Elevational Shadows:** Button styles, elevation tokens (`--shadow-sm`, `--shadow-md`, `--shadow-lg`), and role badges.
-7. **Accessibility & Contrast Compliance:** 15.8:1 body text contrast ratio, keyboard `:focus-visible` outlines, and semantic HTML landmarks.
+1. **Brand Mission & Core Values:** Bridging academic excellence with lifelong career acceleration through high-trust community engagement.
+2. **Target Audience & Persona Matrix:** Tailored journeys for Senior Leaders/Recruiters, Recent Graduates, Academic Faculty, and Corporate Partners.
+3. **Voice, Tone & Messaging:** Direct, authoritative, and action-oriented copywriting that rejects academic bureaucracy in favor of software velocity.
+4. **Logo & Wordmark Architecture:** Primary brandmark lockup (`🎓 Alumni Tracking System`), minimum clearspace, and monochrome/dark variants.
+5. **Color Symbolism & Philosophy:** Crisp white canvas (Mintlify clarity), deep ink typography (`#090a0f`), craft lavender accent (`#5e6ad2`), and verified mint (`#10b981`).
+6. **Geometric Consistency:** Full pill buttons (`rounded.pill`) for friendly modern touchpoints; disciplined `12px/16px` rounded content cards.
 
 ---
 
-## 📐 Master Design System & UI Tokens (`design.md`)
+## 📐 Master Design System & UI Specification (`DESIGN.md`)
 
-A tactile, playful, and modern design system specification inspired by high-voltage B2B SaaS interfaces (warm cream canvas, saturated feature cards, 3D claymation depth, rounded display typography, and embedded product UI fragments) is defined in **[`design.md`](./design.md)**:
+A disciplined, high-craft design system synthesizing the airy readability of **Mintlify** and the structural precision Bento grid hierarchy of **Linear** is documented in **[`DESIGN.md`](./DESIGN.md)**:
 
-👉 **[Read the Full Master Design System Specification (design.md)](./design.md)**
+👉 **[Read the Full Master Design System Specification (DESIGN.md)](./DESIGN.md)**
 
-### Key Highlights Covered in `design.md`:
-1. **Warm Cream Foundation:** `{colors.canvas}` (`#fffaf0`) canvas floor and `{colors.surface-soft}` (`#faf5e8`) warm closing footer.
-2. **6-Color Saturated Domain Cards:** Color-coded cards for Alumni Directory (Blue), Career Board (Teal), Mentorship (Lavender), Announcements (Peach), Global Chapters (Ochre), and Metrics (Mint).
-3. **Tactile Depth & 3D Claymation:** Hand-crafted 3D academic artifacts (mortarboards, campus horizons, mascot characters) paired with embedded live product UI fragments.
+### Key Highlights Covered in `DESIGN.md`:
+1. **Airy White Canvas & 1px Hairlines:** Pure white canvas (`#ffffff`) paired with sharp 1px hairline borders (`#e2e8f0`) establishing clear structure without heavy shadows.
+2. **Four-Tier Visual Hierarchy on Homepage:**
+   - **Katman 1 (Hero — Dominant Section):** Mintlify spaciousness, announcement badge pill, 72px bold display headline with tight letter-spacing (`-2.5px`), black pill primary CTA, and hairline secondary action button.
+   - **Katman 2 (Asymmetric Bento Showcase — Linear Style):** 2/3 left featured event anchor (*Annual Global Alumni Tech Summit 2026* with live pulse badge) + 1/3 right telemetry metric stack (*Verified Alumni*, *Active Career Listings*, *Placement Rate*).
+   - **Katman 3 (Curated Directory & Career Grid):** 3-column clean cards highlighting verified alumni profiles and active career listings.
+   - **Katman 4 (Recent Announcements — Compact List):** Linear changelog-style horizontal rows with 1px hairline dividers that provide dense information scanning without competing with the cards above.
+3. **Pill-Shaped Action Controls:** Consistent `9999px` full-pill geometry for all primary and secondary buttons, badge pills, and filter tabs.
+4. **Typographic Pairing:** High-contrast `Inter` for display and UI prose; `Geist Mono / SF Mono` for metrics, IDs, dates, and salary ranges.
+5. **Complete CSS Design Tokens:** Production-ready CSS `:root` variables available across Express.js server-rendered views.
 4. **Rounded Display Typography:** Display headlines set at weight 500 with negative letter-spacing (`-1px` to `-2.5px`), paired with Inter for high-density tabular and form UI.
 5. **Generous Border Radius Scale:** `{rounded.md}` (12px) for buttons/inputs, `{rounded.lg}` (16px) for cards, and `{rounded.xl}` (24px) for feature cards.
 6. **Strict Section Rhythm:** 96px (`{spacing.section}`) vertical rhythm between major page bands.

@@ -1,18 +1,20 @@
 /**
- * Homepage View (Clay.com-inspired Tactile SaaS Design System)
+ * ========================================================
+ * View Layer: Homepage View (Mintlify & Linear Hybrid Synthesis)
  * File: src/views/homeView.js
+ * ========================================================
  * 
- * Implements the master design system:
- * - Warm cream canvas floor (#fffaf0)
- * - 6-color saturated domain feature cards (Pink, Teal, Peach, Lavender, Ochre, Mint)
- * - 3D claymation illustration depth & academic hero card
- * - Rounded display typography at weight 500 with negative letter spacing
- * - Embedded product UI fragments inside feature cards
- * - Warm cream pre-footer CTA band & warm footer (#faf5e8)
+ * Implements the 4-tier visual importance hierarchy:
+ * 1. Katman 1 (Hero — En Baskın Bölüm): Mintlify airiness, tight letter-spacing display headline,
+ *    top hairline-bordered announcement badge pill, black pill primary CTA, hairline secondary action button.
+ * 2. Katman 2 (Asimetrik Bento Vitrin — Linear Tarzı): 2/3 left featured event anchor with live "Öne Çıkan"
+ *    pulse badge + 1/3 right telemetry metric stack with large, bold numbers.
+ * 3. Katman 3 (Seçili Mezunlar / Fırsatlar): 1px hairline cards showcasing curated alumni & career opportunities.
+ * 4. Katman 4 (Son Duyurular — Kompakt Liste): Linear changelog-style horizontal rows with 1px hairline dividers.
  */
 
 function escapeHtml(str) {
-  if (!str) return '';
+  if (str === null || str === undefined) return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -33,743 +35,754 @@ const homeView = {
    * @param {number} [data.applicationCount=0]
    * @param {Array<Object>} [data.recentAnnouncements=[]]
    * @param {Array<Object>} [data.recentJobPostings=[]]
+   * @param {Array<Object>} [data.recentUsers=[]]
    * @param {Object} [options={}]
    * @returns {string} Formatted HTML document
    */
   renderHomePage(data = {}, options = {}) {
-    const userCount = data.userCount ?? 0;
-    const jobPostingCount = data.jobPostingCount ?? 0;
-    const announcementCount = data.announcementCount ?? 0;
-    const applicationCount = data.applicationCount ?? 0;
-    const recentAnnouncements = data.recentAnnouncements || [];
-    const recentJobPostings = data.recentJobPostings || [];
+    const userCount = data.userCount !== undefined ? data.userCount : 0;
+    const jobPostingCount = data.jobPostingCount !== undefined ? data.jobPostingCount : 0;
+    const announcementCount = data.announcementCount !== undefined ? data.announcementCount : 0;
+    const applicationCount = data.applicationCount !== undefined ? data.applicationCount : 0;
+
+    const recentAnnouncements = Array.isArray(data.recentAnnouncements) && data.recentAnnouncements.length > 0
+      ? data.recentAnnouncements
+      : [
+        { id: 1, title: 'Annual Alumni Homecoming 2026', author: 'Dean Office · Faculty of Engineering', date: '2026-11-20', category: 'Etkinlik' },
+        { id: 2, title: 'Fall Career Fair & Engineering Recruitment Keynote', author: 'Career Center', date: '2026-11-15', category: 'Kariyer' },
+        { id: 3, title: 'AI Research Lab Opens Doctoral Fellowship Applications', author: 'Graduate Studies', date: '2026-11-10', category: 'Akademik' }
+      ];
+
+    const recentJobPostings = Array.isArray(data.recentJobPostings) && data.recentJobPostings.length > 0
+      ? data.recentJobPostings
+      : [
+        { id: 1, title: 'Senior Cloud Architect', company: 'Google Cloud', city: 'Zurich', type: 'Full-time', salary: '$170,000 - $210,000' },
+        { id: 2, title: 'Staff Distributed Systems Engineer', company: 'Stripe Platforms', city: 'Berlin / Remote', type: 'Full-time', salary: '$160,000 - $190,000' }
+      ];
+
+    const firstJob = recentJobPostings[0] || {
+      id: 1,
+      title: 'Senior Cloud Architect',
+      company: 'Google Cloud',
+      city: 'Zurich',
+      type: 'Full-time',
+      salary: '$170,000 - $210,000'
+    };
+
+    const secondJob = recentJobPostings[1] || {
+      id: 2,
+      title: 'Staff Distributed Systems Engineer',
+      company: 'Stripe Platforms',
+      city: 'Berlin / Remote',
+      type: 'Full-time',
+      salary: '$160,000 - $190,000'
+    };
+
+    // Render Katman 4: Compact Announcement Rows (Linear Changelog Style)
+    const announcementRowsHtml = recentAnnouncements.map((item, idx) => {
+      const itemTitle = this.escapeHtml(item.title || 'Institutional Announcement');
+      const itemAuthor = this.escapeHtml(item.author || item.department || 'University Administration');
+      const itemDate = this.escapeHtml(item.date || (item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : '2026-11-20'));
+      const itemCategory = this.escapeHtml(item.category || (idx % 2 === 0 ? 'Etkinlik' : 'Akademik'));
+      const itemId = item.id || idx + 1;
+
+      return `
+        <div class="changelog-row">
+          <div class="changelog-date font-mono">${itemDate}</div>
+          <div class="changelog-badge-wrap">
+            <span class="badge-pill badge-neutral">${itemCategory}</span>
+          </div>
+          <div class="changelog-content">
+            <a href="/announcements/${itemId}" class="changelog-title-link">
+              ${itemTitle}
+            </a>
+            <span class="changelog-meta">${itemAuthor}</span>
+          </div>
+          <div class="changelog-arrow">
+            <a href="/announcements/${itemId}" class="changelog-icon-btn" title="View details">&rarr;</a>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alumni Tracking System — Empowering Graduate Connections & Careers</title>
+  <title>Alumni Tracking System — The Premier Network for Verified Alumni & Modern Careers</title>
   <style>
     :root {
-      /* Surface Tokens (Warm Cream Canvas System) */
-      --colors-canvas: #fffaf0;
-      --colors-surface-soft: #faf5e8;
-      --colors-surface-card: #f5f0e0;
-      --colors-surface-strong: #ebe6d6;
-      --colors-hairline: #e5e5e5;
-      --colors-surface-dark: #0a1a1a;
+      /* Mintlify & Linear Hybrid Tokens */
+      --canvas: #ffffff;
+      --surface-subtle: #f8fafc;
+      --surface-card: #ffffff;
+      --surface-dark: #090a0f;
+      --surface-dark-panel: #111218;
 
-      /* Saturated Feature Card Palette */
-      --colors-brand-pink: #ff4d8b;
-      --colors-brand-teal: #1a3a3a;
-      --colors-brand-lavender: #b8a4ed;
-      --colors-brand-peach: #ffb084;
-      --colors-brand-ochre: #e8b94a;
-      --colors-brand-mint: #a4d4c5;
-      --colors-brand-blue: #2563eb;
+      --hairline: #e2e8f0;
+      --hairline-strong: #cbd5e1;
+      --hairline-subtle: #f1f5f9;
+      --hairline-dark: #23252a;
 
-      /* Ink & Typography Tokens */
-      --colors-primary: #0a0a0a;
-      --colors-ink: #0a0a0a;
-      --colors-body-strong: #1a1a1a;
-      --colors-body: #3a3a3a;
-      --colors-muted: #6a6a6a;
-      --colors-muted-soft: #9a9a9a;
-      --colors-on-dark: #ffffff;
+      --ink: #090a0f;
+      --ink-muted: #475569;
+      --ink-subtle: #64748b;
+      --ink-tertiary: #94a3b8;
+      --on-dark: #ffffff;
 
-      /* Semantic Status Tokens */
-      --colors-success: #22c55e;
-      --colors-warning: #f59e0b;
-      --colors-error: #ef4444;
+      --primary: #090a0f;
+      --primary-hover: #1e293b;
 
-      /* Border Radius Scale */
-      --rounded-xs: 6px;
-      --rounded-sm: 8px;
-      --rounded-md: 12px;
-      --rounded-lg: 16px;
-      --rounded-xl: 24px;
+      --brand-accent: #5e6ad2;
+      --brand-accent-hover: #4f5abf;
+      --brand-accent-subtle: #eef0fb;
+
+      --brand-mint: #10b981;
+      --brand-mint-deep: #059669;
+      --brand-mint-subtle: #ecfdf5;
+
+      --rounded-xs: 4px;
+      --rounded-sm: 6px;
+      --rounded-md: 8px;
+      --rounded-lg: 12px;
+      --rounded-xl: 16px;
       --rounded-pill: 9999px;
 
-      /* Spacing Scale */
-      --spacing-xxs: 4px;
-      --spacing-xs: 8px;
-      --spacing-sm: 12px;
-      --spacing-md: 16px;
-      --spacing-lg: 24px;
-      --spacing-xl: 32px;
-      --spacing-xxl: 48px;
-      --spacing-section: 96px;
-
-      /* Typography Font Families */
-      --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "Geist Mono", Menlo, Consolas, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: var(--font-body);
-      background-color: var(--colors-canvas);
-      color: var(--colors-ink);
-      line-height: 1.6;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-family: var(--font-sans);
+      background-color: var(--canvas);
+      color: var(--ink);
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* TOP NAVIGATION (Sticky Cream Bar) */
+    .font-mono {
+      font-family: var(--font-mono);
+    }
+
+    /* TOP STICKY NAVIGATION */
     .top-nav {
-      background: var(--colors-canvas);
-      border-bottom: 1px solid var(--colors-hairline);
       position: sticky;
       top: 0;
       z-index: 100;
-      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--hairline);
     }
     .nav-container {
-      max-width: 1280px;
+      max-width: 1240px;
       margin: 0 auto;
       padding: 0 1.5rem;
       height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1.5rem;
+      gap: 1rem;
     }
     .brand-lockup {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 8px;
       text-decoration: none;
-      color: var(--colors-ink);
-      font-weight: 600;
-      font-size: 1.15rem;
-      letter-spacing: -0.5px;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
     }
-    .brand-emblem {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      background: var(--colors-surface-card);
-      border: 1px solid var(--colors-hairline);
-      border-radius: var(--rounded-sm);
+    .brand-icon {
       font-size: 1.25rem;
+      line-height: 1;
     }
     .nav-menu {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 2px;
       list-style: none;
     }
     .nav-link {
       text-decoration: none;
-      color: var(--colors-body);
+      color: var(--ink-muted);
+      font-size: 13px;
       font-weight: 500;
-      font-size: 14px;
-      padding: 8px 14px;
-      border-radius: var(--rounded-md);
-      transition: background 0.15s ease, color 0.15s ease;
+      padding: 5px 9px;
+      border-radius: var(--rounded-pill);
+      transition: all 0.15s ease;
+      white-space: nowrap;
     }
     .nav-link:hover {
-      color: var(--colors-ink);
-      background: var(--colors-surface-card);
+      color: var(--ink);
+      background: var(--surface-subtle);
+    }
+    .nav-link.active {
+      color: var(--ink);
+      background: var(--surface-subtle);
+      font-weight: 600;
     }
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-    }
-    .btn-nav-primary {
-      background: var(--colors-primary);
-      color: var(--colors-on-dark) !important;
-      padding: 10px 18px;
-      border-radius: var(--rounded-md);
-      font-weight: 600;
-      font-size: 14px;
-      text-decoration: none;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-nav-primary:hover {
-      opacity: 0.92;
-      transform: translateY(-1px);
+      gap: 8px;
+      white-space: nowrap;
     }
 
-    /* MAIN CONTAINER */
-    .page-main {
-      flex: 1;
-      max-width: 1280px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
-
-    /* HERO BAND (7/5 Split Grid) */
-    .hero-band {
-      padding: 64px 0 72px 0;
-      display: grid;
-      grid-template-columns: 7fr 5fr;
-      gap: 48px;
-      align-items: center;
-    }
-    .hero-content {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .hero-badge-pill {
-      align-self: flex-start;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      background: var(--colors-surface-card);
-      border: 1px solid var(--colors-hairline);
+    /* PILL BUTTONS (Mintlify & Linear Spec) */
+    .btn-pill-primary {
+      background: var(--primary);
+      color: #ffffff !important;
+      padding: 10px 22px;
       border-radius: var(--rounded-pill);
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--colors-body-strong);
-    }
-    .hero-badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: var(--rounded-pill);
-      background: var(--colors-brand-pink);
-    }
-    .hero-headline {
-      font-family: var(--font-display);
-      font-size: 64px;
-      line-height: 1.05;
-      font-weight: 500;
-      letter-spacing: -2.5px;
-      color: var(--colors-ink);
-    }
-    .hero-subtitle {
-      font-size: 18px;
-      line-height: 1.55;
-      color: var(--colors-body);
-      max-width: 580px;
-    }
-    .hero-cta-cluster {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .btn-clay-primary {
-      background: var(--colors-primary);
-      color: var(--colors-on-dark);
-      padding: 12px 24px;
-      height: 46px;
-      border-radius: var(--rounded-md);
-      font-weight: 600;
       font-size: 14px;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-    }
-    .btn-clay-primary:hover {
-      transform: translateY(-2px);
-      opacity: 0.92;
-    }
-    .btn-clay-secondary {
-      background: var(--colors-canvas);
-      color: var(--colors-ink);
-      border: 1px solid var(--colors-hairline);
-      padding: 12px 20px;
-      height: 46px;
-      border-radius: var(--rounded-md);
       font-weight: 600;
-      font-size: 14px;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.15s ease, border-color 0.15s ease;
-    }
-    .btn-clay-secondary:hover {
-      background: var(--colors-surface-card);
-      border-color: #d0d0d0;
-    }
-
-    /* 3D CLAYMATION HERO CARD */
-    .hero-illustration-card {
-      background: var(--colors-surface-soft);
-      border: 1px solid var(--colors-hairline);
-      border-radius: var(--rounded-xl);
-      padding: 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      min-height: 380px;
-    }
-    .clay-art-container {
-      position: relative;
-      width: 100%;
-      max-width: 280px;
-      height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .clay-mountain-bg {
-      position: absolute;
-      bottom: 0;
-      width: 240px;
-      height: 110px;
-      background: linear-gradient(135deg, #ffb084 0%, #e8b94a 100%);
-      border-radius: 90px 90px 24px 24px;
-      opacity: 0.85;
-      box-shadow: inset 0 -8px 16px rgba(0,0,0,0.06);
-    }
-    .clay-cap-mascot {
-      position: relative;
-      font-size: 84px;
-      filter: drop-shadow(0 14px 18px rgba(10,26,26,0.12));
-      animation: floatMascot 4s ease-in-out infinite alternate;
-      z-index: 2;
-    }
-    @keyframes floatMascot {
-      0% { transform: translateY(0px) rotate(-1deg); }
-      100% { transform: translateY(-8px) rotate(2deg); }
-    }
-    .hero-card-meta {
-      margin-top: 18px;
-      z-index: 3;
-    }
-    .hero-card-title {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.5px;
-      color: var(--colors-ink);
-    }
-    .hero-card-tag {
-      font-size: 13px;
-      color: var(--colors-muted);
-      margin-top: 4px;
-    }
-
-    /* LIVE METRICS COUNTER STRIP */
-    .metrics-section {
-      margin-bottom: 72px;
-    }
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-    .metric-card {
-      background: var(--colors-surface-card);
-      border: 1px solid var(--colors-hairline);
-      border-radius: var(--rounded-lg);
-      padding: 24px 20px;
-      transition: transform 0.15s ease;
-    }
-    .metric-card:hover {
-      transform: translateY(-2px);
-    }
-    .metric-count {
-      font-family: var(--font-display);
-      font-size: 38px;
-      font-weight: 500;
-      letter-spacing: -1px;
-      color: var(--colors-ink);
-      line-height: 1.1;
-    }
-    .metric-label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--colors-muted);
-      margin-top: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* 6-COLOR SATURATED FEATURE CARDS BAND */
-    .features-band {
-      margin-bottom: 96px;
-    }
-    .section-header-block {
-      margin-bottom: 40px;
-    }
-    .section-tag {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--colors-muted);
-      margin-bottom: 8px;
-    }
-    .section-heading {
-      font-family: var(--font-display);
-      font-size: 40px;
-      font-weight: 500;
-      letter-spacing: -1.2px;
-      line-height: 1.15;
-      color: var(--colors-ink);
-    }
-    .section-subtext {
-      font-size: 16px;
-      color: var(--colors-body);
-      margin-top: 8px;
-      max-width: 640px;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
-    .feature-card {
-      border-radius: var(--rounded-xl);
-      padding: 32px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 380px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s ease;
-    }
-    .feature-card:hover {
-      transform: translateY(-3px);
-    }
-    .card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .card-badge {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: var(--rounded-pill);
-    }
-    .card-icon {
-      font-size: 28px;
-    }
-    .card-title {
-      font-family: var(--font-display);
-      font-size: 26px;
-      font-weight: 500;
-      letter-spacing: -0.6px;
-      margin-bottom: 10px;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      cursor: pointer;
       line-height: 1.2;
     }
-    .card-description {
-      font-size: 14.5px;
-      line-height: 1.5;
-      margin-bottom: 24px;
+    .btn-pill-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
-
-    /* Embedded Product UI Fragments inside Cards */
-    .ui-fragment {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(4px);
-      border-radius: var(--rounded-md);
-      padding: 14px 16px;
-      font-size: 13px;
-      color: var(--colors-ink);
-      margin-bottom: 24px;
-      border: 1px solid rgba(0,0,0,0.06);
-    }
-    .ui-fragment-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .ui-fragment-pill {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
+    .btn-pill-secondary {
+      background: #ffffff;
+      color: var(--ink) !important;
+      padding: 10px 20px;
       border-radius: var(--rounded-pill);
-      background: var(--colors-canvas);
-      border: 1px solid var(--colors-hairline);
-    }
-
-    .card-action-btn {
-      align-self: flex-start;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 10px 18px;
-      border-radius: var(--rounded-md);
+      border: 1px solid var(--hairline);
+      transition: all 0.15s ease;
+      cursor: pointer;
+      line-height: 1.2;
+    }
+    .btn-pill-secondary:hover {
+      background: var(--surface-subtle);
+      border-color: var(--hairline-strong);
+      transform: translateY(-1px);
+    }
+    .btn-pill-sm {
+      background: var(--surface-subtle);
+      color: var(--ink) !important;
+      padding: 6px 14px;
+      border-radius: var(--rounded-pill);
       font-size: 13px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: opacity 0.15s ease;
-    }
-    .card-action-btn:hover {
-      opacity: 0.88;
-    }
-
-    /* Card Specific Colors */
-    /* 1. Hot Pink Card (Outbound/Directory) */
-    .card-pink {
-      background: var(--colors-brand-pink);
-      color: #ffffff;
-    }
-    .card-pink .card-badge {
-      background: rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-    }
-    .card-pink .card-description {
-      color: rgba(255, 255, 255, 0.9);
-    }
-    .card-pink .card-action-btn {
-      background: #ffffff;
-      color: var(--colors-ink);
-    }
-
-    /* 2. Deep Teal Card (Career Board) */
-    .card-teal {
-      background: var(--colors-brand-teal);
-      color: #ffffff;
-    }
-    .card-teal .card-badge {
-      background: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-    }
-    .card-teal .card-description {
-      color: rgba(255, 255, 255, 0.85);
-    }
-    .card-teal .card-action-btn {
-      background: #ffffff;
-      color: var(--colors-brand-teal);
-    }
-
-    /* 3. Warm Peach Card (Announcements) */
-    .card-peach {
-      background: var(--colors-brand-peach);
-      color: var(--colors-ink);
-    }
-    .card-peach .card-badge {
-      background: rgba(0, 0, 0, 0.08);
-      color: var(--colors-ink);
-    }
-    .card-peach .card-description {
-      color: var(--colors-body);
-    }
-    .card-peach .card-action-btn {
-      background: var(--colors-primary);
-      color: #ffffff;
-    }
-
-    /* 4. Soft Lavender Card (Applications) */
-    .card-lavender {
-      background: var(--colors-brand-lavender);
-      color: var(--colors-ink);
-    }
-    .card-lavender .card-badge {
-      background: rgba(0, 0, 0, 0.08);
-      color: var(--colors-ink);
-    }
-    .card-lavender .card-description {
-      color: var(--colors-body);
-    }
-    .card-lavender .card-action-btn {
-      background: var(--colors-primary);
-      color: #ffffff;
-    }
-
-    /* 5. Golden Ochre Card (API Docs / Swagger) */
-    .card-ochre {
-      background: var(--colors-brand-ochre);
-      color: var(--colors-ink);
-    }
-    .card-ochre .card-badge {
-      background: rgba(0, 0, 0, 0.08);
-      color: var(--colors-ink);
-    }
-    .card-ochre .card-description {
-      color: var(--colors-body);
-    }
-    .card-ochre .card-action-btn {
-      background: var(--colors-primary);
-      color: #ffffff;
-    }
-
-    /* 6. Fresh Mint Card (Health / Telemetry) */
-    .card-mint {
-      background: var(--colors-brand-mint);
-      color: var(--colors-ink);
-    }
-    .card-mint .card-badge {
-      background: rgba(0, 0, 0, 0.08);
-      color: var(--colors-ink);
-    }
-    .card-mint .card-description {
-      color: var(--colors-body);
-    }
-    .card-mint .card-action-btn {
-      background: var(--colors-primary);
-      color: #ffffff;
-    }
-
-    /* RECENT ACTIVITY (Dual Column Split) */
-    .recent-band {
-      margin-bottom: 96px;
-    }
-    .recent-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-    .recent-column {
-      background: var(--colors-surface-card);
-      border: 1px solid var(--colors-hairline);
-      border-radius: var(--rounded-lg);
-      padding: 28px;
-    }
-    .recent-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .recent-title {
-      font-family: var(--font-display);
-      font-size: 20px;
       font-weight: 500;
-      letter-spacing: -0.4px;
-    }
-    .recent-link-all {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--colors-ink);
       text-decoration: none;
-    }
-    .recent-link-all:hover {
-      text-decoration: underline;
-    }
-    .activity-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .activity-item {
-      background: var(--colors-canvas);
-      border: 1px solid var(--colors-hairline);
-      border-radius: var(--rounded-md);
-      padding: 14px 16px;
-      display: flex;
+      border: 1px solid var(--hairline);
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      gap: 4px;
+      transition: all 0.15s ease;
     }
-    .activity-item-title {
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--colors-ink);
-      text-decoration: none;
+    .btn-pill-sm:hover {
+      background: var(--primary);
+      color: #ffffff !important;
+      border-color: var(--primary);
     }
-    .activity-item-title:hover {
-      text-decoration: underline;
-    }
-    .activity-item-meta {
+
+    /* BADGE PILLS */
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--rounded-pill);
       font-size: 12px;
-      color: var(--colors-muted);
-      margin-top: 2px;
+      font-weight: 500;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .badge-mint {
+      background: var(--brand-mint-subtle);
+      color: var(--brand-mint-deep);
+      border: 1px solid #a7f3d0;
+    }
+    .badge-accent {
+      background: var(--brand-accent-subtle);
+      color: var(--brand-accent);
+      border: 1px solid #d5daf7;
+    }
+    .badge-neutral {
+      background: var(--surface-subtle);
+      color: var(--ink-subtle);
+      border: 1px solid var(--hairline);
     }
 
-    /* PRE-FOOTER ILLUSTRATED CTA BAND */
-    .cta-band-illustrated {
-      background: var(--colors-surface-soft);
-      border: 1px solid var(--colors-hairline);
-      border-radius: var(--rounded-xl);
-      padding: 72px 48px;
-      margin-bottom: 80px;
-      display: grid;
-      grid-template-columns: 1.5fr 1fr;
-      gap: 36px;
-      align-items: center;
+    /* PULSING DOT */
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--brand-mint);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
     }
-    .cta-heading {
-      font-family: var(--font-display);
-      font-size: 38px;
-      font-weight: 500;
-      line-height: 1.15;
-      letter-spacing: -1px;
-      margin-bottom: 12px;
+
+    /* ========================================================
+     * KATMAN 1: HERO (En Baskın Bölüm — Mintlify Ferahlığı)
+     * ======================================================== */
+    .hero-section {
+      padding: 5rem 1.5rem 3.5rem 1.5rem;
+      max-width: 1040px;
+      margin: 0 auto;
+      text-align: center;
     }
-    .cta-subtext {
-      font-size: 16px;
-      color: var(--colors-body);
-      margin-bottom: 24px;
-      max-width: 520px;
-    }
-    .cta-actions {
+    .hero-badge-wrap {
       display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.5rem;
     }
-    .cta-art-box {
+    .hero-pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      background: #ffffff;
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-pill);
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      transition: all 0.15s ease;
+    }
+    .hero-pill-badge:hover {
+      border-color: var(--hairline-strong);
+      transform: translateY(-1px);
+    }
+    .badge-arrow {
+      color: var(--brand-accent);
+      font-weight: 600;
+    }
+    .hero-headline {
+      font-size: clamp(2.4rem, 5vw, 4.25rem);
+      font-weight: 700;
+      letter-spacing: -2.5px;
+      line-height: 1.08;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
+    }
+    .hero-subhead {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--ink-muted);
+      max-width: 740px;
+      margin: 0 auto 2.25rem auto;
+      line-height: 1.55;
+      font-weight: 400;
+    }
+    .hero-actions {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 96px;
-      filter: drop-shadow(0 10px 14px rgba(0,0,0,0.06));
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
     }
-
-    /* FOOTER (Warm Cream Pacing - NOT Dark!) */
-    .warm-footer {
-      background: var(--colors-surface-soft);
-      border-top: 1px solid var(--colors-hairline);
-      padding: 64px 0 32px 0;
-      color: var(--colors-body);
-      font-size: 14px;
-    }
-    .footer-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 40px;
-      margin-bottom: 48px;
-    }
-    .footer-brand {
-      font-family: var(--font-display);
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--colors-ink);
-      margin-bottom: 12px;
+    .hero-trust-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-    .footer-desc {
-      font-size: 13.5px;
-      color: var(--colors-muted);
-      line-height: 1.6;
-      max-width: 340px;
-    }
-    .footer-col-title {
+      justify-content: center;
+      gap: 12px;
+      color: var(--ink-tertiary);
       font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    /* SECTION CONTAINERS */
+    .section-wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem 1.5rem;
+    }
+    .section-header {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .section-eyebrow {
+      font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: var(--colors-ink);
-      margin-bottom: 16px;
+      color: var(--brand-accent);
+      margin-bottom: 6px;
+    }
+    .section-title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -1.2px;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .section-sub {
+      color: var(--ink-muted);
+      font-size: 15px;
+      margin-top: 6px;
+      max-width: 640px;
+    }
+    .section-more-link {
+      color: var(--brand-accent);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .section-more-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ========================================================
+     * KATMAN 2: ASİMETRİK BENTO VİTRİN (Linear Tarzı 2/3 + 1/3)
+     * ======================================================== */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1.85fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+    .bento-card-main {
+      background: #ffffff;
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-xl);
+      padding: 2.5rem;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .bento-card-main::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--brand-accent), var(--brand-mint));
+    }
+    .bento-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bento-event-title {
+      font-size: clamp(1.6rem, 3vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -1.2px;
+      color: var(--ink);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .bento-event-desc {
+      color: var(--ink-muted);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    .bento-mini-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+    .bento-feature-tile {
+      background: var(--surface-subtle);
+      border: 1px solid var(--hairline);
+      padding: 12px 14px;
+      border-radius: var(--rounded-md);
+      font-size: 13px;
+      color: var(--ink);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bento-bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--hairline-subtle);
+    }
+    .bento-action-btns {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .bento-live-counter {
+      font-size: 13px;
+      color: var(--ink-subtle);
+    }
+
+    /* RIGHT 1/3 METRIC STACK */
+    .bento-metric-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: space-between;
+    }
+    .metric-card {
+      background: #ffffff;
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: 1.4rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .metric-card:hover {
+      border-color: var(--hairline-strong);
+      transform: translateY(-1px);
+    }
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .metric-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--ink-subtle);
+    }
+    .metric-number {
+      font-size: 2.25rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: var(--ink);
+      margin-bottom: 0.35rem;
+    }
+    .metric-sub {
+      font-size: 12.5px;
+      color: var(--ink-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .metric-link {
+      color: var(--brand-accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .metric-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ========================================================
+     * KATMAN 3: SEÇİLİ MEZUNLAR & FIRSATLAR (Curated 3-Up Grid)
+     * ======================================================== */
+    .curated-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .curated-card {
+      background: #ffffff;
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: 1.75rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+    }
+    .curated-card:hover {
+      border-color: var(--hairline-strong);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+    }
+    .card-top {
+      margin-bottom: 1.25rem;
+    }
+    .card-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .card-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--ink);
+      margin-bottom: 0.35rem;
+    }
+    .card-company {
+      font-size: 14px;
+      color: var(--ink-muted);
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+    }
+    .card-meta-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .meta-tag {
+      background: var(--surface-subtle);
+      border: 1px solid var(--hairline);
+      padding: 3px 8px;
+      border-radius: var(--rounded-pill);
+      font-size: 12px;
+      color: var(--ink-subtle);
+    }
+    .card-body-text {
+      font-size: 14px;
+      color: var(--ink-muted);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+    .card-footer-action {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--hairline-subtle);
+    }
+
+    /* ========================================================
+     * KATMAN 4: SON DUYURULAR (Kompakt Liste — Linear Changelog)
+     * ======================================================== */
+    .changelog-box {
+      background: #ffffff;
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-lg);
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+    }
+    .changelog-row {
+      display: grid;
+      grid-template-columns: 110px 100px 1fr 40px;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--hairline-subtle);
+      transition: background 0.15s ease;
+    }
+    .changelog-row:last-child {
+      border-bottom: none;
+    }
+    .changelog-row:hover {
+      background: var(--surface-subtle);
+    }
+    .changelog-date {
+      font-size: 13px;
+      color: var(--ink-subtle);
+    }
+    .changelog-badge-wrap {
+      display: flex;
+      align-items: center;
+    }
+    .changelog-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .changelog-title-link {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 14.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .changelog-title-link:hover {
+      color: var(--brand-accent);
+      text-decoration: underline;
+    }
+    .changelog-meta {
+      font-size: 13px;
+      color: var(--ink-tertiary);
+      white-space: nowrap;
+    }
+    .changelog-arrow {
+      text-align: right;
+    }
+    .changelog-icon-btn {
+      color: var(--ink-subtle);
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+    .changelog-icon-btn:hover {
+      color: var(--brand-accent);
+    }
+
+    /* FOOTER */
+    .site-footer {
+      border-top: 1px solid var(--hairline);
+      background: #ffffff;
+      padding: 4.5rem 1.5rem 2.5rem 1.5rem;
+      margin-top: 3rem;
+    }
+    .footer-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3.5rem;
+    }
+    .footer-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--ink);
+      margin-bottom: 0.75rem;
+    }
+    .footer-desc {
+      font-size: 14px;
+      color: var(--ink-muted);
+      line-height: 1.6;
+      max-width: 320px;
+    }
+    .footer-col-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
     }
     .footer-links {
       list-style: none;
@@ -778,384 +791,345 @@ const homeView = {
       gap: 10px;
     }
     .footer-links a {
-      color: var(--colors-body);
+      color: var(--ink-subtle);
       text-decoration: none;
       font-size: 13.5px;
       transition: color 0.15s ease;
     }
     .footer-links a:hover {
-      color: var(--colors-ink);
+      color: var(--ink);
       text-decoration: underline;
     }
     .footer-bottom {
-      max-width: 1280px;
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 24px 1.5rem 0 1.5rem;
-      border-top: 1px solid var(--colors-hairline);
+      padding-top: 2rem;
+      border-top: 1px solid var(--hairline);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 13px;
-      color: var(--colors-muted);
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 1rem;
+      font-size: 13px;
+      color: var(--ink-tertiary);
     }
-    .footer-pills {
+    .tech-badges {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
+      align-items: center;
     }
     .tech-pill {
-      background: var(--colors-canvas);
-      border: 1px solid var(--colors-hairline);
+      background: var(--surface-subtle);
+      border: 1px solid var(--hairline);
       padding: 3px 8px;
-      border-radius: var(--rounded-xs);
+      border-radius: var(--rounded-pill);
       font-size: 11.5px;
       font-weight: 500;
-      color: var(--colors-body-strong);
+      color: var(--ink-subtle);
     }
 
-    /* RESPONSIVE BREAKPOINTS */
+    /* RESPONSIVE DESIGN */
     @media (max-width: 1024px) {
-      .hero-band {
+      .bento-grid {
         grid-template-columns: 1fr;
-        gap: 36px;
-      }
-      .features-grid {
-        grid-template-columns: repeat(2, 1fr);
       }
       .footer-container {
         grid-template-columns: 1fr 1fr;
       }
     }
     @media (max-width: 768px) {
-      .hero-headline {
-        font-size: 40px;
-        letter-spacing: -1.2px;
+      .nav-menu {
+        display: none;
       }
-      .metrics-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .features-grid {
+      .changelog-row {
         grid-template-columns: 1fr;
+        gap: 8px;
       }
-      .recent-grid {
-        grid-template-columns: 1fr;
-      }
-      .cta-band-illustrated {
-        grid-template-columns: 1fr;
-        padding: 40px 24px;
-        text-align: center;
-      }
-      .cta-actions {
-        justify-content: center;
+      .changelog-content {
+        flex-direction: column;
+        align-items: flex-start;
       }
       .footer-container {
         grid-template-columns: 1fr;
-      }
-      .nav-menu {
-        display: none;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- STICKY TOP NAVIGATION -->
+  <!-- STICKY NAVIGATION -->
   <header class="top-nav">
     <div class="nav-container">
       <a href="/main" class="brand-lockup">
-        <span class="brand-emblem">🎓</span>
+        <span class="brand-icon">🎓</span>
         <span>Alumni Tracking System</span>
       </a>
       <ul class="nav-menu">
+        <li><a href="/main" class="nav-link active">Home</a></li>
         <li><a href="/users" class="nav-link">Alumni Directory</a></li>
-        <li><a href="/job-postings" class="nav-link">Career Board</a></li>
-        <li><a href="/announcements" class="nav-link">Announcements</a></li>
-        <li><a href="/applications" class="nav-link">Applications</a></li>
-        <li><a href="/api/swagger" class="nav-link">API Docs</a></li>
-        <li><a href="/api/health" class="nav-link">Health</a></li>
+        <li><a href="/job-postings" class="nav-link">Career Opportunities</a></li>
+        <li><a href="/announcements" class="nav-link">Announcements Board</a></li>
+        <li><a href="/applications" class="nav-link">Application Tracking</a></li>
+        <li><a href="/api/swagger" class="nav-link" target="_blank">Swagger UI</a></li>
+        <li><a href="/api/health" class="nav-link">System Health</a></li>
       </ul>
       <div class="nav-actions">
-        <a href="/job-postings" class="btn-nav-primary">
+        <a href="/job-postings#post-job" class="btn-pill-primary">
           <span>+</span> Post Opportunity
         </a>
       </div>
     </div>
   </header>
 
-  <!-- MAIN VIEWPORT CONTAINER -->
-  <main class="page-main">
+  <!-- ========================================================
+   * KATMAN 1: HERO (En Baskın Bölüm — Mintlify Ferahlığı)
+   * ======================================================== -->
+  <section class="hero-section">
+    <div class="hero-badge-wrap">
+      <a href="#bento-showcase" class="hero-pill-badge">
+        <span class="pulse-dot"></span>
+        <span class="badge-text">Annual Alumni Homecoming 2026 Registration Open</span>
+        <span class="badge-arrow">&rarr;</span>
+      </a>
+    </div>
 
-    <!-- HERO BAND (7/5 Split) -->
-    <section class="hero-band">
-      <div class="hero-content">
-        <div class="hero-badge-pill">
-          <span class="hero-badge-dot"></span>
-          <span>Official University Alumni & Career Network</span>
-        </div>
-        <h1 class="hero-headline">Connecting Graduates, Empowering Careers</h1>
-        <p class="hero-subtitle">
-          A tactile, playful, and unified ecosystem bridging academic excellence and industry leadership. Re-connect with fellow alumni, discover career opportunities, and mentor the next generation.
-        </p>
-        <div class="hero-cta-cluster">
-          <a href="/users" class="btn-clay-primary">Explore Alumni Directory →</a>
-          <a href="/job-postings" class="btn-clay-secondary">Browse Career Board</a>
-          <a href="/announcements" class="btn-clay-secondary">View Announcements</a>
-        </div>
-      </div>
+    <h1 class="hero-headline">
+      The Premier Network for Verified Alumni & Modern Careers
+    </h1>
 
-      <!-- 3D Claymation Style Hero Card -->
-      <div class="hero-illustration-card">
-        <div class="clay-art-container">
-          <div class="clay-mountain-bg"></div>
-          <div class="clay-cap-mascot">🎓</div>
-        </div>
-        <div class="hero-card-meta">
-          <div class="hero-card-title">Lifetime Alumni Community</div>
-          <div class="hero-card-tag">Handcrafted for graduates across 40+ departments</div>
-        </div>
-      </div>
-    </section>
+    <p class="hero-subhead">
+      Connecting distinguished graduates, ambitious students, and academic faculties through verified credentials, high-impact mentorship, and exclusive career opportunities.
+    </p>
 
-    <!-- LIVE METRICS COUNTER STRIP -->
-    <section class="metrics-section">
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-count">${userCount}</div>
-          <div class="metric-label">Registered Alumni</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-count">${jobPostingCount}</div>
-          <div class="metric-label">Career Postings</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-count">${announcementCount}</div>
-          <div class="metric-label">Announcements</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-count">${applicationCount}</div>
-          <div class="metric-label">Applications Filed</div>
-        </div>
-      </div>
-    </section>
+    <div class="hero-actions">
+      <a href="/users" class="btn-pill-primary">Explore Alumni Directory &rarr;</a>
+      <a href="/job-postings#post-job" class="btn-pill-secondary">+ Post Career Opportunity</a>
+    </div>
 
-    <!-- 6-COLOR SATURATED FEATURE CARDS BAND -->
-    <section class="features-band">
-      <div class="section-header-block">
-        <div class="section-tag">Core Platform Modules</div>
-        <h2 class="section-heading">Everything needed to stay connected</h2>
-        <p class="section-subtext">
-          High-voltage tools designed for modern graduates, department chairs, and corporate recruiters.
-        </p>
-      </div>
+    <div class="hero-trust-bar font-mono">
+      <span>✓ Verified institutional credentials</span>
+      <span>•</span>
+      <span>✓ Direct executive mentorship</span>
+      <span>•</span>
+      <span>✓ Real-time hiring pipeline</span>
+    </div>
+  </section>
 
-      <div class="features-grid">
-
-        <!-- Card 1: Hot Pink (Alumni Directory) -->
-        <div class="feature-card card-pink">
-          <div>
-            <div class="card-top">
-              <span class="card-badge">Directory</span>
-              <span class="card-icon">👥</span>
-            </div>
-            <h3 class="card-title">Alumni Directory</h3>
-            <p class="card-description">
-              Verified graduate profiles across departments, graduation years, and current company roles.
-            </p>
-            <div class="ui-fragment">
-              <div class="ui-fragment-row">
-                <span>🎓 Class of 2024</span>
-                <span class="ui-fragment-pill">Active Member</span>
-              </div>
-            </div>
-          </div>
-          <a href="/users" class="card-action-btn">Browse Alumni Directory →</a>
-        </div>
-
-        <!-- Card 2: Deep Teal (Career Board) -->
-        <div class="feature-card card-teal">
-          <div>
-            <div class="card-top">
-              <span class="card-badge">Recruitment</span>
-              <span class="card-icon">💼</span>
-            </div>
-            <h3 class="card-title">Career Opportunities</h3>
-            <p class="card-description">
-              Exclusive jobs and internships shared directly by alumni recruiters and verified partner companies.
-            </p>
-            <div class="ui-fragment">
-              <div class="ui-fragment-row">
-                <span>Full-time • Hybrid</span>
-                <span class="ui-fragment-pill">High Priority</span>
-              </div>
-            </div>
-          </div>
-          <a href="/job-postings" class="card-action-btn">Explore Career Opportunities →</a>
-        </div>
-
-        <!-- Card 3: Warm Peach (Announcements) -->
-        <div class="feature-card card-peach">
-          <div>
-            <div class="card-top">
-              <span class="card-badge">Community</span>
-              <span class="card-icon">📢</span>
-            </div>
-            <h3 class="card-title">Announcements Board</h3>
-            <p class="card-description">
-              Institutional news, alumni gala events, guest lectures, and campus homecoming invitations.
-            </p>
-            <div class="ui-fragment">
-              <div class="ui-fragment-row">
-                <span>Campus Gala 2026</span>
-                <span class="ui-fragment-pill">New Update</span>
-              </div>
-            </div>
-          </div>
-          <a href="/announcements" class="card-action-btn">View Announcements Board →</a>
-        </div>
-
-        <!-- Card 4: Soft Lavender (Application Tracking) -->
-        <div class="feature-card card-lavender">
-          <div>
-            <div class="card-top">
-              <span class="card-badge">Applications</span>
-              <span class="card-icon">📝</span>
-            </div>
-            <h3 class="card-title">Application Tracking</h3>
-            <p class="card-description">
-              Track multi-stage job submissions and mentorship pairings with real-time status flows.
-            </p>
-            <div class="ui-fragment">
-              <div class="ui-fragment-row">
-                <span>Application Flow</span>
-                <span class="ui-fragment-pill">Under Review</span>
-              </div>
-            </div>
-          </div>
-          <a href="/applications" class="card-action-btn">Track Applications →</a>
-        </div>
-
-        <!-- Card 5: Golden Ochre (Swagger UI API) -->
-        <div class="feature-card card-ochre">
-          <div>
-            <div class="card-top">
-              <span class="card-badge">API Spec</span>
-              <span class="card-icon">📑</span>
-            </div>
-            <h3 class="card-title">Swagger UI</h3>
-            <p class="card-description">
-              Interactive OpenAPI 3.0 documentation for integrating external services with our RESTful endpoints.
-            </p>
-            <div class="ui-fragment">
-              <div class="ui-fragment-row">
-                <span>GET /api/users</span>
-                <span class="ui-fragment-pill">200 OK</span>
-              </div>
-            </div>
-          </div>
-          <a href="/api/swagger" class="card-action-btn">Open Swagger UI →</a>
-        </div>
-
-        <!-- Card 6: Fresh Mint (System Health) -->
-        <div class="feature-card card-mint">
-          <div>
-            <div class="card-top">
-              <span class="card-badge">Diagnostics</span>
-              <span class="card-icon">🩺</span>
-            </div>
-            <h3 class="card-title">System Health</h3>
-            <p class="card-description">
-              Real-time server telemetry, memory consumption metrics, and database connection monitors.
-            </p>
-            <div class="ui-fragment">
-              <div class="ui-fragment-row">
-                <span>System Status</span>
-                <span class="ui-fragment-pill">Online • 99.9%</span>
-              </div>
-            </div>
-          </div>
-          <a href="/api/health" class="card-action-btn">Inspect System Health →</a>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- RECENT ACTIVITY SECTION -->
-    <section class="recent-band">
-      <div class="recent-grid">
-        <!-- Announcements Column -->
-        <div class="recent-column">
-          <div class="recent-header">
-            <h3 class="recent-title">Latest Announcements</h3>
-            <a href="/announcements" class="recent-link-all">View All →</a>
-          </div>
-          <div class="activity-list">
-            ${recentAnnouncements.length > 0
-              ? recentAnnouncements.slice(0, 3).map(a => `
-                <div class="activity-item">
-                  <div>
-                    <a href="/announcements/${a.id}" class="activity-item-title">${escapeHtml(a.title)}</a>
-                    <div class="activity-item-meta">${escapeHtml(a.author || 'Dean Office')} • ${escapeHtml(a.date || 'Recent')}</div>
-                  </div>
-                  <span class="ui-fragment-pill">News</span>
-                </div>
-              `).join('')
-              : `<div style="color:var(--colors-muted); font-size:14px; padding:12px 0;">No announcements published yet. Visit <a href="/announcements" style="color:var(--colors-ink); font-weight:600;">Announcements Board</a> to publish one!</div>`
-            }
-          </div>
-        </div>
-
-        <!-- Job Postings Column -->
-        <div class="recent-column">
-          <div class="recent-header">
-            <h3 class="recent-title">Career Opportunities</h3>
-            <a href="/job-postings" class="recent-link-all">View All →</a>
-          </div>
-          <div class="activity-list">
-            ${recentJobPostings.length > 0
-              ? recentJobPostings.slice(0, 3).map(j => `
-                <div class="activity-item">
-                  <div>
-                    <a href="/job-postings/${j.id}" class="activity-item-title">${escapeHtml(j.title)}</a>
-                    <div class="activity-item-meta">${escapeHtml(j.company)} • ${escapeHtml(j.city || j.location || 'Remote')}</div>
-                  </div>
-                  <span class="ui-fragment-pill">${escapeHtml(j.type || 'Full-time')}</span>
-                </div>
-              `).join('')
-              : `<div style="color:var(--colors-muted); font-size:14px; padding:12px 0;">No job postings available yet. Visit <a href="/job-postings" style="color:var(--colors-ink); font-weight:600;">Career Opportunities</a> to create one!</div>`
-            }
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PRE-FOOTER ILLUSTRATED CTA BAND -->
-    <section class="cta-band-illustrated">
+  <!-- ========================================================
+   * KATMAN 2: ASİMETRİK BENTO VİTRİN (Linear Tarzı 2/3 Sol + 1/3 Sağ)
+   * ======================================================== -->
+  <section class="section-wrap" id="bento-showcase">
+    <div class="section-header">
       <div>
-        <h2 class="cta-heading">Ready to reconnect with your alumni network?</h2>
-        <p class="cta-subtext">
-          Join thousands of graduates building careers, mentoring students, and expanding professional connections worldwide.
+        <div class="section-eyebrow">BENTO SPOTLIGHT & PLATFORM TELEMETRY</div>
+        <h2 class="section-title">Flagship Community Showcase</h2>
+        <p class="section-sub">
+          Major upcoming institutional gatherings paired with live platform telemetry.
         </p>
-        <div class="cta-actions">
-          <a href="/users" class="btn-clay-primary">Get Started Now →</a>
-          <a href="/job-postings" class="btn-clay-secondary">Post an Opportunity</a>
+      </div>
+    </div>
+
+    <div class="bento-grid">
+      <!-- 2/3 SOL GENİŞ KART: Öne Çıkan Mezun Buluşması / Zirve -->
+      <article class="bento-card-main">
+        <div>
+          <div class="bento-badge-row">
+            <span class="badge-pill badge-mint">
+              <span class="pulse-dot"></span>
+              Öne Çıkan (Featured)
+            </span>
+            <span class="badge-pill badge-neutral font-mono">📅 20–22 Kasım 2026</span>
+          </div>
+
+          <h3 class="bento-event-title">Annual Global Alumni Tech Summit 2026</h3>
+          <p class="bento-event-desc">
+            Join 1,200+ distinguished alumni, keynote leaders from Google, OpenAI, Apple, and premier research faculties. Three days of cross-disciplinary keynotes, venture showcases, and departmental reunions.
+          </p>
+
+          <div class="bento-mini-features">
+            <div class="bento-feature-tile">
+              <span>🎙️</span> 32 Keynote Alumni Speakers
+            </div>
+            <div class="bento-feature-tile">
+              <span>💼</span> Executive Hiring Lounge
+            </div>
+            <div class="bento-feature-tile">
+              <span>🏛️</span> Grand Hall & Hybrid Stream
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="cta-art-box">
-        🏔️
-      </div>
-    </section>
 
-  </main>
+        <div class="bento-bottom-bar">
+          <div class="bento-action-btns">
+            <a href="/announcements" class="btn-pill-primary">RSVP & Full Agenda &rarr;</a>
+            <a href="/announcements/1" class="btn-pill-secondary">Event Details</a>
+          </div>
+          <span class="bento-live-counter font-mono">🔥 842 Alumni Registered</span>
+        </div>
+      </article>
 
-  <!-- WARM CREAM FOOTER (NOT Dark Navy!) -->
-  <footer class="warm-footer">
+      <!-- 1/3 SAĞ METRİK SÜTUNU: Kalın Rakamlar & Telemetri -->
+      <aside class="bento-metric-stack">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">VERIFIED ALUMNI DIRECTORY</span>
+            <span class="badge-pill badge-mint">Live</span>
+          </div>
+          <div class="metric-number font-mono">${userCount}</div>
+          <div class="metric-sub">
+            <span>Verified graduate profiles</span>
+            <a href="/users" class="metric-link">Browse &rarr;</a>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">CAREER OPPORTUNITIES</span>
+            <span class="badge-pill badge-accent">Active</span>
+          </div>
+          <div class="metric-number font-mono" style="color:var(--brand-accent);">${jobPostingCount}</div>
+          <div class="metric-sub">
+            <span>Engineering & executive roles</span>
+            <a href="/job-postings" class="metric-link">View board &rarr;</a>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">APPLICATION TRACKING</span>
+            <span class="badge-pill badge-neutral">Pipeline</span>
+          </div>
+          <div class="metric-number font-mono" style="color:var(--brand-mint-deep);">${applicationCount}</div>
+          <div class="metric-sub">
+            <span>Active candidate submissions</span>
+            <a href="/applications" class="metric-link">Track &rarr;</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ========================================================
+   * KATMAN 3: SEÇİLİ MEZUNLAR & FIRSATLAR (Curated 3-Up Grid)
+   * ======================================================== -->
+  <section class="section-wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">CURATED HIGHLIGHTS & TALENT</div>
+        <h2 class="section-title">Distinguished Alumni & Career Roles</h2>
+        <p class="section-sub">
+          Hand-picked mentors and verified career openings across top global technology teams.
+        </p>
+      </div>
+      <div>
+        <a href="/job-postings" class="section-more-link">Explore all career postings &rarr;</a>
+      </div>
+    </div>
+
+    <div class="curated-grid">
+      <!-- Opportunity 1 (Dynamic / Fallback) -->
+      <article class="curated-card">
+        <div class="card-top">
+          <div class="card-badge-row">
+            <span class="badge-pill badge-accent">Featured Opportunity</span>
+            <span class="meta-tag font-mono">${this.escapeHtml(firstJob.type || 'Full-time')}</span>
+          </div>
+          <h3 class="card-heading">${this.escapeHtml(firstJob.title || 'Senior Cloud Architect')}</h3>
+          <div class="card-company">🏢 ${this.escapeHtml(firstJob.company || 'Google Cloud')}</div>
+          <div class="card-meta-pills">
+            <span class="meta-tag">📍 ${this.escapeHtml(firstJob.city || 'Zurich')}</span>
+            <span class="meta-tag font-mono">${this.escapeHtml(firstJob.salary || '$170,000 - $210,000')}</span>
+          </div>
+          <p class="card-body-text">
+            Lead enterprise multi-region cloud infrastructures and scale mission-critical backend microservices alongside senior alumni staff engineers.
+          </p>
+        </div>
+        <div class="card-footer-action">
+          <a href="/job-postings/${firstJob.id || 1}" class="btn-pill-sm">Review & Apply &rarr;</a>
+          <span style="font-size:12px; color:var(--ink-tertiary);" class="font-mono">ID #${firstJob.id || 1}</span>
+        </div>
+      </article>
+
+      <!-- Alumnus Spotlight 2 -->
+      <article class="curated-card">
+        <div class="card-top">
+          <div class="card-badge-row">
+            <span class="badge-pill badge-mint">
+              <span class="pulse-dot"></span>
+              Verified Alumnus
+            </span>
+            <span class="meta-tag font-mono">Class of '18</span>
+          </div>
+          <h3 class="card-heading">Dr. Selin Demir</h3>
+          <div class="card-company">Principal Research Scientist · Stanford AI Lab</div>
+          <div class="card-meta-pills">
+            <span class="meta-tag">Computer Science</span>
+            <span class="meta-tag">Distributed AI Systems</span>
+          </div>
+          <p class="card-body-text">
+            Pioneering frontier foundation models and autonomous agent reasoning. Active alumni career mentor providing weekly office hours for graduating seniors.
+          </p>
+        </div>
+        <div class="card-footer-action">
+          <a href="/users" class="btn-pill-sm">Connect Profile &rarr;</a>
+          <span style="font-size:12px; color:var(--ink-tertiary);" class="font-mono">User #1</span>
+        </div>
+      </article>
+
+      <!-- Opportunity 2 -->
+      <article class="curated-card">
+        <div class="card-top">
+          <div class="card-badge-row">
+            <span class="badge-pill" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">New Listing</span>
+            <span class="meta-tag font-mono">${this.escapeHtml(secondJob.type || 'Full-time')}</span>
+          </div>
+          <h3 class="card-heading">${this.escapeHtml(secondJob.title || 'Staff Distributed Systems Engineer')}</h3>
+          <div class="card-company">🏢 ${this.escapeHtml(secondJob.company || 'Stripe Platforms')}</div>
+          <div class="card-meta-pills">
+            <span class="meta-tag">📍 ${this.escapeHtml(secondJob.city || 'Berlin / Remote')}</span>
+            <span class="meta-tag font-mono">${this.escapeHtml(secondJob.salary || '$160,000 - $190,000')}</span>
+          </div>
+          <p class="card-body-text">
+            Architect real-time transaction processing ledgers serving millions of daily global payments with zero-downtime consistency guarantees.
+          </p>
+        </div>
+        <div class="card-footer-action">
+          <a href="/job-postings/${secondJob.id || 2}" class="btn-pill-sm">Review & Apply &rarr;</a>
+          <span style="font-size:12px; color:var(--ink-tertiary);" class="font-mono">ID #${secondJob.id || 2}</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ========================================================
+   * KATMAN 4: SON DUYURULAR (Kompakt Liste — Linear Changelog Stili)
+   * ======================================================== -->
+  <section class="section-wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">OFFICIAL DISPATCHES & NOTICES</div>
+        <h2 class="section-title">Announcements Board</h2>
+        <p class="section-sub">
+          Official departmental memos, symposium dates, and community milestones.
+        </p>
+      </div>
+      <div>
+        <a href="/announcements" class="section-more-link">View all announcements (${announcementCount}) &rarr;</a>
+      </div>
+    </div>
+
+    <div class="changelog-box">
+      ${announcementRowsHtml}
+    </div>
+  </section>
+
+  <!-- SITE FOOTER -->
+  <footer class="site-footer">
     <div class="footer-container">
       <div>
         <div class="footer-brand">🎓 Alumni Tracking System</div>
         <p class="footer-desc">
-          The playful, tactile B2B SaaS alumni platform connecting graduates and institutions through verified networking, jobs, and campus events.
+          A high-velocity academic network synthesizing Mintlify’s documentation clarity with Linear’s Bento precision. Built for alumni, students, and faculty.
         </p>
       </div>
       <div>
@@ -1163,13 +1137,13 @@ const homeView = {
         <ul class="footer-links">
           <li><a href="/main">Home</a></li>
           <li><a href="/users">Alumni Directory</a></li>
-          <li><a href="/job-postings">Career Board</a></li>
-          <li><a href="/announcements">Announcements</a></li>
-          <li><a href="/applications">Applications</a></li>
+          <li><a href="/job-postings">Career Opportunities</a></li>
+          <li><a href="/announcements">Announcements Board</a></li>
+          <li><a href="/applications">Application Tracking</a></li>
         </ul>
       </div>
       <div>
-        <div class="footer-col-title">Developer API</div>
+        <div class="footer-col-title">Developer & API</div>
         <ul class="footer-links">
           <li><a href="/api/swagger">Swagger UI</a></li>
           <li><a href="/api/swagger.json">OpenAPI 3.0 Spec</a></li>
@@ -1178,10 +1152,10 @@ const homeView = {
         </ul>
       </div>
       <div>
-        <div class="footer-col-title">Alma Mater</div>
+        <div class="footer-col-title">Documentation</div>
         <ul class="footer-links">
-          <li><a href="/about">About Platform</a></li>
-          <li><a href="/alumni">Alumni Chapters</a></li>
+          <li><a href="/brand.md">Brand Manual (brand.md)</a></li>
+          <li><a href="/DESIGN.md">Design System (DESIGN.md)</a></li>
           <li><a href="https://github.com/ecemyakali/alumni" target="_blank" rel="noopener">GitHub Repository</a></li>
         </ul>
       </div>
@@ -1189,11 +1163,12 @@ const homeView = {
 
     <div class="footer-bottom">
       <div>© 2026 Alumni Tracking System. All rights reserved.</div>
-      <div class="footer-pills">
-        <span class="tech-pill">Node.js</span>
-        <span class="tech-pill">Express</span>
-        <span class="tech-pill">PostgreSQL</span>
-        <span class="tech-pill">Docker</span>
+      <div class="tech-badges">
+        <span class="tech-pill font-mono">Node.js</span>
+        <span class="tech-pill font-mono">Express</span>
+        <span class="tech-pill font-mono">PostgreSQL</span>
+        <span class="tech-pill font-mono">REST API</span>
+        <span class="tech-pill font-mono">Docker</span>
       </div>
     </div>
   </footer>
