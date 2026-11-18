@@ -186,3 +186,4 @@ The Alumni Tracking System adheres to **WCAG 2.1 Level AA** compliance across al
 > 📖 **Related Documentation:**
 > - [README.md](./README.md) — System Overview, Quick Start & API Directory
 > - [ddd.md](./ddd.md) — Domain-Driven Design, Entity Specs & Database Architecture
+> - [design.md](./design.md) — Master Design System, UI Tokens & Component Specifications

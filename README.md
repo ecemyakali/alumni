@@ -3,6 +3,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-MVC_Pattern-blueviolet?style=flat)](#-architecture-model-view-controller-mvc-pattern)
 [![Data Design](https://img.shields.io/badge/Documentation-DDD_Specification-orange?style=flat)](./ddd.md)
 [![Brand Identity](https://img.shields.io/badge/Brand-Guidelines_&_Identity-blue?style=flat)](./brand.md)
+[![Design System](https://img.shields.io/badge/Design_System-Tokens_&_UI_Spec-ff4d8b?style=flat)](./design.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
 [![Tests](https://img.shields.io/badge/Tests-203_Passing-brightgreen?style=flat)](./test/)
 
@@ -42,6 +43,23 @@ A comprehensive brand identity manual, UI design tokens, color palette, typograp
 5. **Voice, Tone & Messaging:** Action-oriented, welcoming, and institutionally credible copywriting guidelines with real-world examples.
 6. **Component Tokens & Elevational Shadows:** Button styles, elevation tokens (`--shadow-sm`, `--shadow-md`, `--shadow-lg`), and role badges.
 7. **Accessibility & Contrast Compliance:** 15.8:1 body text contrast ratio, keyboard `:focus-visible` outlines, and semantic HTML landmarks.
+
+---
+
+## 📐 Master Design System & UI Tokens (`design.md`)
+
+A tactile, playful, and modern design system specification inspired by high-voltage B2B SaaS interfaces (warm cream canvas, saturated feature cards, 3D claymation depth, rounded display typography, and embedded product UI fragments) is defined in **[`design.md`](./design.md)**:
+
+👉 **[Read the Full Master Design System Specification (design.md)](./design.md)**
+
+### Key Highlights Covered in `design.md`:
+1. **Warm Cream Foundation:** `{colors.canvas}` (`#fffaf0`) canvas floor and `{colors.surface-soft}` (`#faf5e8`) warm closing footer.
+2. **6-Color Saturated Domain Cards:** Color-coded cards for Alumni Directory (Blue), Career Board (Teal), Mentorship (Lavender), Announcements (Peach), Global Chapters (Ochre), and Metrics (Mint).
+3. **Tactile Depth & 3D Claymation:** Hand-crafted 3D academic artifacts (mortarboards, campus horizons, mascot characters) paired with embedded live product UI fragments.
+4. **Rounded Display Typography:** Display headlines set at weight 500 with negative letter-spacing (`-1px` to `-2.5px`), paired with Inter for high-density tabular and form UI.
+5. **Generous Border Radius Scale:** `{rounded.md}` (12px) for buttons/inputs, `{rounded.lg}` (16px) for cards, and `{rounded.xl}` (24px) for feature cards.
+6. **Strict Section Rhythm:** 96px (`{spacing.section}`) vertical rhythm between major page bands.
+7. **Ready-to-Use CSS Tokens:** Complete CSS `:root` variable stylesheet ready for Express.js views.
 
 ---
 
