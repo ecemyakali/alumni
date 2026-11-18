@@ -1,15 +1,20 @@
 ---
-version: 2.1.0
-name: alumni-mintlify-first-design-system
-description: "A refined, ultra-clean Mintlify-dominant design system for the Alumni Tracking System. Emphasizes an airy white canvas (#FFFFFF and #F9FAFB), a subtle pastel emerald hero glow (radial gradient with rgba(13, 147, 115, 0.08)), a signature central search bar with ⌘K shortcut, flawlessly aligned navigation tabs with white-space nowrap and 8px 16px padding, and a calm, 3-section layout hierarchy that eliminates visual clutter."
+version: 2.2.0
+name: alumni-mintlify-aurora-design-system
+description: "A Mintlify-inspired aesthetic for the Alumni Tracking System. Features an iconic multi-layer mesh/aurora gradient backdrop (emerald green, turquoise, and soft sky blue), deep diffuse shadows, a signature central search bar with ⌘K shortcut, frosted-glass sticky navigation, and a clear 3-stage visual hierarchy."
 
 colors:
   canvas: "#ffffff"
   surface-subtle: "#f9fafb"
   surface-card: "#ffffff"
   surface-elevated: "#f3f4f6"
-  hero-glow: "rgba(13, 147, 115, 0.08)"
   
+  aurora:
+    emerald: "rgba(16, 185, 129, 0.24)"
+    cyan: "rgba(6, 182, 212, 0.22)"
+    sky: "rgba(59, 130, 246, 0.15)"
+    base-gradient: "linear-gradient(180deg, rgba(236, 253, 245, 0.75) 0%, rgba(255, 255, 255, 1) 100%)"
+
   hairline: "#e5e7eb"
   hairline-strong: "#d1d5db"
   hairline-subtle: "#f3f4f6"
@@ -35,6 +40,12 @@ colors:
   semantic-warning: "#f59e0b"
   semantic-error: "#ef4444"
   semantic-info: "#3b82f6"
+
+shadows:
+  card: "0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03)"
+  card-hover: "0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05)"
+  search-bar: "0 10px 30px -5px rgba(13, 147, 115, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04)"
+  spotlight: "0 12px 32px -4px rgba(16, 185, 129, 0.08), 0 2px 8px rgba(0, 0, 0, 0.02)"
 
 typography:
   fontFamily:
@@ -100,133 +111,53 @@ spacing:
 
 # 📐 Alumni Tracking System — Master Design Specification (`DESIGN.md`)
 
-## 1. Design Vision: Mintlify-First Clarity & Breathing Room
+## 1. Design Vision: Mintlify Aurora & Deep Elevation
 
-The **Alumni Tracking System** follows an airy, light-first design aesthetic derived directly from modern developer documentation and community platforms (Mintlify). By rejecting dark, cluttered card containers and dense borders, the interface achieves maximum reading comfort, visual calm, and rapid comprehension.
+The **Alumni Tracking System** employs an airy, multi-dimensional aesthetic inspired by modern documentation platforms (Mintlify). It replaces sterile flat grays with an iconic **Aurora / Mesh Gradient** canvas that radiates warmth, academic prestige, and high-velocity clarity.
 
-### Core Principles
-1. **Airy & Clean Foundation (`#FFFFFF` and `#F9FAFB`):**
-   - The entire page rests on a clean white canvas floor.
-   - Contrast is established through typography and soft `#F9FAFB` surfaces rather than dark background blocks.
-2. **Subtle Pastel Emerald Glow:**
-   - The top hero is accented with a delicate, non-intrusive radial gradient glow (`rgba(13, 147, 115, 0.08)` fading smoothly into pure white). This delivers modern visual warmth without distracting from the typography.
+### Core Architectural Pillars
+1. **Iconic Aurora / Mesh Gradient Backdrop:**
+   - The top hero and header area feature a multi-layered light cloud composed of emerald green (`rgba(16, 185, 129, 0.24)`), cyan/turquoise (`rgba(6, 182, 212, 0.22)`), and sky blue (`rgba(59, 130, 246, 0.15)`), softly fading into a crisp white canvas.
+   ```css
+   background-color: #ffffff;
+   background-image: 
+     radial-gradient(at 15% 10%, rgba(16, 185, 129, 0.24) 0px, transparent 50%),
+     radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.22) 0px, transparent 50%),
+     radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 60%),
+     linear-gradient(180deg, rgba(236, 253, 245, 0.75) 0%, rgba(255, 255, 255, 1) 100%);
+   ```
+2. **Deep, Diffuse Shadows & Glassmorphism:**
+   - Frosted-glass header (`rgba(255, 255, 255, 0.70)` with `backdrop-filter: blur(16px)`), allowing the vibrant aurora mesh to softly shine through.
+   - Cards utilize soft, multi-layered diffuse shadows (`box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08)`) establishing clean spatial elevation.
 3. **Central Signature Search Bar:**
-   - The Hero features a prominent, centered search box with a search icon, placeholder, and interactive `Ctrl K` / `⌘K` keyboard badge. It invites instant user engagement.
-4. **Flawless Navigation & Tab Alignment:**
-   - All navigation items and category filter tabs enforce `white-space: nowrap`, generous `padding: 8px 16px`, `font-size: 14px`, and `gap: 8px`. Items never wrap awkwardly onto multiple lines.
-5. **Streamlined 3-Stage Layout:**
-   - Rather than overwhelming users with crowded bento boxes, the page flows through 3 clean, focused sections:
-     1. **Hero + Central Search Bar + Dual Action Buttons** (Primary Focus).
-     2. **Single Featured Announcement Card + 3 Clean Metrics** (Curated Spotlight).
-     3. **Category-Filtered Curated Cards** (Alumni & Career Highlights with minimal, essential metadata).
+   - A prominent central search box framed in the hero with a magnifying glass (`🔍`), descriptive placeholder, and a tactile keyboard shortcut chip (`Ctrl K` / `⌘K`).
+4. **Clean 3-Section Visual Hierarchy:**
+   - **Section 1: Hero + Central Search + Dual Action Buttons.**
+   - **Section 2: Single Large Featured Event / Announcement Card + 3 Clean Telemetry Tiles.**
+   - **Section 3: Category-Filtered Curated Cards (Alumni & Career Highlights).**
 
 ---
 
-## 2. Color System & Design Tokens
+## 2. Navigation Standards
 
-### 2.1 Surfaces & Glows
-| Token | Hex / Value | Purpose |
-|---|---|---|
-| `{colors.canvas}` | `#ffffff` | Primary page background |
-| `{colors.surface-subtle}` | `#f9fafb` | Section background, search inputs, tag pills |
-| `{colors.surface-card}` | `#ffffff` | Cards with 1px border and soft diffuse shadow |
-| `{colors.surface-elevated}` | `#f3f4f6` | Hover states, tab backgrounds |
-| `{colors.hero-glow}` | `rgba(13, 147, 115, 0.08)` | Radial gradient glow at top center of hero |
-| `{colors.hairline}` | `#e5e7eb` | 1px clean border on cards, inputs, and dividers |
-| `{colors.hairline-strong}` | `#d1d5db` | Hover/focus border state |
-
-### 2.2 Inks & Typography
-| Token | Hex | Role |
-|---|---|---|
-| `{colors.ink}` | `#111827` | Headings, primary text, high-contrast labels |
-| `{colors.ink-muted}` | `#4b5563` | Subtitles, body descriptions |
-| `{colors.ink-subtle}` | `#6b7280` | Metadata, tags, dates, and placeholders |
-| `{colors.ink-tertiary}` | `#9ca3af` | Secondary badges, disabled text |
-
-### 2.3 Brand Accents
-| Token | Hex | Role |
-|---|---|---|
-| `{colors.primary}` | `#111827` | Primary dark pill button |
-| `{colors.brand-mint}` | `#0d9373` | Mintlify signature emerald/mint accent (badges, dots, highlights) |
-| `{colors.brand-mint-subtle}`| `#ecfdf5` | Soft mint background for pills and status badges |
-| `{colors.brand-mint-border}`| `#a7f3d0` | 1px border for mint status badges |
-| `{colors.brand-accent}` | `#5e6ad2` | Subtle lavender-blue accent for links and secondary highlights |
+To guarantee that navigation items and tabs never cramp, wrap, or generate unwanted horizontal scrollbars:
+- Enforce `white-space: nowrap` and `flex-wrap: nowrap`.
+- Font size set at `13px–13.5px`, with `padding: 6px 12px` and `gap: 4px`.
+- Active tab highlighted with an emerald/mint pill tint (`var(--brand-mint-subtle)`).
 
 ---
 
-## 3. Navigation & Tab Bar Standards
+## 3. Component Design Tokens
 
-To guarantee that tabs and navigation links never look cramped, distorted, or wrap onto multiple lines:
+### 3.1 Buttons
+- **`btn-pill-primary`:** Deep near-black (`#111827`), white text, `border-radius: 9999px`, padding `10px 22px`.
+- **`btn-pill-secondary`:** White surface, 1px border (`#e5e7eb`), `#111827` text, `border-radius: 9999px`, padding `10px 20px`.
+- **`btn-pill-sm`:** Compact action link button, padding `6px 14px`, `border-radius: 9999px`.
 
-```css
-.nav-link, .tab-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-.nav-link.active, .tab-btn.active {
-  background: #f3f4f6;
-  color: #111827;
-  font-weight: 600;
-}
-```
-
----
-
-## 4. The 3-Section Page Architecture
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  BÖLÜM 1: MINTLIFY HERO & MERKEZİ ARAMA ÇUBUĞU                         │
-│  - Yumuşak pastel zümrüt radial glow arka plan                         │
-│  - Üst duyuru hapı (Örn: "Alumni Summit 2026 Kayıtları Açıldı →")      │
-│  - 64px modern ana başlık + nefes alan alt başlık                      │
-│  - MERKEZİ BÜYÜK ARAMA ÇUBUĞU (🔍 İkon + Placeholder + ⌘K Rozeti)      │
-│  - 2 Net Hap Buton (Mezun Rehberi & İlan Yayınla)                      │
-└────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────┬───────────────────────────────┐
-│  BÖLÜM 2: ÖNE ÇIKAN TEK BÜYÜK ETKİNLİK │  3 TEMİZ İSTATİSTİK KUTUSU    │
-│  - "Öne Çıkan (Featured)" yeşil rozet  │  - Toplam Mezun               │
-│  - Tarih, mekan ve konuşmacı bilgisi   │  - Aktif İlanlar              │
-│  - Sade, okunaklı, tek bir büyük kart  │  - Başvuru Takibi             │
-└────────────────────────────────────────┴───────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│  BÖLÜM 3: KATEGORİ SEKMELİ ÖNE ÇIKAN MEZUNLAR & FIRSATLAR              │
-│  - Temiz kategori sekmeleri: [Tümü] [Mezunlar] [Kariyer] [Duyurular]   │
-│  - Her kartta SADECE: Avatar, İsim/Başlık, Rozet, Kurum ve Tek İncele  │
-│  - Aşırı metinden ve karmaşık kutulardan arındırılmış temiz 3'lü grid  │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 5. Central Search Bar Specification
-
-- **Placement:** Positioned centrally in the Hero section, directly between the subtitle and action buttons.
-- **Dimensions:** Width `100%`, `max-width: 600px`, `height: 52px`.
-- **Styling:** White background, 1px border (`#e5e7eb`), soft diffuse shadow (`0 4px 20px rgba(0, 0, 0, 0.05)`), border-radius `14px` (`rounded-xl` / pill).
-- **Interior:** Left magnifying glass (`🔍`), text placeholder (`Mezun adı, bölüm, şirket veya iş ilanı ara...`), right keyboard shortcut chip (`⌘K` or `Ctrl K`).
-
----
-
-## 6. Curated Cards: Minimalist & Focused
-
-Cards must not be overloaded with multi-paragraph text or excessive nested boxes. Each card holds only:
-1. Avatar or Company Icon (Circular, 44px).
-2. Title & Verified Badge.
-3. Subtitle (Department, graduation year, or location).
-4. Direct action link (`İncele &rarr;`).
+### 3.2 Cards
+- **`featured-card`:** White background, 1px `#e5e7eb` hairline, 16px corner radius (`rounded-xl`), prominent emerald left border accent (`border-left: 4px solid var(--brand-mint)`), and diffuse elevation shadow.
+- **`stat-card`:** Clean, uncluttered metric tiles with bold numbers in `Geist Mono` / `SF Mono` and micro subtitles.
+- **`curated-card`:** Minimalist cards with circular avatar (48px), name/title, department/location, status pill tag, and direct `İncele →` action link.
 
 ---
 

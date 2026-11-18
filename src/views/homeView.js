@@ -139,8 +139,9 @@ const homeView = {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--hairline);
     }
     .nav-container {
@@ -255,11 +256,16 @@ const homeView = {
     }
 
     /* ========================================================
-     * GEREKSİNİM 1: MINTLIFY TARZI AYDINLIK & RADIAL GLOW HERO
+     * GEREKSİNİM 1 & 2: MINTLIFY İKONİK AURORA GRADIENT HERO
      * ======================================================== */
     .hero-wrapper {
       position: relative;
-      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(13, 147, 115, 0.08), rgba(255, 255, 255, 0)), #ffffff;
+      background-color: #ffffff;
+      background-image: 
+        radial-gradient(at 15% 10%, rgba(16, 185, 129, 0.24) 0px, transparent 50%),
+        radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.22) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 60%),
+        linear-gradient(180deg, rgba(236, 253, 245, 0.75) 0%, rgba(255, 255, 255, 1) 100%);
       padding: 4.5rem 1.5rem 3.5rem 1.5rem;
       border-bottom: 1px solid var(--hairline);
     }
@@ -326,13 +332,13 @@ const homeView = {
       background: #ffffff;
       border: 1px solid var(--hairline-strong);
       border-radius: var(--rounded-xl);
-      padding: 6px 8px 6px 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
-      transition: all 0.2s ease;
+      padding: 7px 10px 7px 18px;
+      box-shadow: 0 10px 30px -5px rgba(13, 147, 115, 0.10), 0 4px 16px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .search-bar:focus-within {
       border-color: var(--brand-mint);
-      box-shadow: 0 0 0 3px rgba(13, 147, 115, 0.15), 0 6px 24px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 0 0 3px rgba(13, 147, 115, 0.18), 0 12px 32px -4px rgba(13, 147, 115, 0.18);
     }
     .search-icon {
       font-size: 16px;
@@ -416,12 +422,17 @@ const homeView = {
       border: 1px solid var(--hairline);
       border-radius: var(--rounded-xl);
       padding: 2.25rem;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+      box-shadow: 0 16px 36px -6px rgba(16, 185, 129, 0.09), 0 4px 16px -2px rgba(0, 0, 0, 0.04);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
       border-left: 4px solid var(--brand-mint);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .featured-event-card:hover {
+      box-shadow: 0 20px 44px -8px rgba(16, 185, 129, 0.14), 0 6px 20px -2px rgba(0, 0, 0, 0.05);
+      transform: translateY(-2px);
     }
     .featured-badge-bar {
       display: flex;
@@ -485,14 +496,15 @@ const homeView = {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: all 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
     .stat-tile:hover {
       background: #ffffff;
-      border-color: var(--hairline-strong);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border-color: var(--brand-mint-border);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -4px rgba(13, 147, 115, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
     }
     .stat-meta {
       display: flex;
@@ -563,16 +575,16 @@ const homeView = {
       border: 1px solid var(--hairline);
       border-radius: var(--rounded-lg);
       padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-      transition: all 0.15s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
     .clean-card:hover {
       border-color: var(--hairline-strong);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
     }
     .clean-card-header {
       display: flex;
