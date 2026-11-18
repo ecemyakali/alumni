@@ -5,9 +5,21 @@
 [![Brand Identity](https://img.shields.io/badge/Brand-Guidelines_&_Identity-blue?style=flat)](./brand.md)
 [![Design System](https://img.shields.io/badge/Design_System-Tokens_&_UI_Spec-ff4d8b?style=flat)](./design.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-203_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-208_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
+
+---
+
+## 📑 Quick Navigation & Documentation Anchors
+
+* 📚 **[Data Architecture & DDD Specification (`ddd.md`)](#-data-design--architecture-documentation-ddd)** · [Direct File Link (`ddd.md`)](./ddd.md)
+* 🎨 **[Brand Guidelines & Identity Manual (`brand.md`)](#-brand-guidelines--design-system-brandmd)** · [Direct File Link (`brand.md`)](./brand.md)
+* 📐 **[Master Design System & Tactile UI Tokens (`design.md`)](#-master-design-system--ui-tokens-designmd)** · [Direct File Link (`design.md`)](./design.md)
+* 📖 **[API Documentation (Swagger UI)](#-api-documentation-swagger-ui)**
+* 🛣️ **[API Endpoints Summary](#️-api-endpoints-summary)**
+* 🏗️ **[Architecture: Model-View-Controller (MVC) Pattern](#-architecture-model-view-controller-mvc-pattern)**
+* 🧪 **[Testing & Automated Verification](#-testing-strategy)**
 
 ---
 

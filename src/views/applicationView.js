@@ -1,11 +1,11 @@
 /**
  * ========================================================
- * View Layer: Application View (ApplicationView)
+ * View Layer: Application View (ApplicationView) - Tactile SaaS Design
  * File: src/views/applicationView.js
  * ========================================================
  * 
  * Dedicated View Layer for Job Application (Many-to-Many Relational) management.
- * Generates semantic, responsive HTML views for:
+ * Generates semantic, responsive, tactile B2B SaaS HTML views:
  * 1. READ ALL & CREATE: Application listing, status KPI metrics, filters, & submission form (GET /applications)
  * 2. READ ONE: Full application detail card with quick status actions (GET /applications/:id)
  * 3. UPDATE: Pre-filled application edit form (GET /applications/:id/edit)
@@ -13,39 +13,21 @@
  * 5. ERRORS: Semantic 400, 404, and 409 conflict pages
  */
 
+const sharedLayout = require('./sharedLayout');
+
 const applicationView = {
   /**
    * Escape HTML utility to prevent XSS
    */
   escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    return sharedLayout.escapeHtml(str);
   },
 
   /**
    * Global Navigation Header
    */
   renderNavbar(activePage = 'applications') {
-    return `
-    <nav class="top-navbar">
-      <div class="nav-brand">
-        <span class="brand-icon">🎓</span>
-        <span class="brand-title">Alumni Tracking System</span>
-      </div>
-      <div class="nav-links">
-        <a href="/users" class="nav-item ${activePage === 'users' ? 'active' : ''}">👥 Alumni Directory</a>
-        <a href="/announcements" class="nav-item ${activePage === 'announcements' ? 'active' : ''}">📢 Announcements</a>
-        <a href="/job-postings" class="nav-item ${activePage === 'jobs' ? 'active' : ''}">💼 Career Opportunities</a>
-        <a href="/applications" class="nav-item ${activePage === 'applications' ? 'active' : ''}">📝 Job Applications</a>
-        <a href="/api/swagger" target="_blank" class="nav-item nav-badge">📘 Swagger API</a>
-      </div>
-    </nav>
-    `;
+    return sharedLayout.renderNavbar(activePage);
   },
 
   /**
@@ -93,41 +75,43 @@ const applicationView = {
         const jobLabel = jobObj ? `${this.escapeHtml(jobObj.title)} (#${app.jobPostingId})` : `Job #${app.jobPostingId}`;
 
         const resumeLink = app.resumeUrl
-          ? `<a href="${this.escapeHtml(app.resumeUrl)}" target="_blank" class="resume-link">📄 View Resume</a>`
-          : `<span class="text-muted">None</span>`;
+          ? `<a href="${this.escapeHtml(app.resumeUrl)}" target="_blank" class="resume-link" style="color:var(--colors-brand-blue); text-decoration:none; font-weight:500;">📄 View Resume</a>`
+          : `<span style="color:var(--colors-muted);">None</span>`;
         const notePreview = app.coverNote
           ? (app.coverNote.length > 45 ? `${this.escapeHtml(app.coverNote.substring(0, 45))}...` : this.escapeHtml(app.coverNote))
-          : `<span class="text-muted">-</span>`;
+          : `<span style="color:var(--colors-muted);">-</span>`;
 
         return `
         <tr class="app-row" data-status="${this.escapeHtml(app.status || 'pending').toLowerCase()}" data-text="${this.escapeHtml((userLabel + ' ' + jobLabel + ' ' + (app.coverNote || '')).toLowerCase())}">
-          <td><span class="badge badge-id">#${app.id}</span></td>
+          <td><span class="badge-pill badge-id">#${app.id}</span></td>
           <td>
-            <a href="/users/${app.userId}" class="entity-link">
+            <a href="/users/${app.userId}" class="entity-link" style="color:var(--colors-ink); text-decoration:none; font-weight:600;">
               <strong>${userLabel}</strong>
             </a>
           </td>
           <td>
-            <a href="/job-postings/${app.jobPostingId}" class="entity-link">
+            <a href="/job-postings/${app.jobPostingId}" class="entity-link" style="color:var(--colors-ink); text-decoration:none; font-weight:600;">
               <strong>${jobLabel}</strong>
             </a>
-            ${jobObj ? `<div style="font-size:0.75rem; color:var(--muted);">🏢 ${this.escapeHtml(jobObj.company)}</div>` : ''}
+            ${jobObj ? `<div style="font-size:12px; color:var(--colors-muted); margin-top:2px;">🏢 ${this.escapeHtml(jobObj.company)}</div>` : ''}
           </td>
-          <td><span class="badge ${badgeClass}">${this.escapeHtml(app.status || 'pending')}</span></td>
+          <td><span class="badge-pill ${badgeClass}">${this.escapeHtml(app.status || 'pending')}</span></td>
           <td>${resumeLink}</td>
-          <td><small>${notePreview}</small></td>
-          <td><small class="text-muted">${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}</small></td>
+          <td><small style="color:var(--colors-body);">${notePreview}</small></td>
+          <td><small style="color:var(--colors-muted);">${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}</small></td>
           <td class="action-cell">
-            <a href="/applications/${app.id}" class="btn-sm btn-view">View</a>
-            <a href="/applications/${app.id}/edit" class="btn-sm btn-edit">Edit</a>
-            <form method="POST" action="/applications/${app.id}/delete" style="display:inline;" onsubmit="return confirm('Delete application #${app.id}?');">
-              <button type="submit" class="btn-sm btn-delete">Delete</button>
-            </form>
+            <div style="display:flex; gap:6px;">
+              <a href="/applications/${app.id}" class="btn-action-view btn-view">View</a>
+              <a href="/applications/${app.id}/edit" class="btn-action-edit btn-edit">Edit</a>
+              <form method="POST" action="/applications/${app.id}/delete" style="display:inline;" onsubmit="return confirm('Delete application #${app.id}?');">
+                <button type="submit" class="btn-action-delete btn-delete">Delete</button>
+              </form>
+            </div>
           </td>
         </tr>
       `;
       }).join('')
-      : `<tr><td colspan="8" class="text-center text-muted py-4">No job applications submitted yet. Use the form below to submit an application!</td></tr>`;
+      : `<tr><td colspan="8" style="text-align:center; color:var(--colors-muted); padding:2rem;">No job applications submitted yet. Use the form below to submit an application!</td></tr>`;
 
     // Dropdown options for User and Job selection
     const userSelectOptions = users.length > 0
@@ -145,57 +129,46 @@ const applicationView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Applications - Alumni Tracking System</title>
   <style>
-    :root {
-      --primary: #0a0a0a;
-      --primary-hover: #2a2a2a;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --muted: #6a6a6a;
-      --bg: #fffaf0;
-      --card-bg: #ffffff;
-      --text: #0a0a0a;
-      --border: #e5e5e5;
-      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    ${sharedLayout.getCommonStyles()}
+
+    .stats-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--colors-hairline);
+      border-radius: var(--rounded-lg);
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(10,10,10,0.02);
+      transition: transform 0.15s ease;
     }
-    .top-navbar {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    .kpi-card:hover {
+      transform: translateY(-2px);
     }
-    .nav-brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 1.15rem; color: #1e293b; }
-    .brand-icon { font-size: 1.35rem; }
-    .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .nav-item {
-      padding: 0.45rem 0.85rem;
-      border-radius: 6px;
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.875rem;
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 2.25rem;
       font-weight: 500;
-      transition: all 0.15s ease;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+      letter-spacing: -1px;
     }
-    .nav-item:hover { color: var(--primary); background: #f1f5f9; }
-    .nav-item.active { color: var(--primary); background: #eff6ff; font-weight: 600; }
-    .nav-badge { background: #e0f2fe; color: #0284c7; }
-    .container { max-width: 1180px; margin: 0 auto; padding: 2rem 1rem; }
-    .page-header {
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--colors-muted);
+    }
+
+    .filter-panel {
+      background: #ffffff;
+      border: 1px solid var(--colors-hairline);
+      border-radius: var(--rounded-md);
+      padding: 1rem 1.25rem;
       margin-bottom: 1.75rem;
       display: flex;
       justify-content: space-between;
@@ -203,251 +176,125 @@ const applicationView = {
       flex-wrap: wrap;
       gap: 1rem;
     }
-    h1 { font-size: 1.875rem; font-weight: 700; color: #1e293b; letter-spacing: -0.02em; }
-    .header-sub { color: var(--muted); font-size: 0.95rem; margin-top: 0.25rem; }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .stat-number { font-size: 1.85rem; font-weight: 700; color: #1e293b; line-height: 1; }
-    .stat-label { font-size: 0.8rem; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 0.4rem; letter-spacing: 0.05em; }
-    .filter-panel {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .search-box {
+    .search-box-wrap {
       flex: 1;
-      min-width: 250px;
+      min-width: 260px;
       position: relative;
     }
-    .search-input {
+    .search-input-field {
       width: 100%;
-      padding: 0.6rem 1rem 0.6rem 2.25rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.875rem;
+      padding: 9px 14px 9px 36px;
+      border: 1px solid var(--colors-hairline);
+      border-radius: var(--rounded-md);
+      background: var(--colors-canvas);
+      font-size: 14px;
       font-family: inherit;
+      color: var(--colors-ink);
     }
-    .search-icon {
+    .search-icon-symbol {
       position: absolute;
-      left: 0.75rem;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--muted);
-      font-size: 0.875rem;
+      color: var(--colors-muted);
+      font-size: 14px;
+      pointer-events: none;
     }
-    .filter-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .filter-pills-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
     .filter-pill {
-      border: 1px solid var(--border);
-      background: #ffffff;
-      padding: 0.4rem 0.85rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
+      border: 1px solid var(--colors-hairline);
+      background: var(--colors-surface-card);
+      padding: 6px 14px;
+      border-radius: var(--rounded-pill);
+      font-size: 13px;
       font-weight: 500;
-      color: var(--muted);
+      color: var(--colors-body);
       cursor: pointer;
       transition: all 0.15s ease;
     }
     .filter-pill:hover, .filter-pill.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
+      background: var(--colors-primary);
+      color: #ffffff;
+      border-color: var(--colors-primary);
     }
-    .alert {
-      padding: 1rem 1.25rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      font-weight: 500;
-    }
-    .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-    .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      margin-bottom: 2rem;
-      overflow: hidden;
-    }
-    .card-header {
-      padding: 1.25rem 1.5rem;
-      background: #f8fafc;
-      border-bottom: 1px solid var(--border);
-      font-weight: 600;
-      color: #334155;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .card-body { padding: 1.5rem; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th {
-      background: #f8fafc;
-      padding: 0.85rem 1rem;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-    }
-    td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; vertical-align: middle; }
-    tr:hover td { background: #fbfcfe; }
-    .entity-link { color: #1e293b; text-decoration: none; }
-    .entity-link:hover { color: var(--primary); text-decoration: underline; }
-    .resume-link { color: var(--primary); text-decoration: none; font-weight: 500; }
-    .resume-link:hover { text-decoration: underline; }
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: capitalize;
-      white-space: nowrap;
-    }
-    .badge-id { background: #f1f5f9; color: #475569; }
+
     .badge-status-pending { background: #fef3c7; color: #b45309; }
     .badge-status-reviewing { background: #e0f2fe; color: #0369a1; }
     .badge-status-accepted { background: #dcfce7; color: #15803d; }
     .badge-status-rejected { background: #fee2e2; color: #b91c1c; }
     .badge-status-withdrawn { background: #f1f5f9; color: #64748b; }
-    .action-cell { white-space: nowrap; }
-    .btn-sm {
-      display: inline-block;
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      margin-right: 0.25rem;
-      transition: background-color 0.15s ease;
-    }
-    .btn-view { background: #e0f2fe; color: #0284c7; }
-    .btn-view:hover { background: #bae6fd; }
-    .btn-edit { background: #fef3c7; color: #d97706; }
-    .btn-edit:hover { background: #fde68a; }
-    .btn-delete { background: #fee2e2; color: #dc2626; }
-    .btn-delete:hover { background: #fecaca; }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
-    .form-group.full-width { grid-column: 1 / -1; }
-    label { font-size: 0.875rem; font-weight: 600; color: #334155; }
-    input, select, textarea {
-      padding: 0.625rem 0.85rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.875rem;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-    }
-    .btn-submit {
-      background: var(--primary);
-      color: white;
-      font-weight: 600;
-      padding: 0.75rem 1.75rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-      transition: background-color 0.15s ease;
-    }
-    .btn-submit:hover { background: var(--primary-hover); }
-    .text-center { text-align: center; }
-    .py-4 { padding-top: 2rem; padding-bottom: 2rem; }
-    .text-muted { color: var(--muted); }
   </style>
 </head>
 <body>
+
   ${this.renderNavbar('applications')}
 
-  <div class="container">
-    <div class="page-header">
+  <main class="page-wrapper">
+    <div class="page-header-band">
       <div>
-        <h1>📝 Job Applications Management</h1>
-        <p class="header-sub">
+        <div class="page-header-pill">
+          <span>📝 Candidate Pipelines & Hiring Flow</span>
+        </div>
+        <h1 class="page-title">Job Applications Management</h1>
+        <p class="page-subtitle">
           Track, review, and manage career applications linking Alumni Applicants and Job Opportunities.
         </p>
       </div>
       <div>
-        <a href="#new-app" class="btn-submit" style="text-decoration: none; display: inline-block;">+ Submit Application</a>
+        <a href="#new-app" class="btn-clay-primary">+ Submit Application</a>
       </div>
     </div>
 
-    ${successMessage ? `<div class="alert alert-success">${this.escapeHtml(successMessage)}</div>` : ''}
-    ${errorMessage ? `<div class="alert alert-danger">${this.escapeHtml(errorMessage)}</div>` : ''}
+    ${successMessage ? `<div class="alert-banner alert-success"><span>✅</span> <span>${this.escapeHtml(successMessage)}</span></div>` : ''}
+    ${errorMessage ? `<div class="alert-banner alert-danger"><span>⚠️</span> <span>${this.escapeHtml(errorMessage)}</span></div>` : ''}
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-number">${totalApps}</div>
-        <div class="stat-label">Total Applications</div>
+    <!-- KPI Metric Cards -->
+    <div class="stats-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-ink);">${totalApps}</div>
+        <div class="kpi-title">Total Applications</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number" style="color: #d97706;">${pendingCount}</div>
-        <div class="stat-label">Pending Review</div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-warning);">${pendingCount}</div>
+        <div class="kpi-title">Pending Review</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number" style="color: #0284c7;">${reviewingCount}</div>
-        <div class="stat-label">Under Review</div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-brand-blue);">${reviewingCount}</div>
+        <div class="kpi-title">Under Review</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number" style="color: #16a34a;">${acceptedCount}</div>
-        <div class="stat-label">Accepted Offers</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" style="color: #dc2626;">${rejectedCount}</div>
-        <div class="stat-label">Rejected / Withdrawn</div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-success);">${acceptedCount}</div>
+        <div class="kpi-title">Accepted Offers</div>
       </div>
     </div>
 
+    <!-- Filter & Search Toolbar -->
     <div class="filter-panel">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="appSearch" class="search-input" placeholder="Search by applicant, job title, company, or keywords...">
+      <div class="search-box-wrap">
+        <span class="search-icon-symbol">🔍</span>
+        <input type="text" id="appSearch" class="search-input-field" placeholder="Search by applicant, job position, company, or note...">
       </div>
-      <div class="filter-pills">
-        <button class="filter-pill active" data-status="all">All Applications</button>
-        <button class="filter-pill" data-status="pending">Pending</button>
-        <button class="filter-pill" data-status="reviewing">Reviewing</button>
-        <button class="filter-pill" data-status="accepted">Accepted</button>
-        <button class="filter-pill" data-status="rejected">Rejected</button>
-        <button class="filter-pill" data-status="withdrawn">Withdrawn</button>
+      <div class="filter-pills-row">
+        <button type="button" class="filter-pill active" data-status="all">All</button>
+        <button type="button" class="filter-pill" data-status="pending">Pending</button>
+        <button type="button" class="filter-pill" data-status="reviewing">Reviewing</button>
+        <button type="button" class="filter-pill" data-status="accepted">Accepted</button>
+        <button type="button" class="filter-pill" data-status="rejected">Rejected</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <span>Submitted Applications (${totalApps})</span>
+    <!-- Applications Table Section -->
+    <section class="content-card">
+      <div class="card-header-bar">
+        <h2 class="card-heading">Submitted Applications</h2>
+        <span class="badge-pill badge-id">${totalApps} Total</span>
       </div>
-      <div style="overflow-x: auto;">
-        <table id="applicationsTable">
+      <div class="table-container">
+        <table id="applicationsTable" class="data-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -465,65 +312,68 @@ const applicationView = {
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <div class="card" id="new-app">
-      <div class="card-header">
-        Submit New Job Application
+    <!-- New Application Submission Section -->
+    <section class="content-card" id="new-app">
+      <div class="card-header-bar">
+        <h2 class="card-heading">Submit New Job Application</h2>
       </div>
-      <div class="card-body">
-        <form method="POST" action="/applications">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="userId">Applicant (User) *</label>
-              ${userSelectOptions ? `
-                <select id="userId" name="userId" required>
-                  <option value="">Select alumni applicant...</option>
-                  ${userSelectOptions}
-                </select>
-              ` : `
-                <input type="number" id="userId" name="userId" required placeholder="e.g. 1" min="1">
-              `}
-            </div>
-
-            <div class="form-group">
-              <label for="jobPostingId">Job Posting *</label>
-              ${jobSelectOptions ? `
-                <select id="jobPostingId" name="jobPostingId" required>
-                  <option value="">Select career opportunity...</option>
-                  ${jobSelectOptions}
-                </select>
-              ` : `
-                <input type="number" id="jobPostingId" name="jobPostingId" required placeholder="e.g. 1" min="1">
-              `}
-            </div>
-
-            <div class="form-group">
-              <label for="status">Initial Status</label>
-              <select id="status" name="status">
-                <option value="pending" selected>Pending</option>
-                <option value="reviewing">Reviewing</option>
-                <option value="accepted">Accepted</option>
-                <option value="rejected">Rejected</option>
-                <option value="withdrawn">Withdrawn</option>
+      <form method="POST" action="/applications">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="userId">Applicant (User) *</label>
+            ${userSelectOptions ? `
+              <select class="form-select" id="userId" name="userId" required>
+                <option value="">Select alumni applicant...</option>
+                ${userSelectOptions}
               </select>
-            </div>
-
-            <div class="form-group">
-              <label for="resumeUrl">Resume URL (Optional)</label>
-              <input type="url" id="resumeUrl" name="resumeUrl" placeholder="https://cdn.example.com/resumes/cv.pdf">
-            </div>
-
-            <div class="form-group full-width">
-              <label for="coverNote">Cover Note / Statement of Interest (Optional)</label>
-              <textarea id="coverNote" name="coverNote" rows="3" placeholder="Briefly describe relevant background, skills, and interest in this role..."></textarea>
-            </div>
+            ` : `
+              <input class="form-input" type="number" id="userId" name="userId" required placeholder="e.g. 1" min="1">
+            `}
           </div>
-          <button type="submit" class="btn-submit">Submit Application</button>
-        </form>
-      </div>
-    </div>
-  </div>
+
+          <div class="form-group">
+            <label class="form-label" for="jobPostingId">Job Posting *</label>
+            ${jobSelectOptions ? `
+              <select class="form-select" id="jobPostingId" name="jobPostingId" required>
+                <option value="">Select career opportunity...</option>
+                ${jobSelectOptions}
+              </select>
+            ` : `
+              <input class="form-input" type="number" id="jobPostingId" name="jobPostingId" required placeholder="e.g. 1" min="1">
+            `}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="status">Initial Status</label>
+            <select class="form-select" id="status" name="status">
+              <option value="pending" selected>Pending</option>
+              <option value="reviewing">Reviewing</option>
+              <option value="accepted">Accepted</option>
+              <option value="rejected">Rejected</option>
+              <option value="withdrawn">Withdrawn</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="resumeUrl">Resume URL (Optional)</label>
+            <input class="form-input" type="url" id="resumeUrl" name="resumeUrl" placeholder="https://cdn.example.com/resumes/cv.pdf">
+          </div>
+
+          <div class="form-group form-col-full">
+            <label class="form-label" for="coverNote">Cover Note / Statement of Interest (Optional)</label>
+            <textarea class="form-textarea" id="coverNote" name="coverNote" rows="3" placeholder="Briefly describe relevant background, skills, and interest in this role..."></textarea>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;">
+          <button type="submit" class="btn-clay-primary">Submit Application</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 
   <script>
     // Client-side interactive applications search & status filtering
@@ -584,215 +434,123 @@ const applicationView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Application #${application.id} - Alumni Tracking System</title>
   <style>
-    :root {
-      --primary: #0a0a0a;
-      --primary-hover: #2a2a2a;
-      --bg: #fffaf0;
-      --card-bg: #ffffff;
-      --text: #0a0a0a;
-      --muted: #6a6a6a;
-      --border: #e5e5e5;
-      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-    .top-navbar {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .nav-brand { font-weight: 700; font-size: 1.15rem; color: #1e293b; }
-    .container { max-width: 840px; margin: 0 auto; padding: 2rem 1rem; }
-    .back-nav { margin-bottom: 1.5rem; }
-    .back-nav a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
-    .back-nav a:hover { text-decoration: underline; }
-    .alert {
-      padding: 1rem 1.25rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      font-weight: 500;
-      background: #dcfce7;
-      color: #15803d;
-      border: 1px solid #bbf7d0;
-    }
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      padding: 2rem;
-      margin-bottom: 1.5rem;
-    }
-    .header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 1rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    h1 { font-size: 1.5rem; color: #1e293b; }
-    .badge {
-      display: inline-block;
-      padding: 0.35rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      text-transform: capitalize;
-    }
+    ${sharedLayout.getCommonStyles()}
+
     .badge-status-pending { background: #fef3c7; color: #b45309; }
     .badge-status-reviewing { background: #e0f2fe; color: #0369a1; }
     .badge-status-accepted { background: #dcfce7; color: #15803d; }
     .badge-status-rejected { background: #fee2e2; color: #b91c1c; }
     .badge-status-withdrawn { background: #f1f5f9; color: #64748b; }
-    .meta-grid {
+
+    .detail-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .meta-item { display: flex; flex-direction: column; }
-    .meta-label { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); font-weight: 600; letter-spacing: 0.05em; }
-    .meta-value { font-size: 1.05rem; font-weight: 600; color: #1e293b; margin-top: 0.25rem; }
-    .meta-value a { color: var(--primary); text-decoration: none; }
-    .meta-value a:hover { text-decoration: underline; }
-    .meta-sub { font-size: 0.825rem; color: var(--muted); font-weight: normal; margin-top: 0.15rem; }
-    .section-title { font-size: 1rem; font-weight: 700; margin: 1.5rem 0 0.5rem; color: #334155; }
-    .cover-note-box {
-      background: #f8fafc;
-      padding: 1.25rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      font-size: 0.95rem;
-      white-space: pre-line;
-      color: #334155;
+    .detail-box {
+      background: var(--colors-canvas);
+      padding: 1.5rem;
+      border-radius: var(--rounded-md);
+      border: 1px solid var(--colors-hairline);
     }
-    .status-actions-bar {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem;
-      margin-top: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 1rem;
+    .detail-box-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--colors-muted);
+      margin-bottom: 0.5rem;
     }
-    .status-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .btn-status-act {
-      padding: 0.45rem 0.85rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: white;
-      font-size: 0.8rem;
+      padding: 8px 16px;
+      border-radius: var(--rounded-md);
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .btn-status-act:hover { background: #f1f5f9; }
-    .btn-status-accept { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
-    .btn-status-accept:hover { background: #bbf7d0; }
-    .btn-status-review { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
-    .btn-status-review:hover { background: #bae6fd; }
-    .btn-status-reject { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
-    .btn-status-reject:hover { background: #fecaca; }
-    .actions {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 2rem;
-      border-top: 1px solid var(--border);
-      padding-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-    .btn {
-      padding: 0.6rem 1.25rem;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
+      font-size: 13.5px;
       border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
-    .btn-edit { background: #fef3c7; color: #d97706; }
-    .btn-edit:hover { background: #fde68a; }
-    .btn-delete { background: #fee2e2; color: #dc2626; }
-    .btn-delete:hover { background: #fecaca; }
-    .btn-back { background: #f1f5f9; color: #475569; }
-    .btn-back:hover { background: #e2e8f0; }
+    .btn-status-act:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+    .btn-status-accept { background: #16a34a; color: #ffffff; }
+    .btn-status-review { background: #0284c7; color: #ffffff; }
+    .btn-status-reject { background: #dc2626; color: #ffffff; }
   </style>
 </head>
 <body>
-  <div class="top-navbar">
-    <div class="nav-brand">🎓 Alumni Tracking System</div>
-  </div>
 
-  <div class="container">
-    <div class="back-nav">
-      <a href="/applications">&larr; Back to Applications</a>
+  ${this.renderNavbar('applications')}
+
+  <main class="page-wrapper" style="max-width:920px;">
+    <div style="margin-bottom:1.5rem;">
+      <a href="/applications" style="color:var(--colors-ink); text-decoration:none; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+        &larr; Back to Applications
+      </a>
     </div>
 
-    ${successMessage ? `<div class="alert">${this.escapeHtml(successMessage)}</div>` : ''}
+    ${successMessage ? `<div class="alert-banner alert-success"><span>✅</span> <span>${this.escapeHtml(successMessage)}</span></div>` : ''}
 
-    <div class="card">
-      <div class="header-row">
+    <article class="content-card">
+      <div style="border-bottom:1px solid var(--colors-hairline); padding-bottom:1.5rem; margin-bottom:1.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
         <div>
-          <h1>Application #${application.id}</h1>
-          <p style="color: var(--muted); font-size: 0.875rem; margin-top: 0.25rem;">
+          <h1 class="page-title" style="margin-bottom:0.25rem;">Application #${application.id}</h1>
+          <p style="color:var(--colors-muted); font-size:14px;">
             Submitted on ${application.createdAt ? new Date(application.createdAt).toLocaleString() : 'N/A'}
           </p>
         </div>
-        <span class="badge ${badgeClass}">${this.escapeHtml(application.status || 'pending')}</span>
-      </div>
-
-      <div class="meta-grid">
-        <div class="meta-item">
-          <span class="meta-label">Applicant</span>
-          <span class="meta-value">
-            <a href="/users/${application.userId}">User #${application.userId}</a>
-          </span>
-          ${user ? `<span class="meta-sub">${this.escapeHtml(userName)}${userEmail ? ' (' + this.escapeHtml(userEmail) + ')' : ''}</span>` : ''}
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Job Opportunity</span>
-          <span class="meta-value">
-            <a href="/job-postings/${application.jobPostingId}">Job #${application.jobPostingId}</a>
-          </span>
-          ${job ? `<span class="meta-sub">${this.escapeHtml(jobTitle)} @ ${this.escapeHtml(jobCompany)}</span>` : ''}
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Resume Document</span>
-          <span class="meta-value">
-            ${application.resumeUrl ? `<a href="${this.escapeHtml(application.resumeUrl)}" target="_blank">📄 Open Resume Link</a>` : '<span style="color: var(--muted); font-weight: normal;">None provided</span>'}
-          </span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Last Updated</span>
-          <span class="meta-value" style="font-weight: normal; font-size: 0.875rem;">
-            ${application.updatedAt ? new Date(application.updatedAt).toLocaleString() : 'Never'}
-          </span>
+        <div>
+          <span class="badge-pill ${badgeClass}" style="font-size:14px; padding:6px 14px;">${this.escapeHtml(application.status || 'pending')}</span>
         </div>
       </div>
 
-      <div class="section-title">Cover Note / Candidate Statement</div>
-      <div class="cover-note-box">
-        ${application.coverNote ? this.escapeHtml(application.coverNote) : '<em>No cover note submitted with this application.</em>'}
+      <!-- Applicant & Opportunity Grid -->
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="detail-box-title">Applicant Profile</div>
+          <h3 style="font-size:1.15rem; color:var(--colors-ink); margin-bottom:0.25rem;">
+            <a href="/users/${application.userId}" style="color:var(--colors-ink); text-decoration:none;">${this.escapeHtml(userName)}</a>
+          </h3>
+          ${userEmail ? `<p style="font-size:13.5px; color:var(--colors-muted); margin-bottom:0.5rem;">${this.escapeHtml(userEmail)}</p>` : ''}
+          <a href="/users/${application.userId}" class="btn-action-view" style="display:inline-block; margin-top:4px;">View User Profile &rarr;</a>
+        </div>
+
+        <div class="detail-box">
+          <div class="detail-box-title">Applied Career Opportunity</div>
+          <h3 style="font-size:1.15rem; color:var(--colors-ink); margin-bottom:0.25rem;">
+            <a href="/job-postings/${application.jobPostingId}" style="color:var(--colors-ink); text-decoration:none;">${this.escapeHtml(jobTitle)}</a>
+          </h3>
+          ${jobCompany ? `<p style="font-size:13.5px; color:var(--colors-muted); margin-bottom:0.5rem;">🏢 ${this.escapeHtml(jobCompany)}</p>` : ''}
+          <a href="/job-postings/${application.jobPostingId}" class="btn-action-view" style="display:inline-block; margin-top:4px;">View Job Listing &rarr;</a>
+        </div>
       </div>
 
-      <!-- Quick Review Actions Bar -->
-      <div class="status-actions-bar">
-        <span style="font-size: 0.875rem; font-weight: 600; color: #334155;">⚡ Quick Review Action:</span>
-        <div class="status-btns">
+      <!-- Resume and Note -->
+      <div style="margin-bottom:1.75rem;">
+        <h4 style="font-size:14px; font-weight:600; color:var(--colors-muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:0.5rem;">Resume Document</h4>
+        ${application.resumeUrl ? `
+          <div style="padding:12px 16px; background:var(--colors-canvas); border:1px solid var(--colors-hairline); border-radius:var(--rounded-md); display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-size:14px; color:var(--colors-ink);">📄 ${this.escapeHtml(application.resumeUrl)}</span>
+            <a href="${this.escapeHtml(application.resumeUrl)}" target="_blank" class="btn-clay-secondary" style="padding:6px 14px; font-size:13px;">Open Document &nearr;</a>
+          </div>
+        ` : `
+          <p style="color:var(--colors-muted); font-size:14px;">No resume document provided with this application.</p>
+        `}
+      </div>
+
+      <div style="margin-bottom:2rem;">
+        <h4 style="font-size:14px; font-weight:600; color:var(--colors-muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:0.5rem;">Cover Note / Statement</h4>
+        <div style="background:var(--colors-canvas); border:1px solid var(--colors-hairline); border-radius:var(--rounded-md); padding:1.25rem 1.5rem; font-size:15px; color:var(--colors-body-strong); line-height:1.6; white-space:pre-wrap;">
+          ${this.escapeHtml(application.coverNote || 'No cover statement submitted.')}
+        </div>
+      </div>
+
+      <!-- Pipeline Status Management -->
+      <div style="background:var(--colors-surface-card); border:1px solid var(--colors-hairline); border-radius:var(--rounded-md); padding:1.5rem; margin-bottom:2rem;">
+        <h4 style="font-size:14px; font-weight:600; color:var(--colors-ink); margin-bottom:0.75rem;">⚡ Change Pipeline Review Status</h4>
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
           <form method="POST" action="/applications/${application.id}/update" style="display:inline;">
             <input type="hidden" name="status" value="reviewing">
             <button type="submit" class="btn-status-act btn-status-review">Set Reviewing</button>
@@ -808,15 +566,18 @@ const applicationView = {
         </div>
       </div>
 
-      <div class="actions">
-        <a href="/applications/${application.id}/edit" class="btn btn-edit">Edit Application</a>
+      <!-- Action Footer -->
+      <div style="display:flex; gap:0.75rem; align-items:center; border-top:1px solid var(--colors-hairline); padding-top:1.5rem; flex-wrap:wrap;">
+        <a href="/applications/${application.id}/edit" class="btn-clay-secondary btn-edit">✏️ Edit Application</a>
         <form method="POST" action="/applications/${application.id}/delete" style="display:inline;" onsubmit="return confirm('Permanently delete application #${application.id}?');">
-          <button type="submit" class="btn btn-delete">Delete Application</button>
+          <button type="submit" class="btn-action-delete btn-delete" style="padding:10px 18px; font-size:14px; border-radius:var(--rounded-md);">🗑️ Delete Application</button>
         </form>
-        <a href="/applications" class="btn btn-back">Back to List</a>
+        <a href="/applications" class="btn-clay-secondary btn-back">Back to List</a>
       </div>
-    </div>
-  </div>
+    </article>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 </body>
 </html>`;
   },
@@ -841,136 +602,69 @@ const applicationView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Application #${application.id} - Alumni Tracking System</title>
   <style>
-    :root {
-      --primary: #0a0a0a;
-      --primary-hover: #2a2a2a;
-      --bg: #fffaf0;
-      --card-bg: #ffffff;
-      --text: #0a0a0a;
-      --muted: #6a6a6a;
-      --border: #e5e5e5;
-      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-    .top-navbar {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .nav-brand { font-weight: 700; font-size: 1.15rem; color: #1e293b; }
-    .container { max-width: 720px; margin: 0 auto; padding: 2rem 1rem; }
-    .back-nav { margin-bottom: 1.5rem; }
-    .back-nav a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
-    .back-nav a:hover { text-decoration: underline; }
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      padding: 2rem;
-    }
-    h1 { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-bottom: 1.5rem; }
-    .alert-danger {
-      padding: 1rem 1.25rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      font-weight: 500;
-      background: #fee2e2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
-    }
-    .form-group { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem; }
-    label { font-size: 0.875rem; font-weight: 600; color: #334155; }
-    input, select, textarea {
-      padding: 0.625rem 0.85rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.875rem;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-    }
-    .actions { display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem; }
-    .btn-submit {
-      background: var(--primary);
-      color: white;
-      font-weight: 600;
-      padding: 0.75rem 1.75rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
-    .btn-submit:hover { background: var(--primary-hover); }
-    .btn-cancel { color: var(--muted); text-decoration: none; font-size: 0.875rem; font-weight: 500; }
-    .btn-cancel:hover { text-decoration: underline; }
+    ${sharedLayout.getCommonStyles()}
   </style>
 </head>
 <body>
-  <div class="top-navbar">
-    <div class="nav-brand">🎓 Alumni Tracking System</div>
-  </div>
 
-  <div class="container">
-    <div class="back-nav">
-      <a href="/applications/${application.id}">&larr; Cancel & Back to Details</a>
+  ${this.renderNavbar('applications')}
+
+  <main class="page-wrapper" style="max-width:760px;">
+    <div style="margin-bottom:1.5rem;">
+      <a href="/applications/${application.id}" style="color:var(--colors-ink); text-decoration:none; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+        &larr; Cancel & Back to Details
+      </a>
     </div>
 
-    ${errorMessage ? `<div class="alert-danger">${this.escapeHtml(errorMessage)}</div>` : ''}
+    ${errorMessage ? `<div class="alert-banner alert-danger"><span>⚠️</span> <span>${this.escapeHtml(errorMessage)}</span></div>` : ''}
 
-    <div class="card">
-      <h1>Edit Application #${application.id}</h1>
+    <section class="content-card">
+      <div class="card-header-bar">
+        <h1 class="card-heading" style="font-size:1.5rem;">Edit Application #${application.id}</h1>
+      </div>
       <form method="POST" action="/applications/${application.id}/update">
-        <div class="form-group">
-          <label>Applicant</label>
-          <input type="text" value="${userLabel}" disabled style="background: #f1f5f9; color: #64748b; cursor: not-allowed;">
+        <div class="form-grid">
+          <div class="form-group form-col-full">
+            <label class="form-label">Applicant</label>
+            <input class="form-input" type="text" value="${userLabel}" disabled style="background:var(--colors-surface-card); color:var(--colors-muted); cursor:not-allowed;">
+          </div>
+
+          <div class="form-group form-col-full">
+            <label class="form-label">Job Opportunity</label>
+            <input class="form-input" type="text" value="${jobLabel}" disabled style="background:var(--colors-surface-card); color:var(--colors-muted); cursor:not-allowed;">
+          </div>
+
+          <div class="form-group form-col-full">
+            <label class="form-label" for="status">Application Review Status</label>
+            <select class="form-select" id="status" name="status">
+              <option value="pending" ${application.status === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="reviewing" ${application.status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
+              <option value="accepted" ${application.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+              <option value="rejected" ${application.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+              <option value="withdrawn" ${application.status === 'withdrawn' ? 'selected' : ''}>Withdrawn</option>
+            </select>
+          </div>
+
+          <div class="form-group form-col-full">
+            <label class="form-label" for="resumeUrl">Resume Document URL</label>
+            <input class="form-input" type="url" id="resumeUrl" name="resumeUrl" value="${this.escapeHtml(application.resumeUrl || '')}" placeholder="https://cdn.example.com/resumes/cv.pdf">
+          </div>
+
+          <div class="form-group form-col-full">
+            <label class="form-label" for="coverNote">Cover Note</label>
+            <textarea class="form-textarea" id="coverNote" name="coverNote" rows="4">${this.escapeHtml(application.coverNote || '')}</textarea>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Job Opportunity</label>
-          <input type="text" value="${jobLabel}" disabled style="background: #f1f5f9; color: #64748b; cursor: not-allowed;">
-        </div>
-
-        <div class="form-group">
-          <label for="status">Application Review Status</label>
-          <select id="status" name="status">
-            <option value="pending" ${application.status === 'pending' ? 'selected' : ''}>Pending</option>
-            <option value="reviewing" ${application.status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
-            <option value="accepted" ${application.status === 'accepted' ? 'selected' : ''}>Accepted</option>
-            <option value="rejected" ${application.status === 'rejected' ? 'selected' : ''}>Rejected</option>
-            <option value="withdrawn" ${application.status === 'withdrawn' ? 'selected' : ''}>Withdrawn</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="resumeUrl">Resume Document URL</label>
-          <input type="url" id="resumeUrl" name="resumeUrl" value="${this.escapeHtml(application.resumeUrl || '')}" placeholder="https://cdn.example.com/resumes/cv.pdf">
-        </div>
-
-        <div class="form-group">
-          <label for="coverNote">Cover Note</label>
-          <textarea id="coverNote" name="coverNote" rows="4">${this.escapeHtml(application.coverNote || '')}</textarea>
-        </div>
-
-        <div class="actions">
-          <button type="submit" class="btn-submit">Save Changes</button>
-          <a href="/applications/${application.id}" class="btn-cancel">Cancel</a>
+        <div style="display:flex; gap:1rem; align-items:center; margin-top:1.75rem;">
+          <button type="submit" class="btn-clay-primary">Save Changes</button>
+          <a href="/applications/${application.id}" class="btn-clay-secondary">Cancel</a>
         </div>
       </form>
-    </div>
-  </div>
+    </section>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 </body>
 </html>`;
   },
@@ -992,49 +686,22 @@ const applicationView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Error ${statusCode} - Alumni Tracking System</title>
   <style>
-    body {
-      font-family: Inter, -apple-system, sans-serif;
-      background: #fffaf0;
-      color: #0a0a0a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 1rem;
-    }
-    .card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(10, 10, 10, 0.04);
-      max-width: 480px;
-      width: 100%;
-      text-align: center;
-      border: 1px solid #e5e5e5;
-    }
-    h1 { font-size: 3rem; color: #dc2626; margin: 0; line-height: 1; }
-    h2 { font-size: 1.25rem; color: #0a0a0a; margin: 1rem 0; }
-    p { color: #6a6a6a; margin-bottom: 2rem; font-size: 0.95rem; }
-    a {
-      background: #0a0a0a;
-      color: white;
-      text-decoration: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 600;
-      display: inline-block;
-    }
-    a:hover { background: #2a2a2a; }
+    ${sharedLayout.getCommonStyles()}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>${statusCode}</h1>
-    <h2>Action Failed</h2>
-    <p>${this.escapeHtml(message)}</p>
-    <a href="/applications">Return to Applications</a>
-  </div>
+  ${this.renderNavbar('applications')}
+
+  <main class="page-wrapper" style="display:flex; align-items:center; justify-content:center;">
+    <div class="content-card" style="max-width:520px; width:100%; text-align:center; padding:3rem 2rem;">
+      <h1 class="page-title" style="color:var(--colors-error); font-size:3rem; margin:0 0 0.5rem 0;">${statusCode}</h1>
+      <h2 style="font-size:1.25rem; color:var(--colors-ink); margin-bottom:1rem;">Action Failed</h2>
+      <p style="color:var(--colors-body); margin-bottom:1.75rem; font-size:15px;">${this.escapeHtml(message)}</p>
+      <a href="/applications" class="btn-clay-primary">Return to Applications</a>
+    </div>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 </body>
 </html>`;
   }

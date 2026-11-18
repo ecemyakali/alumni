@@ -1,11 +1,11 @@
 /**
  * ========================================================
- * View Layer: JobPosting View (JobPostingView)
+ * View Layer: JobPosting View (JobPostingView) - Tactile SaaS Design
  * File: src/views/jobPostingView.js
  * ========================================================
  * 
  * Dedicated View Layer for Career & Job Opportunities management.
- * Generates semantic, responsive, interactive HTML views for:
+ * Generates semantic, responsive, tactile B2B SaaS HTML views:
  * 1. READ ALL & CREATE: Career Board, metrics, filter, & posting form (GET /job-postings)
  * 2. READ ONE: Full job posting detail view with inline "Quick Apply" & applications received (GET /job-postings/:id)
  * 3. UPDATE: Pre-filled job posting edit form (GET /job-postings/:id/edit)
@@ -13,39 +13,21 @@
  * 5. ERRORS: Semantic 400 and 404 pages
  */
 
+const sharedLayout = require('./sharedLayout');
+
 const jobPostingView = {
   /**
    * Escape HTML utility to prevent XSS
    */
   escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    return sharedLayout.escapeHtml(str);
   },
 
   /**
    * Global Navigation Header
    */
   renderNavbar(activePage = 'jobs') {
-    return `
-    <nav class="top-navbar">
-      <div class="nav-brand">
-        <span class="brand-icon">🎓</span>
-        <span class="brand-title">Alumni Tracking System</span>
-      </div>
-      <div class="nav-links">
-        <a href="/users" class="nav-item ${activePage === 'users' ? 'active' : ''}">👥 Alumni Directory</a>
-        <a href="/announcements" class="nav-item ${activePage === 'announcements' ? 'active' : ''}">📢 Announcements</a>
-        <a href="/job-postings" class="nav-item ${activePage === 'jobs' ? 'active' : ''}">💼 Career Opportunities</a>
-        <a href="/applications" class="nav-item ${activePage === 'applications' ? 'active' : ''}">📝 Job Applications</a>
-        <a href="/api/swagger" target="_blank" class="nav-item nav-badge">📘 Swagger API</a>
-      </div>
-    </nav>
-    `;
+    return sharedLayout.renderNavbar(activePage);
   },
 
   /**
@@ -68,28 +50,30 @@ const jobPostingView = {
         const typeClass = `badge-type-${(j.type || 'full-time').toLowerCase().replace(/\s+/g, '-')}`;
         return `
         <tr class="job-row" data-type="${this.escapeHtml(j.type || 'full-time').toLowerCase()}" data-text="${this.escapeHtml((j.title + ' ' + j.company + ' ' + (j.location || '') + ' ' + (j.requirements || '')).toLowerCase())}">
-          <td><span class="badge badge-id">#${j.id}</span></td>
+          <td><span class="badge-pill badge-id">#${j.id}</span></td>
           <td>
-            <a href="/job-postings/${j.id}" class="title-link">
-              <strong>${this.escapeHtml(j.title)}</strong>
+            <a href="/job-postings/${j.id}" class="title-link" style="color:var(--colors-ink); text-decoration:none; font-weight:600;">
+              ${this.escapeHtml(j.title)}
             </a>
-            <div class="company-subtext">🏢 ${this.escapeHtml(j.company)}</div>
+            <div style="font-size:12.5px; color:var(--colors-muted); margin-top:2px;">🏢 ${this.escapeHtml(j.company)}</div>
           </td>
-          <td><span class="badge badge-location">📍 ${this.escapeHtml(j.location || 'Remote')}</span></td>
-          <td><span class="badge ${typeClass}">${this.escapeHtml(j.type || 'full-time')}</span></td>
-          <td><span class="salary-tag">${this.escapeHtml(j.salary || 'Competitive')}</span></td>
-          <td class="action-cell">
-            <a href="/job-postings/${j.id}" class="btn-sm btn-view">View</a>
-            <a href="/applications?jobPostingId=${j.id}" class="btn-sm btn-apply" title="Apply for this role">Apply</a>
-            <a href="/job-postings/${j.id}/edit" class="btn-sm btn-edit">Edit</a>
-            <form method="POST" action="/job-postings/${j.id}/delete" style="display:inline;" onsubmit="return confirm('Delete job posting #${j.id}?');">
-              <button type="submit" class="btn-sm btn-delete">Delete</button>
-            </form>
+          <td><span class="badge-pill" style="background:var(--colors-surface-card); color:var(--colors-body-strong);">📍 ${this.escapeHtml(j.location || 'Remote')}</span></td>
+          <td><span class="badge-pill ${typeClass}">${this.escapeHtml(j.type || 'full-time')}</span></td>
+          <td><span style="font-weight:600; color:var(--colors-body-strong); font-size:13.5px;">${this.escapeHtml(j.salary || 'Competitive')}</span></td>
+          <td>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <a href="/job-postings/${j.id}" class="btn-action-view btn-view">View</a>
+              <a href="/applications?jobPostingId=${j.id}" class="btn-action-view btn-apply" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;" title="Apply for this role">Apply</a>
+              <a href="/job-postings/${j.id}/edit" class="btn-action-edit btn-edit">Edit</a>
+              <form method="POST" action="/job-postings/${j.id}/delete" style="display:inline;" onsubmit="return confirm('Delete job posting #${j.id}?');">
+                <button type="submit" class="btn-action-delete btn-delete">Delete</button>
+              </form>
+            </div>
           </td>
         </tr>
       `;
       }).join('')
-      : `<tr><td colspan="6" class="text-center text-muted py-4">No job opportunities posted yet. Use the form below to share an opportunity!</td></tr>`;
+      : `<tr><td colspan="6" style="text-align:center; color:var(--colors-muted); padding:2rem;">No job opportunities posted yet. Use the form below to share an opportunity!</td></tr>`;
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -98,57 +82,46 @@ const jobPostingView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Career Opportunities - Alumni Tracking System</title>
   <style>
-    :root {
-      --primary: #0a0a0a;
-      --primary-hover: #2a2a2a;
-      --success: #22c55e;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --bg: #fffaf0;
-      --card-bg: #ffffff;
-      --text: #0a0a0a;
-      --text-muted: #6a6a6a;
-      --border: #e5e5e5;
-      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    ${sharedLayout.getCommonStyles()}
+
+    .stats-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--colors-hairline);
+      border-radius: var(--rounded-lg);
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(10,10,10,0.02);
+      transition: transform 0.15s ease;
     }
-    .top-navbar {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    .kpi-card:hover {
+      transform: translateY(-2px);
     }
-    .nav-brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 1.15rem; color: #1e293b; }
-    .brand-icon { font-size: 1.35rem; }
-    .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .nav-item {
-      padding: 0.45rem 0.85rem;
-      border-radius: 6px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.875rem;
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 2.25rem;
       font-weight: 500;
-      transition: all 0.15s ease;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+      letter-spacing: -1px;
     }
-    .nav-item:hover { color: var(--primary); background: #f1f5f9; }
-    .nav-item.active { color: var(--primary); background: #eff6ff; font-weight: 600; }
-    .nav-badge { background: #e0f2fe; color: #0284c7; }
-    .container { max-width: 1180px; margin: 0 auto; padding: 2rem 1rem; }
-    .page-header {
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--colors-muted);
+    }
+
+    .filter-panel {
+      background: #ffffff;
+      border: 1px solid var(--colors-hairline);
+      border-radius: var(--rounded-md);
+      padding: 1rem 1.25rem;
       margin-bottom: 1.75rem;
       display: flex;
       justify-content: space-between;
@@ -156,248 +129,125 @@ const jobPostingView = {
       flex-wrap: wrap;
       gap: 1rem;
     }
-    h1 { font-size: 1.875rem; font-weight: 700; color: #1e293b; letter-spacing: -0.02em; }
-    .header-sub { color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem; }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .stat-number { font-size: 1.85rem; font-weight: 700; color: #1e293b; line-height: 1; }
-    .stat-label { font-size: 0.825rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-top: 0.4rem; letter-spacing: 0.05em; }
-    .filter-panel {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .search-box {
+    .search-box-wrap {
       flex: 1;
-      min-width: 250px;
+      min-width: 260px;
       position: relative;
     }
-    .search-input {
+    .search-input-field {
       width: 100%;
-      padding: 0.6rem 1rem 0.6rem 2.25rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.875rem;
+      padding: 9px 14px 9px 36px;
+      border: 1px solid var(--colors-hairline);
+      border-radius: var(--rounded-md);
+      background: var(--colors-canvas);
+      font-size: 14px;
       font-family: inherit;
+      color: var(--colors-ink);
     }
-    .search-icon {
+    .search-icon-symbol {
       position: absolute;
-      left: 0.75rem;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--text-muted);
-      font-size: 0.875rem;
+      color: var(--colors-muted);
+      font-size: 14px;
+      pointer-events: none;
     }
-    .filter-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .filter-pills-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
     .filter-pill {
-      border: 1px solid var(--border);
-      background: #ffffff;
-      padding: 0.4rem 0.85rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
+      border: 1px solid var(--colors-hairline);
+      background: var(--colors-surface-card);
+      padding: 6px 14px;
+      border-radius: var(--rounded-pill);
+      font-size: 13px;
       font-weight: 500;
-      color: var(--text-muted);
+      color: var(--colors-body);
       cursor: pointer;
       transition: all 0.15s ease;
     }
     .filter-pill:hover, .filter-pill.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
+      background: var(--colors-primary);
+      color: #ffffff;
+      border-color: var(--colors-primary);
     }
-    .alert {
-      padding: 1rem 1.25rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      font-weight: 500;
-    }
-    .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-    .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      margin-bottom: 2rem;
-      overflow: hidden;
-    }
-    .card-header {
-      padding: 1.25rem 1.5rem;
-      background: #f8fafc;
-      border-bottom: 1px solid var(--border);
-      font-weight: 600;
-      color: #334155;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .card-body { padding: 1.5rem; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th {
-      background: #f8fafc;
-      padding: 0.85rem 1rem;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-    }
-    td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; vertical-align: middle; }
-    tr:hover td { background: #fbfcfe; }
-    .title-link { color: #1e293b; text-decoration: none; font-size: 0.95rem; }
-    .title-link:hover { color: var(--primary); text-decoration: underline; }
-    .company-subtext { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.15rem; }
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .badge-id { background: #f1f5f9; color: #475569; }
-    .badge-location { background: #f3e8ff; color: #7e22ce; }
+
     .badge-type-full-time { background: #dbeafe; color: #1d4ed8; }
     .badge-type-part-time { background: #e0e7ff; color: #4338ca; }
     .badge-type-internship { background: #fef3c7; color: #b45309; }
     .badge-type-remote { background: #dcfce7; color: #15803d; }
     .badge-type-contract { background: #ffedd5; color: #c2410c; }
-    .salary-tag { font-weight: 600; color: #334155; font-size: 0.825rem; }
-    .action-cell { white-space: nowrap; }
-    .btn-sm {
-      display: inline-block;
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      margin-right: 0.25rem;
-      transition: background-color 0.15s ease;
-    }
-    .btn-view { background: #e0f2fe; color: #0284c7; }
-    .btn-view:hover { background: #bae6fd; }
-    .btn-apply { background: #dcfce7; color: #15803d; }
-    .btn-apply:hover { background: #bbf7d0; }
-    .btn-edit { background: #fef3c7; color: #d97706; }
-    .btn-edit:hover { background: #fde68a; }
-    .btn-delete { background: #fee2e2; color: #dc2626; }
-    .btn-delete:hover { background: #fecaca; }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
-    .form-group.full-width { grid-column: 1 / -1; }
-    label { font-size: 0.875rem; font-weight: 600; color: #334155; }
-    input, select, textarea {
-      padding: 0.625rem 0.85rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.875rem;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-    }
-    .btn-submit {
-      background: var(--primary);
-      color: white;
-      font-weight: 600;
-      padding: 0.75rem 1.75rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-      transition: background-color 0.15s ease;
-    }
-    .btn-submit:hover { background: var(--primary-hover); }
-    .text-center { text-align: center; }
-    .py-4 { padding-top: 2rem; padding-bottom: 2rem; }
-    .text-muted { color: var(--text-muted); }
   </style>
 </head>
 <body>
+
   ${this.renderNavbar('jobs')}
 
-  <div class="container">
-    <div class="page-header">
+  <main class="page-wrapper">
+    <div class="page-header-band">
       <div>
-        <h1>💼 Career Opportunities Board</h1>
-        <p class="header-sub">
+        <div class="page-header-pill">
+          <span>💼 Career & Talent Marketplace</span>
+        </div>
+        <h1 class="page-title">Career Opportunities Board</h1>
+        <p class="page-subtitle">
           Discover and share professional opportunities across the alumni network.
         </p>
       </div>
       <div>
-        <a href="#post-job" class="btn-submit" style="text-decoration: none; display: inline-block;">+ Post Opportunity</a>
+        <a href="#post-job" class="btn-clay-primary">+ Post Opportunity</a>
       </div>
     </div>
 
-    ${successMessage ? `<div class="alert alert-success">${this.escapeHtml(successMessage)}</div>` : ''}
-    ${errorMessage ? `<div class="alert alert-danger">${this.escapeHtml(errorMessage)}</div>` : ''}
+    ${successMessage ? `<div class="alert-banner alert-success"><span>✅</span> <span>${this.escapeHtml(successMessage)}</span></div>` : ''}
+    ${errorMessage ? `<div class="alert-banner alert-danger"><span>⚠️</span> <span>${this.escapeHtml(errorMessage)}</span></div>` : ''}
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-number">${totalJobs}</div>
-        <div class="stat-label">Total Listings</div>
+    <!-- KPI Metric Cards -->
+    <div class="stats-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-ink);">${totalJobs}</div>
+        <div class="kpi-title">Total Listings</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number" style="color: #16a34a;">${remoteCount}</div>
-        <div class="stat-label">Remote / Hybrid</div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-success);">${remoteCount}</div>
+        <div class="kpi-title">Remote / Hybrid</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number" style="color: #2563eb;">${fullTimeCount}</div>
-        <div class="stat-label">Full-Time Roles</div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-brand-blue);">${fullTimeCount}</div>
+        <div class="kpi-title">Full-Time Roles</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-number" style="color: #7c3aed;">${appCount}</div>
-        <div class="stat-label">Total Applications</div>
+      <div class="kpi-card">
+        <div class="kpi-value" style="color:var(--colors-brand-lavender);">${appCount}</div>
+        <div class="kpi-title">Total Applications</div>
       </div>
     </div>
 
+    <!-- Filter & Search Toolbar -->
     <div class="filter-panel">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="jobSearch" class="search-input" placeholder="Search by title, company, skills, or location...">
+      <div class="search-box-wrap">
+        <span class="search-icon-symbol">🔍</span>
+        <input type="text" id="jobSearch" class="search-input-field" placeholder="Search by title, company, skills, or location...">
       </div>
-      <div class="filter-pills">
-        <button class="filter-pill active" data-filter="all">All Roles</button>
-        <button class="filter-pill" data-filter="full-time">Full-Time</button>
-        <button class="filter-pill" data-filter="contract">Contract</button>
-        <button class="filter-pill" data-filter="internship">Internship</button>
-        <button class="filter-pill" data-filter="remote">Remote</button>
+      <div class="filter-pills-row">
+        <button type="button" class="filter-pill active" data-filter="all">All Roles</button>
+        <button type="button" class="filter-pill" data-filter="full-time">Full-Time</button>
+        <button type="button" class="filter-pill" data-filter="contract">Contract</button>
+        <button type="button" class="filter-pill" data-filter="internship">Internship</button>
+        <button type="button" class="filter-pill" data-filter="remote">Remote</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <span>Active Career Listings (${totalJobs})</span>
+    <!-- Active Listings Table Card -->
+    <section class="content-card">
+      <div class="card-header-bar">
+        <h2 class="card-heading">Active Career Listings</h2>
+        <span class="badge-pill badge-id">${totalJobs} Opportunities</span>
       </div>
-      <div style="overflow-x: auto;">
-        <table id="jobsTable">
+      <div class="table-container">
+        <table id="jobsTable" class="data-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -413,63 +263,66 @@ const jobPostingView = {
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <div class="card" id="post-job">
-      <div class="card-header">
-        Share a New Career Opportunity
+    <!-- Share New Opportunity Form Card -->
+    <section class="content-card" id="post-job">
+      <div class="card-header-bar">
+        <h2 class="card-heading">Share a New Career Opportunity</h2>
       </div>
-      <div class="card-body">
-        <form method="POST" action="/job-postings">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="title">Position Title *</label>
-              <input type="text" id="title" name="title" required maxlength="120" placeholder="e.g. Senior Backend Engineer (Max 120 chars)">
-            </div>
-            <div class="form-group">
-              <label for="company">Company / Organization *</label>
-              <input type="text" id="company" name="company" required placeholder="e.g. TechCorp Solutions">
-            </div>
-            <div class="form-group">
-              <label for="city">City (Optional)</label>
-              <input type="text" id="city" name="city" placeholder="e.g. Istanbul, Ankara">
-            </div>
-            <div class="form-group">
-              <label for="location">Location / Work Policy (Optional)</label>
-              <input type="text" id="location" name="location" placeholder="e.g. Remote or Hybrid">
-            </div>
-            <div class="form-group">
-              <label for="type">Employment Type</label>
-              <select id="type" name="type">
-                <option value="full-time" selected>Full-Time</option>
-                <option value="part-time">Part-Time</option>
-                <option value="contract">Contract</option>
-                <option value="internship">Internship</option>
-                <option value="remote">Remote</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="salary">Compensation / Salary Range</label>
-              <input type="text" id="salary" name="salary" placeholder="e.g. $80,000 - $100,000 / Competitive">
-            </div>
-            <div class="form-group">
-              <label for="contactEmail">Contact / Application Email</label>
-              <input type="email" id="contactEmail" name="contactEmail" placeholder="e.g. careers@techcorp.com">
-            </div>
-            <div class="form-group full-width">
-              <label for="requirements">Requirements & Skills</label>
-              <input type="text" id="requirements" name="requirements" placeholder="e.g. Node.js, Express, PostgreSQL, Docker, Git">
-            </div>
-            <div class="form-group full-width">
-              <label for="description">Role Description (Optional)</label>
-              <textarea id="description" name="description" rows="4" placeholder="Describe key responsibilities, team impact, and day-to-day work (Optional)..."></textarea>
-            </div>
+      <form method="POST" action="/job-postings">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="title">Position Title *</label>
+            <input class="form-input" type="text" id="title" name="title" required maxlength="120" placeholder="e.g. Senior Backend Engineer (Max 120 chars)">
           </div>
-          <button type="submit" class="btn-submit">Publish Career Opportunity</button>
-        </form>
-      </div>
-    </div>
-  </div>
+          <div class="form-group">
+            <label class="form-label" for="company">Company / Organization *</label>
+            <input class="form-input" type="text" id="company" name="company" required placeholder="e.g. TechCorp Solutions">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="city">City (Optional)</label>
+            <input class="form-input" type="text" id="city" name="city" placeholder="e.g. Istanbul, Ankara">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="location">Location / Work Policy (Optional)</label>
+            <input class="form-input" type="text" id="location" name="location" placeholder="e.g. Remote or Hybrid">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="type">Employment Type</label>
+            <select class="form-select" id="type" name="type">
+              <option value="full-time" selected>Full-Time</option>
+              <option value="part-time">Part-Time</option>
+              <option value="contract">Contract</option>
+              <option value="internship">Internship</option>
+              <option value="remote">Remote</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="salary">Compensation / Salary Range</label>
+            <input class="form-input" type="text" id="salary" name="salary" placeholder="e.g. $80,000 - $100,000 / Competitive">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contactEmail">Contact / Application Email</label>
+            <input class="form-input" type="email" id="contactEmail" name="contactEmail" placeholder="e.g. careers@techcorp.com">
+          </div>
+          <div class="form-group form-col-full">
+            <label class="form-label" for="requirements">Requirements & Skills</label>
+            <input class="form-input" type="text" id="requirements" name="requirements" placeholder="e.g. Node.js, Express, PostgreSQL, Docker, Git">
+          </div>
+          <div class="form-group form-col-full">
+            <label class="form-label" for="description">Role Description (Optional)</label>
+            <textarea class="form-textarea" id="description" name="description" rows="4" placeholder="Describe key responsibilities, team impact, and day-to-day work (Optional)..."></textarea>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;">
+          <button type="submit" class="btn-clay-primary">Publish Career Opportunity</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 
   <script>
     // Client-side interactive job search & filtering
@@ -524,25 +377,25 @@ const jobPostingView = {
         const statusBadge = `badge-status-${(app.status || 'pending').toLowerCase()}`;
         return `
         <tr>
-          <td><span class="badge badge-id">#${app.id}</span></td>
+          <td><span class="badge-pill badge-id">#${app.id}</span></td>
           <td>
-            <a href="/users/${app.userId}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+            <a href="/users/${app.userId}" style="color:var(--colors-ink); text-decoration:none; font-weight:600;">
               User #${app.userId}
             </a>
           </td>
-          <td><span class="badge ${statusBadge}">${this.escapeHtml(app.status || 'pending')}</span></td>
+          <td><span class="badge-pill ${statusBadge}">${this.escapeHtml(app.status || 'pending')}</span></td>
           <td>
-            ${app.resumeUrl ? `<a href="${this.escapeHtml(app.resumeUrl)}" target="_blank" style="color: var(--primary); text-decoration: none;">📄 Resume</a>` : '<span class="text-muted">-</span>'}
+            ${app.resumeUrl ? `<a href="${this.escapeHtml(app.resumeUrl)}" target="_blank" style="color:var(--colors-brand-blue); text-decoration:none; font-weight:500;">📄 Resume</a>` : '<span style="color:var(--colors-muted);">-</span>'}
           </td>
-          <td><small>${this.escapeHtml(app.coverNote || '-')}</small></td>
-          <td><small class="text-muted">${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}</small></td>
+          <td><small style="color:var(--colors-body);">${this.escapeHtml(app.coverNote || '-')}</small></td>
+          <td><small style="color:var(--colors-muted);">${app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A'}</small></td>
           <td>
-            <a href="/applications/${app.id}" class="btn-sm btn-view">Review</a>
+            <a href="/applications/${app.id}" class="btn-action-view btn-view">Review</a>
           </td>
         </tr>
       `;
       }).join('')
-      : `<tr><td colspan="7" class="text-center text-muted py-4">No applications received for this position yet. Be the first to apply below!</td></tr>`;
+      : `<tr><td colspan="7" style="text-align:center; color:var(--colors-muted); padding:2rem;">No applications received for this position yet. Be the first to apply below!</td></tr>`;
 
     // Generate options for user select dropdown if available
     const userOptions = users.length > 0
@@ -556,75 +409,8 @@ const jobPostingView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${this.escapeHtml(job.title)} at ${this.escapeHtml(job.company)} - Alumni Tracking System</title>
   <style>
-    :root {
-      --primary: #0a0a0a;
-      --primary-hover: #2a2a2a;
-      --bg: #fffaf0;
-      --card-bg: #ffffff;
-      --text: #0a0a0a;
-      --text-muted: #6a6a6a;
-      --border: #e5e5e5;
-      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-    .top-navbar {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .nav-brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 700; font-size: 1.15rem; color: #1e293b; }
-    .nav-links { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .nav-item { padding: 0.45rem 0.85rem; border-radius: 6px; color: var(--text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500; }
-    .nav-item:hover { color: var(--primary); background: #f1f5f9; }
-    .nav-item.active { color: var(--primary); background: #eff6ff; font-weight: 600; }
-    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
-    .back-nav { margin-bottom: 1.5rem; }
-    .back-nav a { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
-    .back-nav a:hover { text-decoration: underline; }
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-    .header-section {
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    h1 { font-size: 1.75rem; color: #1e293b; margin-bottom: 0.5rem; }
-    .meta-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-      color: var(--text-muted);
-      font-size: 0.875rem;
-    }
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-    .badge-id { background: #f1f5f9; color: #475569; }
+    ${sharedLayout.getCommonStyles()}
+
     .badge-type-full-time { background: #dbeafe; color: #1d4ed8; }
     .badge-type-part-time { background: #e0e7ff; color: #4338ca; }
     .badge-type-internship { background: #fef3c7; color: #b45309; }
@@ -635,185 +421,122 @@ const jobPostingView = {
     .badge-status-accepted { background: #dcfce7; color: #15803d; }
     .badge-status-rejected { background: #fee2e2; color: #b91c1c; }
     .badge-status-withdrawn { background: #f1f5f9; color: #64748b; }
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #334155;
-      margin-top: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .content-box {
-      background: #f8fafc;
-      padding: 1.25rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
+
+    .content-box-tactile {
+      background: var(--colors-canvas);
+      padding: 1.25rem 1.5rem;
+      border-radius: var(--rounded-md);
+      border: 1px solid var(--colors-hairline);
       white-space: pre-wrap;
-      font-size: 0.95rem;
-      color: #334155;
+      font-size: 15px;
+      color: var(--colors-body-strong);
+      line-height: 1.6;
     }
-    .actions {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-    .btn {
-      padding: 0.6rem 1.25rem;
-      border-radius: 6px;
-      font-weight: 600;
-      text-decoration: none;
-      font-size: 0.875rem;
-      cursor: pointer;
-      border: none;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #f1f5f9; color: #334155; }
-    .btn-secondary:hover { background: #e2e8f0; }
-    .btn-danger { background: #fee2e2; color: #dc2626; }
-    .btn-danger:hover { background: #fecaca; }
-    .btn-sm {
-      display: inline-block;
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-    }
-    .btn-view { background: #e0f2fe; color: #0284c7; }
-    .alert-success { background: #dcfce7; color: #15803d; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #bbf7d0; font-weight: 500; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th {
-      background: #f8fafc;
-      padding: 0.75rem 1rem;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-    }
-    td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; vertical-align: middle; }
-    .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
-    label { font-size: 0.875rem; font-weight: 600; color: #334155; }
-    input, select, textarea {
-      padding: 0.625rem 0.75rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.875rem;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
-    .btn-submit {
-      background: #16a34a;
-      color: white;
-      font-weight: 600;
-      padding: 0.75rem 1.5rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
-    .btn-submit:hover { background: #15803d; }
-    .text-center { text-align: center; }
-    .py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-    .text-muted { color: var(--text-muted); }
   </style>
 </head>
 <body>
+
   ${this.renderNavbar('jobs')}
 
-  <div class="container">
-    <div class="back-nav">
-      <a href="/job-postings">&larr; Back to Career Opportunities</a>
+  <main class="page-wrapper" style="max-width:960px;">
+    <div style="margin-bottom:1.5rem;">
+      <a href="/job-postings" style="color:var(--colors-ink); text-decoration:none; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+        &larr; Back to Career Opportunities
+      </a>
     </div>
 
-    ${successMessage ? `<div class="alert-success">${this.escapeHtml(successMessage)}</div>` : ''}
+    ${successMessage ? `<div class="alert-banner alert-success"><span>✅</span> <span>${this.escapeHtml(successMessage)}</span></div>` : ''}
 
-    <div class="card">
-      <div class="header-section">
-        <h1>${this.escapeHtml(job.title)}</h1>
-        <div class="meta-bar">
-          <strong>🏢 ${this.escapeHtml(job.company)}</strong>
+    <article class="content-card">
+      <div style="border-bottom:1px solid var(--colors-hairline); padding-bottom:1.5rem; margin-bottom:1.75rem;">
+        <h1 class="page-title" style="margin-bottom:0.75rem;">${this.escapeHtml(job.title)}</h1>
+        <div style="display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center; color:var(--colors-muted); font-size:14px;">
+          <strong style="color:var(--colors-ink);">🏢 ${this.escapeHtml(job.company)}</strong>
           <span>•</span>
           <span>📍 ${this.escapeHtml(job.location || 'Remote')}</span>
           <span>•</span>
-          <span class="badge ${typeClass}">${this.escapeHtml(job.type || 'full-time')}</span>
+          <span class="badge-pill ${typeClass}">${this.escapeHtml(job.type || 'full-time')}</span>
           ${job.salary ? `<span>• 💰 ${this.escapeHtml(job.salary)}</span>` : ''}
           <span>• 🗓️ Posted ${job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently'}</span>
         </div>
       </div>
 
-      <div class="section-title">Role Description</div>
-      <div class="content-box">${this.escapeHtml(job.description)}</div>
+      <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:0.5rem; color:var(--colors-ink);">Role Description</h3>
+      <div class="content-box-tactile">${this.escapeHtml(job.description)}</div>
 
       ${job.requirements ? `
-        <div class="section-title">Requirements & Qualifications</div>
-        <div class="content-box">${this.escapeHtml(job.requirements)}</div>
+        <h3 style="font-size:1.1rem; font-weight:600; margin-top:1.5rem; margin-bottom:0.5rem; color:var(--colors-ink);">Requirements & Qualifications</h3>
+        <div class="content-box-tactile">${this.escapeHtml(job.requirements)}</div>
       ` : ''}
 
       ${job.contactEmail ? `
-        <div class="section-title">Application Inquiries</div>
-        <p style="font-size: 0.95rem;">Direct inquiries: <a href="mailto:${this.escapeHtml(job.contactEmail)}" style="color: var(--primary); font-weight: 600;">${this.escapeHtml(job.contactEmail)}</a></p>
+        <h3 style="font-size:1.1rem; font-weight:600; margin-top:1.5rem; margin-bottom:0.5rem; color:var(--colors-ink);">Application Inquiries</h3>
+        <p style="font-size:14.5px; color:var(--colors-body);">
+          Direct inquiries: <a href="mailto:${this.escapeHtml(job.contactEmail)}" style="color:var(--colors-brand-blue); font-weight:600; text-decoration:none;">${this.escapeHtml(job.contactEmail)}</a>
+        </p>
       ` : ''}
 
-      <div class="actions">
-        <a href="#quick-apply" class="btn btn-primary">🚀 Apply for this Role</a>
-        <a href="/job-postings/${job.id}/edit" class="btn btn-secondary">✏️ Edit Opportunity</a>
+      <div style="display:flex; gap:0.75rem; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--colors-hairline); flex-wrap:wrap; align-items:center;">
+        <a href="#quick-apply" class="btn-clay-primary">🚀 Apply for this Role</a>
+        <a href="/job-postings/${job.id}/edit" class="btn-clay-secondary">✏️ Edit Opportunity</a>
         <form method="POST" action="/job-postings/${job.id}/delete" onsubmit="return confirm('Delete this job posting?');" style="display:inline;">
-          <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+          <button type="submit" class="btn-action-delete" style="padding:10px 18px; font-size:14px; border-radius:var(--rounded-md);">🗑️ Delete</button>
         </form>
       </div>
-    </div>
+    </article>
 
     <!-- Quick Application Form Section -->
-    <div class="card" id="quick-apply">
-      <h2 style="font-size: 1.35rem; color: #1e293b; margin-bottom: 0.5rem;">🚀 Apply for this Position</h2>
-      <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">
-        Submit your application directly for <strong>${this.escapeHtml(job.title)}</strong> at <strong>${this.escapeHtml(job.company)}</strong>.
-      </p>
+    <section class="content-card" id="quick-apply">
+      <div class="card-header-bar">
+        <div>
+          <h2 class="card-heading">🚀 Apply for this Position</h2>
+          <p style="color:var(--colors-body); font-size:13.5px; margin-top:4px;">
+            Submit your application directly for <strong>${this.escapeHtml(job.title)}</strong> at <strong>${this.escapeHtml(job.company)}</strong>.
+          </p>
+        </div>
+      </div>
 
       <form method="POST" action="/applications">
         <input type="hidden" name="jobPostingId" value="${job.id}">
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <div class="form-grid">
           <div class="form-group">
-            <label for="userId">Applicant (Alumni User) *</label>
+            <label class="form-label" for="userId">Applicant (Alumni User) *</label>
             ${userOptions ? `
-              <select id="userId" name="userId" required>
+              <select class="form-select" id="userId" name="userId" required>
                 <option value="">Select your alumni profile...</option>
                 ${userOptions}
               </select>
             ` : `
-              <input type="number" id="userId" name="userId" required placeholder="Enter your User ID (e.g. 1)" min="1">
+              <input class="form-input" type="number" id="userId" name="userId" required placeholder="Enter your User ID (e.g. 1)" min="1">
             `}
           </div>
 
           <div class="form-group">
-            <label for="resumeUrl">Resume / Portfolio Link (URL)</label>
-            <input type="url" id="resumeUrl" name="resumeUrl" placeholder="https://cdn.example.com/cv.pdf">
+            <label class="form-label" for="resumeUrl">Resume / Portfolio Link (URL)</label>
+            <input class="form-input" type="url" id="resumeUrl" name="resumeUrl" placeholder="https://cdn.example.com/cv.pdf">
+          </div>
+
+          <div class="form-group form-col-full">
+            <label class="form-label" for="coverNote">Cover Note / Statement of Interest</label>
+            <textarea class="form-textarea" id="coverNote" name="coverNote" rows="3" placeholder="Highlight relevant skills, achievements, and why you are interested in this position..."></textarea>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="coverNote">Cover Note / Statement of Interest</label>
-          <textarea id="coverNote" name="coverNote" rows="3" placeholder="Highlight relevant skills, achievements, and why you are interested in this position..."></textarea>
+        <div style="margin-top:1.5rem;">
+          <button type="submit" class="btn-clay-primary">Submit Application</button>
         </div>
-
-        <button type="submit" class="btn-submit">Submit Application</button>
       </form>
-    </div>
+    </section>
 
     <!-- Received Applications for this Job -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="font-size: 1.25rem; color: #1e293b;">📋 Received Applications (${applications.length})</h2>
+    <section class="content-card">
+      <div class="card-header-bar">
+        <h2 class="card-heading">📋 Received Applications</h2>
+        <span class="badge-pill badge-id">${applications.length} Applicants</span>
       </div>
-      <div style="overflow-x: auto;">
-        <table>
+      <div class="table-container">
+        <table class="data-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -830,8 +553,10 @@ const jobPostingView = {
           </tbody>
         </table>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 </body>
 </html>`;
   },
@@ -854,122 +579,47 @@ const jobPostingView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit ${this.escapeHtml(job.title)} - Alumni Tracking System</title>
   <style>
-    :root {
-      --primary: #0a0a0a;
-      --primary-hover: #2a2a2a;
-      --bg: #fffaf0;
-      --card-bg: #ffffff;
-      --text: #0a0a0a;
-      --text-muted: #6a6a6a;
-      --border: #e5e5e5;
-      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-    .top-navbar {
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .nav-brand { font-weight: 700; font-size: 1.15rem; color: #1e293b; }
-    .container { max-width: 800px; margin: 0 auto; padding: 2rem 1rem; }
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
-      padding: 2rem;
-    }
-    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #1e293b; }
-    .alert-danger {
-      padding: 1rem 1.25rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      font-weight: 500;
-      background: #fee2e2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.25rem;
-    }
-    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
-    .form-group.full-width { grid-column: 1 / -1; }
-    label { font-size: 0.875rem; font-weight: 600; color: #334155; }
-    input, select, textarea {
-      padding: 0.625rem 0.85rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.875rem;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-    }
-    .actions { display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem; }
-    .btn-submit {
-      background: var(--primary);
-      color: white;
-      font-weight: 600;
-      padding: 0.75rem 1.75rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
-    .btn-submit:hover { background: var(--primary-hover); }
-    .btn-cancel { color: var(--text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500; }
-    .btn-cancel:hover { text-decoration: underline; }
+    ${sharedLayout.getCommonStyles()}
   </style>
 </head>
 <body>
-  <div class="top-navbar">
-    <div class="nav-brand">🎓 Alumni Tracking System</div>
-  </div>
 
-  <div class="container">
-    <div style="margin-bottom: 1.5rem;">
-      <a href="/job-postings/${job.id}" style="color: var(--primary); text-decoration: none; font-weight: 600;">&larr; Cancel & Back to Details</a>
+  ${this.renderNavbar('jobs')}
+
+  <main class="page-wrapper" style="max-width:820px;">
+    <div style="margin-bottom:1.5rem;">
+      <a href="/job-postings/${job.id}" style="color:var(--colors-ink); text-decoration:none; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
+        &larr; Cancel & Back to Details
+      </a>
     </div>
 
-    ${errorMessage ? `<div class="alert-danger">${this.escapeHtml(errorMessage)}</div>` : ''}
+    ${errorMessage ? `<div class="alert-banner alert-danger"><span>⚠️</span> <span>${this.escapeHtml(errorMessage)}</span></div>` : ''}
 
-    <div class="card">
-      <h1>Edit Job Posting: ${this.escapeHtml(job.title)}</h1>
+    <section class="content-card">
+      <div class="card-header-bar">
+        <h1 class="card-heading" style="font-size:1.5rem;">Edit Job Posting: ${this.escapeHtml(job.title)}</h1>
+      </div>
       <form method="POST" action="/job-postings/${job.id}/update">
         <div class="form-grid">
           <div class="form-group">
-            <label for="title">Position Title *</label>
-            <input type="text" id="title" name="title" value="${this.escapeHtml(job.title)}" required maxlength="120">
+            <label class="form-label" for="title">Position Title *</label>
+            <input class="form-input" type="text" id="title" name="title" value="${this.escapeHtml(job.title)}" required maxlength="120">
           </div>
           <div class="form-group">
-            <label for="company">Company / Organization *</label>
-            <input type="text" id="company" name="company" value="${this.escapeHtml(job.company)}" required>
+            <label class="form-label" for="company">Company / Organization *</label>
+            <input class="form-input" type="text" id="company" name="company" value="${this.escapeHtml(job.company)}" required>
           </div>
           <div class="form-group">
-            <label for="city">City (Optional)</label>
-            <input type="text" id="city" name="city" value="${this.escapeHtml(job.city || '')}" placeholder="e.g. Istanbul">
+            <label class="form-label" for="city">City (Optional)</label>
+            <input class="form-input" type="text" id="city" name="city" value="${this.escapeHtml(job.city || '')}" placeholder="e.g. Istanbul">
           </div>
           <div class="form-group">
-            <label for="location">Location / Work Policy (Optional)</label>
-            <input type="text" id="location" name="location" value="${this.escapeHtml(job.location || '')}">
+            <label class="form-label" for="location">Location / Work Policy (Optional)</label>
+            <input class="form-input" type="text" id="location" name="location" value="${this.escapeHtml(job.location || '')}">
           </div>
           <div class="form-group">
-            <label for="type">Employment Type</label>
-            <select id="type" name="type">
+            <label class="form-label" for="type">Employment Type</label>
+            <select class="form-select" id="type" name="type">
               <option value="full-time" ${job.type === 'full-time' ? 'selected' : ''}>Full-Time</option>
               <option value="part-time" ${job.type === 'part-time' ? 'selected' : ''}>Part-Time</option>
               <option value="contract" ${job.type === 'contract' ? 'selected' : ''}>Contract</option>
@@ -978,29 +628,31 @@ const jobPostingView = {
             </select>
           </div>
           <div class="form-group">
-            <label for="salary">Compensation / Salary Range</label>
-            <input type="text" id="salary" name="salary" value="${this.escapeHtml(job.salary || '')}">
+            <label class="form-label" for="salary">Compensation / Salary Range</label>
+            <input class="form-input" type="text" id="salary" name="salary" value="${this.escapeHtml(job.salary || '')}">
           </div>
           <div class="form-group">
-            <label for="contactEmail">Contact / Application Email</label>
-            <input type="email" id="contactEmail" name="contactEmail" value="${this.escapeHtml(job.contactEmail || '')}">
+            <label class="form-label" for="contactEmail">Contact / Application Email</label>
+            <input class="form-input" type="email" id="contactEmail" name="contactEmail" value="${this.escapeHtml(job.contactEmail || '')}">
           </div>
-          <div class="form-group full-width">
-            <label for="requirements">Requirements & Skills</label>
-            <input type="text" id="requirements" name="requirements" value="${this.escapeHtml(job.requirements || '')}">
+          <div class="form-group form-col-full">
+            <label class="form-label" for="requirements">Requirements & Skills</label>
+            <input class="form-input" type="text" id="requirements" name="requirements" value="${this.escapeHtml(job.requirements || '')}">
           </div>
-          <div class="form-group full-width">
-            <label for="description">Role Description (Optional)</label>
-            <textarea id="description" name="description" rows="5">${this.escapeHtml(job.description || '')}</textarea>
+          <div class="form-group form-col-full">
+            <label class="form-label" for="description">Role Description (Optional)</label>
+            <textarea class="form-textarea" id="description" name="description" rows="5">${this.escapeHtml(job.description || '')}</textarea>
           </div>
         </div>
-        <div class="actions">
-          <button type="submit" class="btn-submit">Save Changes</button>
-          <a href="/job-postings/${job.id}" class="btn-cancel">Cancel</a>
+        <div style="display:flex; gap:1rem; align-items:center; margin-top:1.75rem;">
+          <button type="submit" class="btn-clay-primary">Save Changes</button>
+          <a href="/job-postings/${job.id}" class="btn-clay-secondary">Cancel</a>
         </div>
       </form>
-    </div>
-  </div>
+    </section>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 </body>
 </html>`;
   },
@@ -1022,49 +674,22 @@ const jobPostingView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Error ${statusCode} - Alumni Tracking System</title>
   <style>
-    body {
-      font-family: Inter, -apple-system, sans-serif;
-      background: #fffaf0;
-      color: #0a0a0a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 1rem;
-    }
-    .card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(10, 10, 10, 0.04);
-      max-width: 480px;
-      width: 100%;
-      text-align: center;
-      border: 1px solid #e5e5e5;
-    }
-    h1 { font-size: 3rem; color: #dc2626; margin: 0; line-height: 1; }
-    h2 { font-size: 1.25rem; color: #0a0a0a; margin: 1rem 0; }
-    p { color: #6a6a6a; margin-bottom: 2rem; font-size: 0.95rem; }
-    a {
-      background: #0a0a0a;
-      color: white;
-      text-decoration: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 600;
-      display: inline-block;
-    }
-    a:hover { background: #2a2a2a; }
+    ${sharedLayout.getCommonStyles()}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>${statusCode}</h1>
-    <h2>Action Failed</h2>
-    <p>${this.escapeHtml(message)}</p>
-    <a href="/job-postings">Return to Career Board</a>
-  </div>
+  ${this.renderNavbar('jobs')}
+
+  <main class="page-wrapper" style="display:flex; align-items:center; justify-content:center;">
+    <div class="content-card" style="max-width:520px; width:100%; text-align:center; padding:3rem 2rem;">
+      <h1 class="page-title" style="color:var(--colors-error); font-size:3rem; margin:0 0 0.5rem 0;">${statusCode}</h1>
+      <h2 style="font-size:1.25rem; color:var(--colors-ink); margin-bottom:1rem;">Action Failed</h2>
+      <p style="color:var(--colors-body); margin-bottom:1.75rem; font-size:15px;">${this.escapeHtml(message)}</p>
+      <a href="/job-postings" class="btn-clay-primary">Return to Career Board</a>
+    </div>
+  </main>
+
+  ${sharedLayout.renderFooter()}
 </body>
 </html>`;
   }
