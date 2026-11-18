@@ -99,17 +99,17 @@ const jobPostingView = {
   <title>Career Opportunities - Alumni Tracking System</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --warning: #d97706;
-      --bg: #f8fafc;
+      --primary: #0a0a0a;
+      --primary-hover: #2a2a2a;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg: #fffaf0;
       --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --text: #0a0a0a;
+      --text-muted: #6a6a6a;
+      --border: #e5e5e5;
+      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -119,7 +119,7 @@ const jobPostingView = {
       line-height: 1.5;
     }
     .top-navbar {
-      background: #ffffff;
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       padding: 0.85rem 2rem;
       display: flex;
@@ -557,14 +557,14 @@ const jobPostingView = {
   <title>${this.escapeHtml(job.title)} at ${this.escapeHtml(job.company)} - Alumni Tracking System</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --bg: #f8fafc;
+      --primary: #0a0a0a;
+      --primary-hover: #2a2a2a;
+      --bg: #fffaf0;
       --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --text: #0a0a0a;
+      --text-muted: #6a6a6a;
+      --border: #e5e5e5;
+      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -574,7 +574,7 @@ const jobPostingView = {
       line-height: 1.6;
     }
     .top-navbar {
-      background: #ffffff;
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       padding: 0.85rem 2rem;
       display: flex;
@@ -855,14 +855,14 @@ const jobPostingView = {
   <title>Edit ${this.escapeHtml(job.title)} - Alumni Tracking System</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --bg: #f8fafc;
+      --primary: #0a0a0a;
+      --primary-hover: #2a2a2a;
+      --bg: #fffaf0;
       --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --text: #0a0a0a;
+      --text-muted: #6a6a6a;
+      --border: #e5e5e5;
+      --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -872,7 +872,7 @@ const jobPostingView = {
       line-height: 1.5;
     }
     .top-navbar {
-      background: #ffffff;
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       padding: 0.85rem 2rem;
       display: flex;
@@ -1023,9 +1023,9 @@ const jobPostingView = {
   <title>Error ${statusCode} - Alumni Tracking System</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #f8fafc;
-      color: #0f172a;
+      font-family: Inter, -apple-system, sans-serif;
+      background: #fffaf0;
+      color: #0a0a0a;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -1036,26 +1036,26 @@ const jobPostingView = {
     .card {
       background: white;
       padding: 2.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(10, 10, 10, 0.04);
       max-width: 480px;
       width: 100%;
       text-align: center;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #e5e5e5;
     }
     h1 { font-size: 3rem; color: #dc2626; margin: 0; line-height: 1; }
-    h2 { font-size: 1.25rem; color: #1e293b; margin: 1rem 0; }
-    p { color: #64748b; margin-bottom: 2rem; font-size: 0.95rem; }
+    h2 { font-size: 1.25rem; color: #0a0a0a; margin: 1rem 0; }
+    p { color: #6a6a6a; margin-bottom: 2rem; font-size: 0.95rem; }
     a {
-      background: #2563eb;
+      background: #0a0a0a;
       color: white;
       text-decoration: none;
       padding: 0.75rem 1.5rem;
-      border-radius: 6px;
+      border-radius: 12px;
       font-weight: 600;
       display: inline-block;
     }
-    a:hover { background: #1d4ed8; }
+    a:hover { background: #2a2a2a; }
   </style>
 </head>
 <body>

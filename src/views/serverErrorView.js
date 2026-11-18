@@ -38,13 +38,14 @@ const serverErrorView = {
   <title>${statusCode} - Internal Server Error | Alumni Tracking System</title>
   <style>
     :root {
-      --primary: #2563eb;
+      --primary: #0a0a0a;
+      --primary-dark: #2a2a2a;
       --danger: #dc2626;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
+      --text: #0a0a0a;
+      --text-muted: #6a6a6a;
+      --bg: #fffaf0;
       --card-bg: #ffffff;
-      --border: #e2e8f0;
+      --border: #e5e5e5;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -60,8 +61,8 @@ const serverErrorView = {
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(10, 10, 10, 0.05);
       max-width: 580px;
       width: 100%;
       padding: 2.5rem;
@@ -70,13 +71,14 @@ const serverErrorView = {
     .status-badge {
       display: inline-block;
       font-size: 3.5rem;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--danger);
       background: #fef2f2;
-      border: 2px solid #fee2e2;
+      border: 1px solid #fee2e2;
       border-radius: 12px;
       padding: 0.25rem 1.5rem;
       margin-bottom: 1.25rem;
+      letter-spacing: -1.5px;
     }
     h1 {
       font-size: 1.75rem;

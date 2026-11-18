@@ -59,20 +59,20 @@ const announcementView = {
   <title>Alumni Announcements Board - Alumni Tracking System</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --success: #16a34a;
-      --warning: #d97706;
-      --danger: #dc2626;
-      --bg: #f8fafc;
+      --primary: #0a0a0a;
+      --primary-dark: #2a2a2a;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #fffaf0;
       --card-bg: #ffffff;
-      --text: #1e293b;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
+      --text: #0a0a0a;
+      --text-muted: #6a6a6a;
+      --border: #e5e5e5;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.5;
@@ -80,13 +80,13 @@ const announcementView = {
     }
     .container { max-width: 1100px; margin: 0 auto; }
     header { text-align: center; margin-bottom: 2rem; }
-    h1 { font-size: 2rem; color: var(--text); margin-bottom: 0.5rem; }
+    h1 { font-size: 2.25rem; font-weight: 500; letter-spacing: -1px; color: var(--text); margin-bottom: 0.5rem; }
     .subtitle { color: var(--text-muted); font-size: 1rem; }
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 1.75rem;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+      box-shadow: 0 4px 16px rgba(10,10,10,0.04);
       margin-bottom: 2rem;
       border: 1px solid var(--border);
     }
@@ -94,20 +94,20 @@ const announcementView = {
       font-size: 1.25rem;
       font-weight: 600;
       margin-bottom: 1.25rem;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .alert { padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-weight: 500; }
+    .alert { padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 500; }
     .alert-success { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
     .alert-danger { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th, td { padding: 0.75rem 0.85rem; border-bottom: 1px solid var(--border); }
-    th { background-color: #f1f5f9; color: var(--text-muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    tr:hover { background-color: #f8fafc; }
-    .title-link { color: #1e293b; text-decoration: none; }
+    th { background-color: #faf5e8; color: var(--text-muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:hover { background-color: #faf5e8; }
+    .title-link { color: #0a0a0a; text-decoration: none; }
     .title-link:hover { color: var(--primary); text-decoration: underline; }
     .badge {
       display: inline-block;
@@ -150,21 +150,21 @@ const announcementView = {
     input, select, textarea {
       padding: 0.65rem 0.85rem;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 12px;
       font-size: 0.95rem;
       font-family: inherit;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+      box-shadow: 0 0 0 3px rgba(10,10,10,0.08);
     }
     textarea { min-height: 90px; resize: vertical; }
     button[type="submit"] {
       background: var(--primary);
       color: #ffffff;
       border: none;
-      border-radius: 6px;
+      border-radius: 12px;
       padding: 0.75rem 1.75rem;
       font-size: 0.95rem;
       font-weight: 600;
@@ -289,26 +289,26 @@ const announcementView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${this.escapeHtml(announcement.title)} - Alumni Tracking System</title>
   <style>
-    body { font-family: -apple-system, sans-serif; background: #f8fafc; color: #1e293b; padding: 2rem 1rem; }
-    .card { max-width: 750px; margin: 0 auto; background: white; padding: 2.25rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-    .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.25rem; }
-    h1 { font-size: 1.85rem; margin-bottom: 0.75rem; color: #1e293b; }
-    .meta-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
+    body { font-family: Inter, -apple-system, sans-serif; background: #fffaf0; color: #0a0a0a; padding: 2rem 1rem; }
+    .card { max-width: 750px; margin: 0 auto; background: white; padding: 2.25rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(10,10,10,0.04); border: 1px solid #e5e5e5; }
+    .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1.25rem; }
+    h1 { font-size: 1.85rem; font-weight: 500; letter-spacing: -0.5px; margin-bottom: 0.75rem; color: #0a0a0a; }
+    .meta-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; border-bottom: 1px solid #e5e5e5; padding-bottom: 1rem; }
     .badge { padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; text-transform: capitalize; }
-    .badge-id { background: #e2e8f0; color: #475569; }
+    .badge-id { background: #faf5e8; color: #475569; border: 1px solid #e5e5e5; }
     .badge-category { background: #e0e7ff; color: #3730a3; }
     .priority-urgent { background: #fee2e2; color: #991b1b; }
     .priority-high { background: #ffedd5; color: #9a3412; }
     .priority-normal { background: #dcfce7; color: #166534; }
-    .priority-low { background: #f1f5f9; color: #475569; }
-    .content-box { font-size: 1.05rem; line-height: 1.7; white-space: pre-wrap; margin-bottom: 2rem; color: #334155; }
-    .dates-bar { font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem; }
-    .btn-group { display: flex; gap: 0.75rem; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 1.25rem; }
-    .btn { display: inline-block; padding: 0.5rem 1.1rem; font-size: 0.9rem; font-weight: 600; border-radius: 6px; text-decoration: none; cursor: pointer; border: none; }
+    .priority-low { background: #faf5e8; color: #475569; }
+    .content-box { font-size: 1.05rem; line-height: 1.7; white-space: pre-wrap; margin-bottom: 2rem; color: #3a3a3a; }
+    .dates-bar { font-size: 0.85rem; color: #6a6a6a; margin-bottom: 1.5rem; }
+    .btn-group { display: flex; gap: 0.75rem; align-items: center; border-top: 1px solid #e5e5e5; padding-top: 1.25rem; }
+    .btn { display: inline-block; padding: 0.6rem 1.15rem; font-size: 0.9rem; font-weight: 600; border-radius: 12px; text-decoration: none; cursor: pointer; border: none; }
     .btn-edit { background: #fef3c7; color: #b45309; }
     .btn-danger { background: #fee2e2; color: #b91c1c; }
-    .btn-back { color: #64748b; text-decoration: none; margin-left: auto; font-weight: 500; }
-    .btn-back:hover { text-decoration: underline; }
+    .btn-back { color: #6a6a6a; text-decoration: none; margin-left: auto; font-weight: 500; }
+    .btn-back:hover { text-decoration: underline; color: #0a0a0a; }
   </style>
 </head>
 <body>
@@ -361,20 +361,20 @@ const announcementView = {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Announcement #${announcement.id} - Alumni Tracking System</title>
   <style>
-    body { font-family: -apple-system, sans-serif; background: #f8fafc; color: #1e293b; padding: 2rem 1rem; }
-    .card { max-width: 700px; margin: 0 auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-    h1 { font-size: 1.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
-    .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+    body { font-family: Inter, -apple-system, sans-serif; background: #fffaf0; color: #0a0a0a; padding: 2rem 1rem; }
+    .card { max-width: 700px; margin: 0 auto; background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(10,10,10,0.04); border: 1px solid #e5e5e5; }
+    h1 { font-size: 1.5rem; font-weight: 500; letter-spacing: -0.5px; margin-bottom: 1.25rem; border-bottom: 1px solid #e5e5e5; padding-bottom: 0.5rem; color: #0a0a0a; }
+    .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1rem; }
     .form-group { margin-bottom: 1.15rem; display: flex; flex-direction: column; }
     label { font-weight: 600; margin-bottom: 0.35rem; font-size: 0.9rem; }
-    input, select, textarea { padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; font-family: inherit; }
+    input, select, textarea { padding: 0.65rem 0.85rem; border: 1px solid #e5e5e5; border-radius: 12px; font-size: 0.95rem; font-family: inherit; }
     textarea { min-height: 110px; resize: vertical; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #0a0a0a; box-shadow: 0 0 0 3px rgba(10,10,10,0.08); }
     .btn-group { margin-top: 1.5rem; display: flex; gap: 0.75rem; align-items: center; }
-    button[type="submit"] { background: #2563eb; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    button[type="submit"]:hover { background: #1d4ed8; }
-    .btn-cancel { color: #64748b; text-decoration: none; }
-    .btn-cancel:hover { text-decoration: underline; }
+    button[type="submit"] { background: #0a0a0a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; cursor: pointer; }
+    button[type="submit"]:hover { background: #2a2a2a; }
+    .btn-cancel { color: #6a6a6a; text-decoration: none; }
+    .btn-cancel:hover { text-decoration: underline; color: #0a0a0a; }
   </style>
 </head>
 <body>
@@ -444,11 +444,11 @@ const announcementView = {
   <meta charset="UTF-8">
   <title>${statusCode} Error - Announcements</title>
   <style>
-    body { font-family: -apple-system, sans-serif; background: #f8fafc; color: #1e293b; padding: 3rem 1rem; text-align: center; }
-    .card { max-width: 500px; margin: 0 auto; background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-    h1 { font-size: 2rem; color: #dc2626; margin-bottom: 0.5rem; }
-    p { color: #64748b; margin-bottom: 1.5rem; }
-    a { color: #2563eb; text-decoration: none; font-weight: 500; }
+    body { font-family: Inter, -apple-system, sans-serif; background: #fffaf0; color: #0a0a0a; padding: 3rem 1rem; text-align: center; }
+    .card { max-width: 500px; margin: 0 auto; background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 4px 16px rgba(10,10,10,0.04); border: 1px solid #e5e5e5; }
+    h1 { font-size: 2rem; font-weight: 500; letter-spacing: -0.5px; color: #dc2626; margin-bottom: 0.5rem; }
+    p { color: #6a6a6a; margin-bottom: 1.5rem; }
+    a { color: #0a0a0a; text-decoration: underline; font-weight: 600; }
   </style>
 </head>
 <body>

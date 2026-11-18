@@ -38,14 +38,14 @@ const notFoundView = {
   <title>404 - Page Not Found | Alumni Tracking System</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
+      --primary: #0a0a0a;
+      --primary-dark: #2a2a2a;
       --danger: #dc2626;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --bg: #f8fafc;
+      --text: #0a0a0a;
+      --text-muted: #6a6a6a;
+      --bg: #fffaf0;
       --card-bg: #ffffff;
-      --border: #e2e8f0;
+      --border: #e5e5e5;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -61,8 +61,8 @@ const notFoundView = {
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(10, 10, 10, 0.05);
       max-width: 580px;
       width: 100%;
       padding: 2.5rem;
@@ -71,25 +71,26 @@ const notFoundView = {
     .status-badge {
       display: inline-block;
       font-size: 3.5rem;
-      font-weight: 800;
+      font-weight: 600;
       color: var(--danger);
       background: #fef2f2;
-      border: 2px solid #fee2e2;
+      border: 1px solid #fee2e2;
       border-radius: 12px;
       padding: 0.25rem 1.5rem;
       margin-bottom: 1.25rem;
-      letter-spacing: -0.05em;
+      letter-spacing: -1.5px;
     }
     h1 {
       font-size: 1.75rem;
-      font-weight: 700;
+      font-weight: 500;
+      letter-spacing: -0.5px;
       margin-bottom: 0.75rem;
       color: var(--text);
     }
     .reason-box {
-      background: #f1f5f9;
+      background: #faf5e8;
       border-left: 4px solid var(--primary);
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 0.875rem 1rem;
       margin: 1.25rem 0;
       text-align: left;
@@ -129,7 +130,7 @@ const notFoundView = {
       padding: 0.75rem 0.5rem;
       background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 12px;
       color: var(--text);
       text-decoration: none;
       font-size: 0.85rem;
@@ -137,7 +138,10 @@ const notFoundView = {
       transition: all 0.15s ease-in-out;
     }
     .nav-btn:hover {
-      background: #eff6ff;
+      background: #faf5e8;
+      border-color: #d0d0d0;
+      transform: translateY(-1px);
+    }
       border-color: var(--primary);
       color: var(--primary);
       transform: translateY(-2px);
