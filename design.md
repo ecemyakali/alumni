@@ -157,7 +157,32 @@ To guarantee that navigation items and tabs never cramp, wrap, or generate unwan
 ### 3.2 Cards
 - **`featured-card`:** White background, 1px `#e5e7eb` hairline, 16px corner radius (`rounded-xl`), prominent emerald left border accent (`border-left: 4px solid var(--brand-mint)`), and diffuse elevation shadow.
 - **`stat-card`:** Clean, uncluttered metric tiles with bold numbers in `Geist Mono` / `SF Mono` and micro subtitles.
-- **`curated-card`:** Minimalist cards with circular avatar (48px), name/title, department/location, status pill tag, and direct `İncele →` action link.
+- **`curated-card`:** Minimalist cards with circular avatar (48px), name/title, department/location, status pill tag, and direct `View Details →` action link.
+
+---
+
+## 4. Subpages & Multi-Page Architectural Consistency
+
+To ensure the entire web application delivers a unified, premium user experience, all subpages follow the exact same architectural tokens:
+
+1. **Global Mesh / Aurora Backdrop:**
+   - Every subpage (`/users`, `/job-postings`, `/announcements`, `/applications`, `/404`, `/500`) applies the fixed Aurora Mesh gradient on the `<body>` element, preventing plain flat white surfaces and preserving visual continuity across all routes.
+   ```css
+   background-color: #ffffff;
+   background-image: 
+     radial-gradient(at 15% 10%, rgba(16, 185, 129, 0.22) 0px, transparent 50%),
+     radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.20) 0px, transparent 50%),
+     radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.14) 0px, transparent 60%),
+     linear-gradient(180deg, rgba(236, 253, 245, 0.72) 0%, rgba(255, 255, 255, 1) 100%);
+   background-attachment: fixed;
+   background-repeat: no-repeat;
+   ```
+2. **Unified Navigation Bar:**
+   - Single-row sticky navigation across every subpage with uniform pill buttons, frosted glass blur (`backdrop-filter: blur(16px)`), and active route highlighting.
+3. **Deep Diffuse Shadows:**
+   - Content cards, KPI metrics, tables, and modal dialogs employ multi-tiered diffuse shadows (`box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03)`).
+4. **100% English Language Standard:**
+   - All page headings, form labels, buttons, status badges, placeholders, and error messages strictly adhere to professional, idiomatic English.
 
 ---
 

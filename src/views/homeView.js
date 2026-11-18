@@ -49,8 +49,8 @@ const homeView = {
     const recentAnnouncements = Array.isArray(data.recentAnnouncements) && data.recentAnnouncements.length > 0
       ? data.recentAnnouncements
       : [
-        { id: 1, title: 'Annual Alumni Homecoming 2026', author: 'Mühendislik Fakültesi Dekanlığı', date: '2026-11-20', category: 'Etkinlik' },
-        { id: 2, title: 'Sonbahar Kariyer Fuarı ve Şirket Görüşmeleri', author: 'Kariyer Merkezi', date: '2026-11-15', category: 'Kariyer' }
+        { id: 1, title: 'Annual Alumni Homecoming 2026', author: 'Dean of Engineering', date: '2026-11-20', category: 'Event' },
+        { id: 2, title: 'Fall Career Fair & Executive Networking', author: 'Career Development Center', date: '2026-11-15', category: 'Career' }
       ];
 
     const recentJobPostings = Array.isArray(data.recentJobPostings) && data.recentJobPostings.length > 0
@@ -63,7 +63,7 @@ const homeView = {
     const firstAnnouncement = recentAnnouncements[0] || {
       id: 1,
       title: 'Annual Alumni Homecoming 2026',
-      author: 'Mühendislik Fakültesi Dekanlığı',
+      author: 'Dean of Engineering',
       date: '2026-11-20'
     };
 
@@ -76,11 +76,11 @@ const homeView = {
     };
 
     return `<!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alumni Tracking System — Modern Mezun ve Kariyer Ağı</title>
+  <title>Alumni Tracking System — Modern Alumni & Career Network</title>
   <style>
     :root {
       /* Mintlify-First Bright Color Palette */
@@ -133,7 +133,7 @@ const homeView = {
     }
 
     /* ========================================================
-     * GEREKSİNİM 2: ÜST MENÜ & SEKME (TAB) YAZILARI
+     * NAVIGATION & TAB LABELS (MINTLIFY SINGLE-ROW)
      * ======================================================== */
     .top-nav {
       position: sticky;
@@ -256,7 +256,7 @@ const homeView = {
     }
 
     /* ========================================================
-     * GEREKSİNİM 1 & 2: MINTLIFY İKONİK AURORA GRADIENT HERO
+     * MINTLIFY ICONIC AURORA GRADIENT HERO
      * ======================================================== */
     .hero-wrapper {
       position: relative;
@@ -319,7 +319,7 @@ const homeView = {
     }
 
     /* ========================================================
-     * GEREKSİNİM 3: MINTLIFY İMZASI: MERKEZİ ARAMA ÇUBUĞU
+     * MINTLIFY SIGNATURE: CENTRAL SEARCH BAR
      * ======================================================== */
     .search-box-wrapper {
       max-width: 600px;
@@ -382,7 +382,7 @@ const homeView = {
     }
 
     /* ========================================================
-     * GEREKSİNİM 4: SADE VE ANLAŞILIR 3'LÜ AKIŞ
+     * STREAMLINED 3-SECTION LAYOUT HIERARCHY
      * ======================================================== */
     .content-container {
       max-width: 1200px;
@@ -409,7 +409,7 @@ const homeView = {
       margin-top: 4px;
     }
 
-    /* BÖLÜM 2: ÖNE ÇIKAN TEK BÜYÜK DUYURU + 3 İSTATİSTİK */
+    /* SECTION 2: FEATURED SPOTLIGHT CARD + 3 TELEMETRY TILES */
     .spotlight-grid {
       display: grid;
       grid-template-columns: 1.8fr 1fr;
@@ -481,7 +481,7 @@ const homeView = {
       border-top: 1px solid var(--surface-subtle);
     }
 
-    /* 3 İSTATİSTİK KUTUSU */
+    /* 3 TELEMETRY STAT TILES */
     .stats-stack {
       display: flex;
       flex-direction: column;
@@ -529,7 +529,7 @@ const homeView = {
     }
 
     /* ========================================================
-     * BÖLÜM 3: KATEGORİ SEKMELERİ & SADE KARTLAR
+     * SECTION 3: CATEGORY TABS & CURATED CARDS
      * ======================================================== */
     .tabs-bar {
       display: flex;
@@ -733,7 +733,7 @@ const homeView = {
 <body>
 
   <!-- ========================================================
-   * ÜST MENÜ & SEKME (TAB) YAZILARI
+   * TOP NAVIGATION & TABS (SINGLE ROW, 1280PX)
    * ======================================================== -->
   <header class="top-nav">
     <div class="nav-container">
@@ -759,7 +759,7 @@ const homeView = {
   </header>
 
   <!-- ========================================================
-   * BÖLÜM 1: FERAH HERO + BÜYÜK ARAMA ÇUBUĞU + 2 NET BUTON
+   * SECTION 1: AIRY HERO + CENTRAL SEARCH BAR + 2 CLEAR BUTTONS
    * ======================================================== -->
   <section class="hero-wrapper">
     <div class="hero-content">
@@ -774,10 +774,10 @@ const homeView = {
       </h1>
 
       <p class="hero-subtitle">
-        Mezunlar, öğrenciler ve akademisyenleri bir araya getiren yeni nesil doğruluk odaklı kariyer ve mentörlük ağı.
+        A next-generation verification-first academic and career network uniting alumni, students, and faculty.
       </p>
 
-      <!-- Mintlify İmzası: Merkezi Arama Çubuğu -->
+      <!-- Mintlify Signature: Central Search Bar -->
       <div class="search-box-wrapper">
         <div class="search-bar">
           <span class="search-icon">🔍</span>
@@ -785,7 +785,7 @@ const homeView = {
             type="text" 
             id="globalSearchInput" 
             class="search-input" 
-            placeholder="Mezun adı, bölüm, şirket veya iş ilanı ara..." 
+            placeholder="Search alumni by name, department, company, or career role..." 
             autocomplete="off"
           />
           <kbd class="search-badge font-mono">Ctrl K</kbd>
@@ -793,8 +793,8 @@ const homeView = {
       </div>
 
       <div class="hero-actions">
-        <a href="/users" class="btn-pill-primary">Mezun Rehberini Keşfet &rarr;</a>
-        <a href="/job-postings#post-job" class="btn-pill-secondary">+ İlan Paylaş</a>
+        <a href="/users" class="btn-pill-primary">Explore Alumni Directory &rarr;</a>
+        <a href="/job-postings#post-job" class="btn-pill-secondary">+ Post Opportunity</a>
       </div>
     </div>
   </section>
@@ -802,43 +802,43 @@ const homeView = {
   <main class="content-container">
 
     <!-- ========================================================
-     * BÖLÜM 2: ÖNE ÇIKAN TEK BÜYÜK DUYURU + 3 İSTATİSTİK
+     * SECTION 2: SINGLE FEATURED EVENT / ANNOUNCEMENT + 3 TELEMETRY TILES
      * ======================================================== -->
     <section class="section-heading-wrap">
       <div>
-        <h2 class="section-title">Topluluk Vitrini & İstatistikler</h2>
-        <p class="section-desc">Öne çıkan en son kurumsal duyuru ve ağ genelindeki canlı veriler.</p>
+        <h2 class="section-title">Community Showcase & Telemetry</h2>
+        <p class="section-desc">Featured institutional announcement and verified live network statistics.</p>
       </div>
     </section>
 
     <div class="spotlight-grid">
-      <!-- Öne Çıkan Tek Büyük Etkinlik / Duyuru Kartı -->
+      <!-- Single Large Featured Event / Announcement Card -->
       <article class="featured-event-card">
         <div>
           <div class="featured-badge-bar">
             <span class="badge-mint">
               <span class="pulse-dot"></span>
-              Öne Çıkan (Featured)
+              Featured Announcement
             </span>
-            <span class="badge-date font-mono">📅 20–22 Kasım 2026</span>
+            <span class="badge-date font-mono">📅 November 20–22, 2026</span>
           </div>
           <h3 class="featured-event-title">${this.escapeHtml(firstAnnouncement.title)}</h3>
           <p class="featured-event-desc">
-            Büyük mezunlar buluşması ve teknoloji zirvesi için kayıtlar açıldı. Küresel teknoloji liderleri, sektör oturumları ve mentörlük atölyeleri için yerinizi hemen ayırtın.
+            Registration is now open for the grand homecoming summit. Reserve your seat for global keynote sessions, industry panels, and 1-on-1 mentorship workshops.
           </p>
         </div>
         <div class="featured-event-footer">
-          <a href="/announcements" class="btn-pill-primary">Detayları İncele & Kayıt Ol &rarr;</a>
-          <span style="font-size:13px; color:var(--ink-subtle);" class="font-mono">Organizatör: ${this.escapeHtml(firstAnnouncement.author)}</span>
+          <a href="/announcements" class="btn-pill-primary">View Event Details & RSVP &rarr;</a>
+          <span style="font-size:13px; color:var(--ink-subtle);" class="font-mono">Organizer: ${this.escapeHtml(firstAnnouncement.author)}</span>
         </div>
       </article>
 
-      <!-- Yanında 3 Temiz İstatistik -->
+      <!-- 3 Clean Metric Tiles -->
       <aside class="stats-stack">
         <a href="/users" class="stat-tile">
           <div class="stat-meta">
             <span class="stat-label">Alumni Directory</span>
-            <span class="stat-sub">Doğrulanmış Mezunlar</span>
+            <span class="stat-sub">Verified Alumni</span>
           </div>
           <div class="stat-count">${userCount}</div>
         </a>
@@ -846,7 +846,7 @@ const homeView = {
         <a href="/job-postings" class="stat-tile">
           <div class="stat-meta">
             <span class="stat-label">Career Opportunities</span>
-            <span class="stat-sub">Aktif İş İlanları</span>
+            <span class="stat-sub">Active Job Postings</span>
           </div>
           <div class="stat-count" style="color:var(--brand-mint);">${jobPostingCount}</div>
         </a>
@@ -854,7 +854,7 @@ const homeView = {
         <a href="/applications" class="stat-tile">
           <div class="stat-meta">
             <span class="stat-label">Application Tracking</span>
-            <span class="stat-sub">Aday Başvuruları</span>
+            <span class="stat-sub">Applications Tracked</span>
           </div>
           <div class="stat-count">${applicationCount}</div>
         </a>
@@ -862,26 +862,26 @@ const homeView = {
     </div>
 
     <!-- ========================================================
-     * BÖLÜM 3: KATEGORİ SEKMELİ ÖNE ÇIKAN MEZUNLAR & FIRSATLAR
+     * SECTION 3: FILTERABLE CATEGORY TABS & CURATED MINIMALIST CARDS
      * ======================================================== -->
     <section class="section-heading-wrap">
       <div>
-        <h2 class="section-title">Öne Çıkanlar & Fırsatlar</h2>
-        <p class="section-desc">Kategorilere göre filtrelenebilir doğrulanmış mezun profilleri ve kariyer fırsatları.</p>
+        <h2 class="section-title">Featured Opportunities & Alumni</h2>
+        <p class="section-desc">Filter verified alumni profiles, career positions, and campus announcements.</p>
       </div>
     </section>
 
-    <!-- Temiz Kategori Sekmeleri -->
+    <!-- Clean Category Tabs -->
     <div class="tabs-bar" id="categoryTabs">
-      <button class="tab-btn active" data-filter="all">Tümü (All)</button>
-      <button class="tab-btn" data-filter="jobs">Kariyer Fırsatları</button>
-      <button class="tab-btn" data-filter="alumni">Mezun Profilleri</button>
+      <button class="tab-btn active" data-filter="all">All</button>
+      <button class="tab-btn" data-filter="jobs">Career Opportunities</button>
+      <button class="tab-btn" data-filter="alumni">Alumni Profiles</button>
       <button class="tab-btn" data-filter="announcements">Announcements Board (${announcementCount})</button>
     </div>
 
-    <!-- Minimalist & Sade Kartlar Izgarası -->
+    <!-- Minimalist & Clean Cards Grid -->
     <div class="cards-grid" id="curatedCardsGrid">
-      <!-- Kart 1: İş Fırsatı (Google Cloud) -->
+      <!-- Card 1: Job Opportunity (Google Cloud) -->
       <article class="clean-card" data-category="jobs" data-title="${this.escapeHtml(firstJob.title)} ${this.escapeHtml(firstJob.company)}">
         <div class="clean-card-header">
           <div class="card-avatar" style="background:#eff6ff;">💼</div>
@@ -892,12 +892,12 @@ const homeView = {
         </div>
         <div class="card-meta-row">
           <span class="pill-tag">${this.escapeHtml(firstJob.type || 'Full-time')}</span>
-          <a href="/job-postings" class="card-action-link">İncele &rarr;</a>
+          <a href="/job-postings" class="card-action-link">View Details &rarr;</a>
         </div>
       </article>
 
-      <!-- Kart 2: Doğrulanmış Mezun Profili -->
-      <article class="clean-card" data-category="alumni" data-title="Dr. Selin Demir Stanford AI Lab Bilgisayar Mühendisliği">
+      <!-- Card 2: Verified Alumnus Profile -->
+      <article class="clean-card" data-category="alumni" data-title="Dr. Selin Demir Stanford AI Lab Computer Science">
         <div class="clean-card-header">
           <div class="card-avatar" style="background:#ecfdf5;">🎓</div>
           <div class="card-title-group">
@@ -906,12 +906,12 @@ const homeView = {
           </div>
         </div>
         <div class="card-meta-row">
-          <span class="pill-tag font-mono">2018 Mezunu</span>
-          <a href="/users" class="card-action-link">İncele &rarr;</a>
+          <span class="pill-tag font-mono">Class of 2018</span>
+          <a href="/users" class="card-action-link">View Details &rarr;</a>
         </div>
       </article>
 
-      <!-- Kart 3: İkinci Kariyer Fırsatı -->
+      <!-- Card 3: Second Career Opportunity -->
       <article class="clean-card" data-category="jobs" data-title="Staff Systems Engineer Stripe Platforms">
         <div class="clean-card-header">
           <div class="card-avatar" style="background:#f5f3ff;">🚀</div>
@@ -922,41 +922,41 @@ const homeView = {
         </div>
         <div class="card-meta-row">
           <span class="pill-tag">Full-time</span>
-          <a href="/job-postings" class="card-action-link">İncele &rarr;</a>
+          <a href="/job-postings" class="card-action-link">View Details &rarr;</a>
         </div>
       </article>
 
-      <!-- Kart 4: Doğrulanmış Mezun 2 -->
-      <article class="clean-card" data-category="alumni" data-title="Barış Akın Product Lead Revolut">
+      <!-- Card 4: Verified Alumnus 2 -->
+      <article class="clean-card" data-category="alumni" data-title="Baris Akin Product Lead Revolut">
         <div class="clean-card-header">
           <div class="card-avatar" style="background:#fef3c7;">👨‍💻</div>
           <div class="card-title-group">
-            <h3 class="card-name">Barış Akın</h3>
+            <h3 class="card-name">Baris Akin</h3>
             <div class="card-subtext">Senior Product Manager · Revolut London</div>
           </div>
         </div>
         <div class="card-meta-row">
-          <span class="pill-tag font-mono">2020 Mezunu</span>
-          <a href="/users" class="card-action-link">İncele &rarr;</a>
+          <span class="pill-tag font-mono">Class of 2020</span>
+          <a href="/users" class="card-action-link">View Details &rarr;</a>
         </div>
       </article>
 
-      <!-- Kart 5: Resmi Duyuru -->
-      <article class="clean-card" data-category="announcements" data-title="Yıllık Mezunlar Zirvesi Kayıtları">
+      <!-- Card 5: Official Announcement -->
+      <article class="clean-card" data-category="announcements" data-title="Annual Alumni Homecoming 2026 Dean of Engineering">
         <div class="clean-card-header">
           <div class="card-avatar" style="background:#ecfdf5;">📢</div>
           <div class="card-title-group">
             <h3 class="card-name">Annual Alumni Homecoming 2026</h3>
-            <div class="card-subtext">Mühendislik Fakültesi · 20 Kasım 2026</div>
+            <div class="card-subtext">Faculty of Engineering · November 20, 2026</div>
           </div>
         </div>
         <div class="card-meta-row">
-          <span class="pill-tag">Etkinlik</span>
-          <a href="/announcements" class="card-action-link">İncele &rarr;</a>
+          <span class="pill-tag">Event</span>
+          <a href="/announcements" class="card-action-link">View Details &rarr;</a>
         </div>
       </article>
 
-      <!-- Kart 6: Kariyer Fırsatı 3 -->
+      <!-- Card 6: Career Opportunity 3 -->
       <article class="clean-card" data-category="jobs" data-title="Frontend Infrastructure Lead Vercel">
         <div class="clean-card-header">
           <div class="card-avatar" style="background:#eff6ff;">💻</div>
@@ -967,7 +967,7 @@ const homeView = {
         </div>
         <div class="card-meta-row">
           <span class="pill-tag">Full-time</span>
-          <a href="/job-postings" class="card-action-link">İncele &rarr;</a>
+          <a href="/job-postings" class="card-action-link">View Details &rarr;</a>
         </div>
       </article>
     </div>
@@ -982,11 +982,11 @@ const homeView = {
       <div>
         <div class="footer-brand">🎓 Alumni Tracking System</div>
         <p class="footer-desc">
-          Mintlify aydınlığı ve ferahlığında geliştirilmiş, doğrulanmış mezun ve kariyer platformu.
+          A modern, scalable network engineered to bridge academic excellence with lifetime career achievement.
         </p>
       </div>
       <div>
-        <div class="footer-col-title">Navigasyon</div>
+        <div class="footer-col-title">Navigation</div>
         <ul class="footer-links">
           <li><a href="/main">Home</a></li>
           <li><a href="/users">Alumni Directory</a></li>
@@ -996,7 +996,7 @@ const homeView = {
         </ul>
       </div>
       <div>
-        <div class="footer-col-title">Geliştirici & API</div>
+        <div class="footer-col-title">Developer API</div>
         <ul class="footer-links">
           <li><a href="/api/swagger">Swagger UI</a></li>
           <li><a href="/api/swagger.json">OpenAPI 3.0 Spec</a></li>
@@ -1005,7 +1005,7 @@ const homeView = {
         </ul>
       </div>
       <div>
-        <div class="footer-col-title">Dokümantasyon</div>
+        <div class="footer-col-title">Documentation</div>
         <ul class="footer-links">
           <li><a href="/brand.md">Brand Manual (brand.md)</a></li>
           <li><a href="/DESIGN.md">Design System (DESIGN.md)</a></li>
@@ -1015,7 +1015,7 @@ const homeView = {
     </div>
 
     <div class="footer-bottom">
-      <div>© 2026 Alumni Tracking System. Tüm hakları saklıdır.</div>
+      <div>© 2026 Alumni Tracking System. All rights reserved.</div>
       <div style="display:flex; gap:8px;">
         <span class="pill-tag font-mono">Node.js</span>
         <span class="pill-tag font-mono">Express</span>
@@ -1024,7 +1024,7 @@ const homeView = {
     </div>
   </footer>
 
-  <!-- İNTERAKTİF İSTEMCİ SCRİPTİ: Arama ve Kategori Filtreleme -->
+  <!-- Interactive Client Script: Search & Category Filtering -->
   <script>
     (function() {
       const searchInput = document.getElementById('globalSearchInput');

@@ -139,14 +139,16 @@ const applicationView = {
     }
     .kpi-card {
       background: #ffffff;
-      border: 1px solid var(--colors-hairline);
+      border: 1px solid var(--hairline);
       border-radius: var(--rounded-lg);
       padding: 1.5rem;
-      box-shadow: 0 2px 10px rgba(10,10,10,0.02);
-      transition: transform 0.15s ease;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .kpi-card:hover {
+      border-color: var(--brand-mint-border);
       transform: translateY(-2px);
+      box-shadow: 0 12px 28px -4px rgba(13, 147, 115, 0.09);
     }
     .kpi-value {
       font-family: var(--font-display);
@@ -166,8 +168,8 @@ const applicationView = {
 
     .filter-panel {
       background: #ffffff;
-      border: 1px solid var(--colors-hairline);
-      border-radius: var(--rounded-md);
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-lg);
       padding: 1rem 1.25rem;
       margin-bottom: 1.75rem;
       display: flex;
@@ -175,6 +177,7 @@ const applicationView = {
       align-items: center;
       flex-wrap: wrap;
       gap: 1rem;
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.04);
     }
     .search-box-wrap {
       flex: 1;
