@@ -12,7 +12,14 @@
 
 1. [Overview & Architectural Context](#1-overview--architectural-context)
 2. [Domain Entities & Information Schema](#2-domain-entities--information-schema)
-   - [2.1 User (Alumni) Entity](#21-user-alumni-entity)
+   - [2.1 User Aggregate & Identity Domain](#21-user-aggregate--identity-domain)
+     - [2.1.1 Aggregate Root Architecture & Invariants](#211-aggregate-root-architecture--invariants)
+     - [2.1.2 Value Objects (Email, PasswordHash, Role, GraduationYear)](#212-value-objects-email-passwordhash-role-graduationyear)
+     - [2.1.3 System Roles & Persona Hierarchy](#213-system-roles--persona-hierarchy)
+     - [2.1.4 Role-Based Access Control (RBAC) & Permissions Matrix](#214-role-based-access-control-rbac--permissions-matrix)
+     - [2.1.5 Authentication Domain Rules & Security Policies](#215-authentication-domain-rules--security-policies)
+     - [2.1.6 Domain Events & Lifecycle State Machine](#216-domain-events--lifecycle-state-machine)
+     - [2.1.7 Authentication & Access Domain Flows](#217-authentication--access-domain-flows)
    - [2.2 Announcement Entity](#22-announcement-entity)
    - [2.3 JobPosting Entity](#23-jobposting-entity)
    - [2.4 Application Entity (Many-to-Many Action Table)](#24-application-entity-many-to-many-action-table)
@@ -58,33 +65,447 @@ The **Alumni Tracking System** is architected using the **Model-View-Controller 
 
 The application models four primary business domains: **User (Alumni Profile)**, **Announcement (Campus & Alumni Broadcasts)**, **JobPosting (Career Opportunities)**, and **Application (Many-to-Many Job Applications)**.
 
-### 2.1 User (Alumni) Entity
+### 2.1 User Aggregate & Identity Domain
 
-Represents an alumnus, student, faculty member, or system administrator registered in the network.
+In the **Alumni Tracking System**, user identity, authentication, credential validation, and role authorization constitute the central **Identity & Access Management (IAM)** bounded context. The `User` is modeled not merely as an anemic data table, but as a rich **Domain Aggregate Root** enforcing business invariants, credential integrity, and role boundaries.
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        USER AGGREGATE ROOT                             │
+│                                                                        │
+│  [Entity Identity: UserId (PK)]                                        │
+│  ├── FullName (Value Object: validated string 2-255 chars)             │
+│  ├── Email (Value Object: RFC 5322 lowercase, unique index)            │
+│  ├── PasswordHash (Value Object: bcrypt/Argon2id cryptographic digest)  │
+│  ├── Role (Value Object: Finite Enum: admin | alumni | student | guest)│
+│  ├── Department (Academic Unit string)                                 │
+│  ├── GraduationYear (Value Object: integer 1950 - 2100)                │
+│  ├── AccountStatus (Finite State: ACTIVE | PENDING | SUSPENDED)        │
+│  └── AuditTimestamps (createdAt, updatedAt, lastLoginAt)               │
+│                                                                        │
+│  [Domain Invariant Enforcement]                                        │
+│  ├── verifyPassword(plainPassword): Constant-time hash verification   │
+│  ├── changePassword(newPlainPassword): Enforce complexity & rehash     │
+│  ├── assignRole(newRole, actor): Admin-only boundary & last-admin check│
+│  └── emitDomainEvents(): UserRegistered, UserLoggedIn, RoleAssigned    │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+#### User Aggregate Information Schema:
 
 | Attribute | Data Type | Nullable | Default | Description |
 | :--- | :--- | :---: | :--- | :--- |
-| **`id`** | `INTEGER` | ❌ No | Auto-increment (`1, 2, ...`) | Unique primary identifier. |
-| **`name`** | `VARCHAR(255)` | ❌ No | - | Full name of the graduate. |
-| **`email`** | `VARCHAR(255)` | ❌ No | - | Unique electronic mail address. |
-| **`department`** | `VARCHAR(255)` | ❌ No | - | Academic department / graduation program. |
-| **`graduationYear`** | `INTEGER` | ❌ No | - | Four-digit calendar year of graduation. |
-| **`role`** | `VARCHAR(50)` | ❌ No | `'alumni'` | Authorization role (`'alumni'`, `'admin'`). |
+| **`id`** | `INTEGER` | ❌ No | Auto-increment (`1, 2, ...`) | Unique immutable primary identifier (`UserId`). |
+| **`name`** | `VARCHAR(255)` | ❌ No | - | Full name of the individual (min 2, max 255 chars). |
+| **`email`** | `VARCHAR(255)` | ❌ No | - | Unique case-insensitive electronic mail address (`Email`). |
+| **`passwordHash`** | `VARCHAR(255)` | ❌ No | - | One-way cryptographic password digest (`PasswordHash`). |
+| **`role`** | `VARCHAR(50)` | ❌ No | `'alumni'` | Authorization level (`'admin'`, `'alumni'`, `'student'`, `'guest'`, `'faculty'`). |
+| **`department`** | `VARCHAR(255)` | ✅ Yes | `""` | Academic department / university program. |
+| **`graduationYear`** | `INTEGER` | ❌ No | `2024` | Four-digit calendar year of graduation ($1950 \le \text{year} \le 2100$). |
+| **`status`** | `VARCHAR(50)` | ❌ No | `'ACTIVE'` | Account state (`'ACTIVE'`, `'PENDING_VERIFICATION'`, `'SUSPENDED'`, `'DEACTIVATED'`). |
+| **`lastLoginAt`** | `TIMESTAMP (ISO 8601)` | ✅ Yes | `null` | Timestamp of most recent successful authentication. |
 | **`createdAt`** | `TIMESTAMP (ISO 8601)` | ❌ No | `CURRENT_TIMESTAMP` | System record creation timestamp. |
 | **`updatedAt`** | `TIMESTAMP (ISO 8601)` | ✅ Yes | `null` | Timestamp of last modification. |
 
-#### User JSON Representation:
+#### User Aggregate JSON Representation:
 ```json
 {
   "id": 1,
   "name": "Ece Yakali",
   "email": "ece@example.com",
+  "passwordHash": "$2b$12$e80yqZ.4nBqQvHkX2Y9H1.N0M6R7W8Z1K2L3M4N5O6P7Q8R9S0T1U",
+  "role": "alumni",
   "department": "Computer Engineering",
   "graduationYear": 2024,
-  "role": "alumni",
+  "status": "ACTIVE",
+  "lastLoginAt": "2026-11-25T08:30:00.000Z",
   "createdAt": "2026-10-14T20:00:00.000Z",
-  "updatedAt": null
+  "updatedAt": "2026-11-25T08:30:00.000Z"
 }
+```
+
+---
+
+#### 2.1.1 Aggregate Root Architecture & Invariants
+
+In Domain-Driven Design, the **Aggregate Root** guarantees transactional consistency across all entities and value objects it encapsulates. External callers (controllers, services) cannot bypass the Aggregate Root to mutate internal properties directly.
+
+##### Core Aggregate Invariants:
+1. **Email Global Uniqueness:**
+   An email address uniquely identifies an individual across the entire institution. Lookups and uniqueness checks are strictly case-insensitive (`LOWER(email)`). Duplicate registrations with case variance (e.g. `User@Alumni.edu` vs `user@alumni.edu`) are rejected with `HTTP 400 Bad Request` or `HTTP 409 Conflict`.
+2. **Credential Privacy & Irreversibility:**
+   Plaintext passwords must **never** be persisted, logged, transmitted in error traces, or serialized in API responses. The aggregate holds only a cryptographically salted one-way hash (`PasswordHash`).
+3. **Role Boundary Invariant:**
+   The `role` property must strictly be one of the finite domain roles: `admin`, `alumni`, `student`, `guest`, or `faculty`. Unknown or arbitrary strings are rejected.
+4. **System Administrator Preservation Invariant:**
+   The platform must maintain at least **one active `admin`** user at all times. Any administrative action (demotion, role revocation, account deactivation, or deletion) that would reduce the count of active administrators to zero is strictly rejected with `HTTP 422 Unprocessable Entity` or `HTTP 403 Forbidden`.
+5. **Self-Elevation Prohibition:**
+   A non-admin user cannot promote themselves to `admin` or modify their own authorization tier. Self-profile updates (`PUT /api/users/:id`) filter out the `role` field.
+6. **Academic Year Temporal Invariant:**
+   The graduation year must be an integer between `1950` and `2100`. For users assigned the `student` role, graduation year must typically be $\ge \text{currentYear}$; for `alumni`, graduation year is typically $\le \text{currentYear} + 1$.
+
+---
+
+#### 2.1.2 Value Objects (Email, PasswordHash, Role, GraduationYear)
+
+To avoid "primitive obsession" and ensure domain rules are validated at construction, the User Aggregate utilizes immutable **Value Objects**:
+
+##### 1. `Email` Value Object
+* **Responsibilities:** Syntax verification, lowercase normalization, domain restriction checks.
+* **Validation Rule:** Conforms to RFC 5322 regex pattern `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`, length $\le 255$ characters.
+* **Institutional Preference:** Recognizes and tags verified university email domains (`@alumni.edu`, `@std.edu`).
+
+##### 2. `PasswordHash` Value Object
+* **Responsibilities:** Encapsulates irreversible password storage and timing-safe comparison.
+* **Algorithm:** `bcrypt` with work factor $\ge 12$ (or `Argon2id` with memory cost $\ge 64\text{MB}$).
+* **Complexity Validation (pre-hash):** Minimum 8 characters, maximum 128 characters; must contain at least one uppercase letter, one lowercase letter, one numeric digit, and one special symbol (`[@$!%*?&]`).
+* **Comparison:** Constant-time verification (`bcrypt.compare`) prevents side-channel timing attacks.
+
+##### 3. `Role` Value Object
+* **Responsibilities:** Encapsulates authorization hierarchy and boundary transitions.
+* **Enumeration:** `admin`, `alumni`, `student`, `guest`, `faculty`.
+* **Equality:** Compared via strict string value matching.
+
+##### 4. `GraduationYear` Value Object
+* **Responsibilities:** Temporal graduation constraint validation.
+* **Validation:** Integer between $1950$ and $2100$.
+
+---
+
+#### 2.1.3 System Roles & Persona Hierarchy
+
+The system defines five explicit authorization personas, each with strictly delimited access boundaries:
+
+```
+                      ┌─────────────────────────┐
+                      │          ADMIN          │ (Full Platform Governance)
+                      └────────────┬────────────┘
+                                   │
+         ┌─────────────────────────┼─────────────────────────┐
+         │                         │                         │
+         ▼                         ▼                         ▼
+┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│     FACULTY     │       │     ALUMNI      │       │     STUDENT     │
+│ (Academic Posts)│       │(Jobs & Mentors) │       │(Applications)   │
+└─────────────────┘       └─────────────────┘       └─────────────────┘
+         │                         │                         │
+         └─────────────────────────┼─────────────────────────┘
+                                   │
+                                   ▼
+                      ┌─────────────────────────┐
+                      │          GUEST          │ (Public Exploration)
+                      └─────────────────────────┘
+```
+
+##### 1. `admin` (System Administrator & Platform Steward)
+* **Purpose:** Oversees the institutional registry, manages user roles, moderates postings, and enforces governance.
+* **Capabilities:** Full read/write access to all users, postings, announcements, applications, system telemetry, and audit logs.
+* **Unique Powers:** Assigns and revokes user roles; deletes abusive listings; publishes priority broadcast announcements.
+* **Boundary:** Subject to the *System Administrator Preservation Invariant* (cannot demote or delete the last admin).
+
+##### 2. `alumni` (Verified University Graduate)
+* **Purpose:** Engages in career networking, posts job vacancies, mentors junior students, and applies for advanced roles.
+* **Capabilities:** Browses the full alumni directory; publishes, edits, and deletes their own job postings; reviews candidate applications submitted to their postings (modifying candidate status from `pending` to `reviewing`, `accepted`, `rejected`); submits applications to other career opportunities.
+* **Boundary:** Cannot modify or delete other members' postings; cannot assign roles; cannot delete other users.
+
+##### 3. `student` (Enrolled University Student)
+* **Purpose:** Explores career pathways, discovers verified alumni mentors, and applies for internships or entry-level positions.
+* **Capabilities:** Read-only access to the alumni directory; views all active job postings; submits job applications with resume link and cover note; tracks status of their own submitted applications; reads campus announcements.
+* **Boundary:** Cannot publish job vacancies; cannot review other candidates' applications; cannot assign roles.
+
+##### 4. `guest` (Unauthenticated Visitor / Prospective Member)
+* **Purpose:** Explores the public institutional showcase, views general announcements, and evaluates the platform before registration.
+* **Capabilities:** Views public homepage (`/main`), views public announcements board, accesses API Swagger documentation, initiates registration or login.
+* **Boundary:** Zero access to private alumni directory profiles, contact emails, application submission pipelines, or administrative controls.
+
+##### 5. `faculty` (Academic Department Representative / Dean)
+* **Purpose:** Communicates official departmental milestones, academic symposiums, research grants, and career fairs.
+* **Capabilities:** Publishes official announcements tagged as `Academic` or `Event` with elevated priority; views departmental alumni career outcomes and placement rates.
+* **Boundary:** Cannot modify administrative user roles or delete alumni job postings outside their department.
+
+---
+
+#### 2.1.4 Role-Based Access Control (RBAC) & Permissions Matrix
+
+The following comprehensive matrix defines the precise permissions assigned to each role:
+
+| Action / Permission Token | Scope / Description | `guest` | `student` | `alumni` | `faculty` | `admin` |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **`users:read:public`** | View public directory teaser / alumni count | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **`users:read:full`** | View verified profile details & email | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **`users:create`** | Register new user account | ✅ | ❌ | ❌ | ❌ | ✅ |
+| **`users:update:self`** | Update own profile & password | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **`users:update:any`** | Update arbitrary user profile data | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **`users:delete:any`** | Delete/deactivate user record | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **`roles:assign`** | Mutate/assign user role (`admin`, etc.) | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **`jobs:read`** | Browse active career listings & details | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **`jobs:create`** | Post new job vacancy or internship | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **`jobs:update:own`** | Edit job vacancy created by self | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **`jobs:update:any`** | Edit arbitrary job vacancy | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **`jobs:delete:own`** | Remove job vacancy created by self | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **`jobs:delete:any`** | Remove arbitrary job vacancy | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **`applications:submit`** | Submit application to a job vacancy | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **`applications:read:own`** | View applications submitted by self | ❌ | ✅ | ✅ | ❌ | ✅ |
+| **`applications:read:job_owner`** | View applicants for jobs posted by self | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **`applications:update_status`** | Accept / reject / review job applicants | ❌ | ❌ | ✅ | ✅ | ✅ |
+| **`applications:delete`** | Withdraw or remove application | ❌ | ✅ (own) | ✅ (own) | ❌ | ✅ (any) |
+| **`announcements:read`** | Read broadcast announcements | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **`announcements:publish`** | Publish new official broadcast | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **`announcements:edit:own`** | Update announcement authored by self | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **`announcements:delete:any`** | Remove broadcast announcement | ❌ | ❌ | ❌ | ❌ | ✅ |
+| **`system:telemetry:view`** | Access live health, DB & metrics | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **`system:audit:read`** | Access role mutation & security audit log | ❌ | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+#### 2.1.5 Authentication Domain Rules & Security Policies
+
+##### 1. User Registration Domain Rules:
+* **Self-Registration Endpoint (`POST /api/auth/register`):**
+  * Incoming payload must supply valid `name`, `email`, and `password`.
+  * `email` is verified against existing users. If duplicate, execution terminates with `400 Bad Request`.
+  * `role` defaulting rule:
+    * If `graduationYear` $> \text{currentYear} \implies$ Assigned `student`.
+    * If `graduationYear` $\le \text{currentYear} \implies$ Assigned `alumni`.
+    * Under no circumstances can a public registration request assign `admin` or `faculty`. Any attempt to pass `role: "admin"` in the public registration DTO is silently overridden or rejected.
+  * Emits `UserRegisteredEvent`.
+
+##### 2. Authentication & Login Verification Rules:
+* **Credential Verification (`POST /api/auth/login`):**
+  * Looks up user by normalized email (`LOWER(email)`).
+  * If user not found, executes dummy password hashing to prevent timing discrepancy enumeration, increments brute-force counters, and emits `UserLoginFailedEvent`.
+  * If user found, compares raw candidate password against stored `passwordHash` using timing-safe comparison (`bcrypt.compare`).
+  * If password invalid, increments failed attempt counter and emits `UserLoginFailedEvent`.
+  * If successful, resets failed attempt counter, updates `lastLoginAt`, and emits `UserLoggedInEvent`.
+* **Rate Limiting & Brute-Force Defense:**
+  * Maximum 5 failed login attempts per email / IP address within a 15-minute sliding window.
+  * Upon reaching the 5th failure, the account enters a temporary lockout state for 15 minutes, rejecting subsequent login attempts with `HTTP 429 Too Many Requests`.
+
+##### 3. Token & Session Management:
+* Successful authentication issues a cryptographically signed token (e.g., JWT with HMAC-SHA256 or RSA-256) or a secure random 32-byte session token stored in an `HttpOnly`, `Secure`, `SameSite=Lax` cookie.
+* **Token Payload Claims:**
+  * `sub`: `user.id` (subject)
+  * `email`: `user.email`
+  * `role`: `user.role`
+  * `name`: `user.name`
+  * `iat`: Issue timestamp
+  * `exp`: Expiration timestamp (e.g. 24 hours for access tokens)
+
+##### 4. Role Assignment & Boundary Enforcement:
+* **Administrative Mutation (`PATCH /api/users/:id/role`):**
+  * Caller must possess the `roles:assign` permission (strictly `admin` role).
+  * Caller cannot demote or delete themselves if they are the sole administrator (*System Administrator Preservation Invariant*).
+  * Valid role transitions:
+    * `student` $\to$ `alumni` (upon graduation verification).
+    * `alumni` $\to$ `faculty` or `admin` (upon institutional appointment).
+    * `admin` $\to$ `alumni` (demotion permitted only when $\ge 2$ admins remain).
+  * Emits `UserRoleAssignedEvent` or `UserRoleRevokedEvent`.
+  * All active sessions/cached permissions for the target user are invalidated or flagged for refresh upon next request.
+
+---
+
+#### 2.1.6 Domain Events & Lifecycle State Machine
+
+Domain events capture state transitions within the identity boundary, allowing decoupled audit logging, email notifications, and cache invalidations:
+
+##### Concrete Domain Events:
+
+1. **`UserRegisteredEvent`**
+   ```json
+   {
+     "eventId": "evt_reg_8492019",
+     "eventName": "UserRegisteredEvent",
+     "aggregateId": 1,
+     "occurredOn": "2026-11-25T09:00:00.000Z",
+     "payload": {
+       "userId": 1,
+       "name": "Ece Yakali",
+       "email": "ece@example.com",
+       "role": "alumni",
+       "department": "Computer Engineering",
+       "graduationYear": 2024
+     }
+   }
+   ```
+2. **`UserLoggedInEvent`**
+   ```json
+   {
+     "eventId": "evt_auth_1029384",
+     "eventName": "UserLoggedInEvent",
+     "aggregateId": 1,
+     "occurredOn": "2026-11-25T09:05:00.000Z",
+     "payload": {
+       "userId": 1,
+       "email": "ece@example.com",
+       "ipAddress": "192.168.1.100",
+       "userAgent": "Mozilla/5.0 ... Chrome/130.0"
+     }
+   }
+   ```
+3. **`UserLoginFailedEvent`**
+   ```json
+   {
+     "eventId": "evt_auth_fail_4920192",
+     "eventName": "UserLoginFailedEvent",
+     "aggregateId": null,
+     "occurredOn": "2026-11-25T09:04:30.000Z",
+     "payload": {
+       "attemptedEmail": "ece@example.com",
+       "ipAddress": "192.168.1.100",
+       "failureCount": 3,
+       "reason": "INVALID_PASSWORD"
+     }
+   }
+   ```
+4. **`UserRoleAssignedEvent`**
+   ```json
+   {
+     "eventId": "evt_role_5829103",
+     "eventName": "UserRoleAssignedEvent",
+     "aggregateId": 1,
+     "occurredOn": "2026-11-25T09:10:00.000Z",
+     "payload": {
+       "userId": 1,
+       "previousRole": "alumni",
+       "newRole": "admin",
+       "assignedBy": 99,
+       "reason": "Elected as Alumni Association Executive"
+     }
+   }
+   ```
+
+##### User Account Lifecycle State Machine:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Guest: Unauthenticated Session
+    Guest --> Active: Register & Auto-Verify (Student / Alumni)
+    Guest --> PendingVerification: Register with Manual Review
+    PendingVerification --> Active: Admin / Dean Verification
+    Active --> Active: Password Change / Profile Update
+    Active --> Suspended: 5 Consecutive Failed Logins / Policy Violation
+    Suspended --> Active: Admin Reset / Lockout Expiry (15 min)
+    Active --> Deactivated: User Request / Admin Account Termination
+    Deactivated --> [*]
+```
+
+---
+
+#### 2.1.7 Authentication & Access Domain Flows
+
+##### Flow 1: User Registration Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Registration Client
+    participant AC as AuthController
+    participant UA as UserAggregate
+    participant DB as UserModel / Database
+    participant EP as DomainEventPublisher
+    participant NS as NotificationService
+
+    Client->>AC: POST /api/auth/register (name, email, password, department, graduationYear)
+    AC->>UA: validateRegistrationInput(dto)
+    UA->>DB: findByEmail(email)
+    alt Email Already Exists
+        DB-->>UA: existingUser
+        UA-->>AC: Error: Email already registered
+        AC-->>Client: 400 Bad Request / 409 Conflict
+    else Email Available
+        DB-->>UA: null
+        UA->>UA: validatePasswordComplexity(password)
+        UA->>UA: hashPassword(password, saltRounds=12)
+        UA->>UA: resolveRole(graduationYear) -> student | alumni
+        UA->>DB: create(UserAggregateData)
+        DB-->>AC: newUserRecord (id, name, email, role, createdAt)
+        AC->>EP: publish(UserRegisteredEvent)
+        EP->>NS: dispatchWelcomeNotification(newUserRecord)
+        AC-->>Client: 201 Created (Token / User Profile DTO)
+    end
+```
+
+##### Flow 2: User Authentication / Login Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Login Client
+    participant AC as AuthController
+    participant RL as RateLimiterGuard
+    participant UA as UserAggregate
+    participant DB as UserModel / Database
+    participant TS as TokenService
+    participant EP as DomainEventPublisher
+
+    Client->>AC: POST /api/auth/login (email, password)
+    AC->>RL: checkAttemptThreshold(ip, email)
+    alt Threshold Exceeded (>= 5 failures)
+        RL-->>AC: Locked out (cooldown active)
+        AC-->>Client: 429 Too Many Requests (Try again in 15 minutes)
+    else Threshold OK
+        RL-->>AC: Allowed
+        AC->>DB: findByEmail(email)
+        alt User Not Found or Inactive
+            DB-->>AC: null
+            AC->>RL: recordFailure(ip, email)
+            AC->>EP: publish(UserLoginFailedEvent)
+            AC-->>Client: 401 Unauthorized (Invalid email or password)
+        else User Found
+            DB-->>AC: userEntity (with passwordHash)
+            AC->>UA: verifyCredentials(password, userEntity.passwordHash)
+            alt Password Mismatch
+                UA-->>AC: false
+                AC->>RL: recordFailure(ip, email)
+                AC->>EP: publish(UserLoginFailedEvent)
+                AC-->>Client: 401 Unauthorized (Invalid email or password)
+            else Password Match
+                UA-->>AC: true
+                AC->>RL: resetFailures(ip, email)
+                AC->>TS: generateToken(userEntity.id, userEntity.role)
+                TS-->>AC: authToken
+                AC->>DB: update(userEntity.id, { lastLoginAt: now() })
+                AC->>EP: publish(UserLoggedInEvent)
+                AC-->>Client: 200 OK (Token, Role, Profile)
+            end
+        end
+    end
+```
+
+##### Flow 3: Administrative Role Assignment & Boundary Enforcement Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Admin as Admin Client
+    participant UC as UserController
+    participant AG as AuthorizationGuard
+    participant UA as UserAggregate
+    participant DB as UserModel / Database
+    participant EP as DomainEventPublisher
+    participant SM as SessionManager
+
+    Admin->>UC: PATCH /api/users/{id}/role (newRole: "admin" | "alumni" | "faculty")
+    UC->>AG: verifyPermission(actorToken, "roles:assign")
+    alt Actor is NOT Admin
+        AG-->>UC: Access Denied
+        UC-->>Admin: 403 Forbidden (Insufficient privileges)
+    else Actor is Admin
+        AG-->>UC: Authorized
+        UC->>DB: findById(targetId)
+        DB-->>UC: targetUser
+        UC->>UA: validateRoleMutation(targetUser, newRole, actorId)
+        alt Demoting Last Admin Invariant Check Fails
+            UA-->>UC: Invariant Violation: Cannot demote the last system administrator
+            UC-->>Admin: 422 Unprocessable Entity
+        else Valid Transition
+            UA->>DB: update(targetId, { role: newRole })
+            DB-->>UC: updatedUser
+            UC->>EP: publish(UserRoleAssignedEvent)
+            EP->>SM: invalidateCachedPermissions(targetId)
+            UC-->>Admin: 200 OK (Updated user with new role permissions)
+        end
+    end
 ```
 
 ---
@@ -212,9 +633,12 @@ erDiagram
         int id PK
         string name
         string email UK
+        string passwordHash
+        string role "admin|alumni|student|guest|faculty"
         string department
         int graduationYear
-        string role
+        string status "ACTIVE|PENDING|SUSPENDED"
+        timestamp lastLoginAt
         timestamp createdAt
         timestamp updatedAt
     }
@@ -344,18 +768,29 @@ curl http://localhost:5000/api/users
 
 All models implement a uniform, clean CRUD contract providing deterministic inputs and outputs.
 
-### 4.1 UserModel CRUD Interface
+### 4.1 UserModel CRUD & IAM Aggregate Interface
 
 ```typescript
 interface UserModelContract {
-  // CREATE (PostgreSQL INSERT ... ON CONFLICT / Memory Fallback)
+  // CREATE / REGISTER (PostgreSQL INSERT ... ON CONFLICT / Memory Fallback)
   create(userData: {
     name: string;
     email: string;
+    password?: string;
     department?: string;
     graduationYear?: number | string;
-    role?: string;
+    role?: 'admin' | 'alumni' | 'student' | 'guest' | 'faculty';
+    status?: 'ACTIVE' | 'PENDING_VERIFICATION' | 'SUSPENDED' | 'DEACTIVATED';
   }): Promise<User> & User;
+
+  // AUTHENTICATION & CREDENTIAL VERIFICATION
+  verifyCredentials(email: string, plainTextPassword: string): Promise<User | null>;
+  hashPassword(plainTextPassword: string, saltRounds?: number): Promise<string>;
+  updatePassword(userId: number | string, newPlainTextPassword: string): Promise<boolean>;
+
+  // ROLE ASSIGNMENT & BOUNDARY ENFORCEMENT
+  assignRole(userId: number | string, newRole: string, actorUserId: number | string): Promise<User>;
+  countAdmins(): Promise<number> & number;
 
   // READ ALL (PostgreSQL SELECT ... ORDER BY id ASC / Memory)
   findAll(): Promise<User[]> & User[];
@@ -672,9 +1107,12 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255),
     department VARCHAR(255),
     graduation_year INTEGER,
-    role VARCHAR(50) DEFAULT 'alumni' CHECK (role IN ('alumni', 'admin', 'faculty', 'student')),
+    role VARCHAR(50) DEFAULT 'alumni' CHECK (role IN ('alumni', 'admin', 'faculty', 'student', 'guest')),
+    status VARCHAR(50) DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'PENDING_VERIFICATION', 'SUSPENDED', 'DEACTIVATED')),
+    last_login_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -813,8 +1251,13 @@ volumes:
 | Field | Rule / Constraint | Action on Failure |
 | :--- | :--- | :--- |
 | **`User.name`** | Non-empty string, min length 2, max length 255. | HTTP `400 Bad Request` |
-| **`User.email`** | Valid RFC 5322 format: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`. | HTTP `400 Bad Request` |
+| **`User.email`** | Valid RFC 5322 format: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`. Unique across the system (case-insensitive). | HTTP `400 Bad Request` / `409 Conflict` |
+| **`User.password`** | **Required on registration/update**. Min 8 chars, at least 1 uppercase, 1 lowercase, 1 number, and 1 special symbol: `/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/`. Hashed via bcrypt ($cost \ge 12$). | HTTP `400 Bad Request` |
 | **`User.graduationYear`** | Numeric integer between `1950` and `2100`. | HTTP `400 Bad Request` |
+| **`User.role`** | Must match: `'admin' \| 'alumni' \| 'faculty' \| 'student' \| 'guest'`. Self-registration defaults to `'student'` (if graduation year > current year) or `'alumni'` (if $\le$ current year). Public requests cannot self-assign `'admin'` or `'faculty'`. | Defaults based on year / HTTP `400 Bad Request` |
+| **`User.status`** | Must match: `'ACTIVE' \| 'PENDING_VERIFICATION' \| 'SUSPENDED' \| 'DEACTIVATED'`. Inactive users are denied token issuance and session login. | Defaults to `'ACTIVE'` / HTTP `400 Bad Request` |
+| **`User.roleAssignment`** | Administrative-only mutation (`actor.role === 'admin'`). System invariant: At least 1 active `admin` must remain in the system; demoting or deactivating the last admin is rejected. | HTTP `403 Forbidden` / HTTP `422 Unprocessable Entity` |
+| **`User.loginRateLimit`** | Max 5 consecutive failed authentication attempts within a 15-minute window per IP + email identity. | HTTP `429 Too Many Requests` |
 | **`Announcement.title`** | Non-empty string, min length 3, max length 255. | HTTP `400 Bad Request` |
 | **`Announcement.content`** | Non-empty text, min length 5. | HTTP `400 Bad Request` |
 | **`Announcement.priority`** | Must match: `'low' \| 'normal' \| 'high' \| 'urgent'`. | Defaults to `'normal'` |
@@ -836,6 +1279,11 @@ volumes:
 
 | HTTP Method | Route URI | Controller Method | Model Method | Success Status | Error Status |
 | :---: | :--- | :--- | :--- | :---: | :---: |
+| **POST** | `/api/auth/register` | `apiAuthController.register` | `userModel.create(data)` | `201 Created` | `400 Bad Request` / `409 Conflict` |
+| **POST** | `/api/auth/login` | `apiAuthController.login` | `userModel.verifyCredentials(email, pwd)` | `200 OK` | `401 Unauthorized` / `429 Too Many Requests` |
+| **POST** | `/api/auth/logout` | `apiAuthController.logout` | Session/Token invalidation | `200 OK` | `400 Bad Request` |
+| **GET** | `/api/auth/me` | `apiAuthController.getCurrentUser` | `userModel.getById(token.userId)` | `200 OK` | `401 Unauthorized` |
+| **PATCH** | `/api/users/:id/role` | `apiUserController.assignRole` | `userModel.assignRole(id, role, actor)` | `200 OK` | `400 / 403 / 404 / 422` |
 | **GET** | `/api/users` | `apiUserController.getAllUsers` | `userModel.getAll()` | `200 OK` | - |
 | **POST** | `/api/users` | `apiUserController.createUser` | `userModel.create(data)` | `201 Created` | `400 Bad Request` |
 | **GET** | `/api/users/:id` | `apiUserController.getUserById` | `userModel.getById(id)` | `200 OK` | `404 Not Found` |
@@ -844,6 +1292,11 @@ volumes:
 | **GET** | `/users` | `userController.getAllUsers` | `userModel.getAll()` | `200 OK` | - |
 | **POST** | `/users` | `userController.createUser` | `userModel.create(data)` | `201 Created` | `400 Bad Request` |
 | **GET** | `/users/:id` | `userController.getUserById` | `userModel.getById(id)` | `200 OK` | `404 Not Found` |
+| **GET** | `/login` | `authController.renderLogin` | - | `200 OK` | - |
+| **POST** | `/login` | `authController.handleLogin` | `userModel.verifyCredentials(email, pwd)` | `302 Redirect` | `401 Unauthorized` |
+| **GET** | `/register` | `authController.renderRegister` | - | `200 OK` | - |
+| **POST** | `/register` | `authController.handleRegister` | `userModel.create(data)` | `302 Redirect` | `400 Bad Request` |
+| **GET** | `/logout` | `authController.handleLogout` | Session destroy | `302 Redirect` | - |
 | **GET** | `/api/announcements` | `apiAnnouncementController.getAllAnnouncements` | `announcementModel.getAll()` | `200 OK` | - |
 | **POST** | `/api/announcements` | `apiAnnouncementController.createAnnouncement` | `announcementModel.create(data)` | `201 Created` | `400 Bad Request` |
 | **GET** | `/api/announcements/:id` | `apiAnnouncementController.getAnnouncementById` | `announcementModel.getById(id)`| `200 OK` | `404 Not Found` |
