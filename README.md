@@ -125,6 +125,16 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 
 ### 🖥️ Web / Application Endpoints (Dedicated View Layers)
 
+#### 🔐 Member Registration & Authentication (`AuthController` & `ApiAuthController`)
+| Method | Endpoint | Description | Layer / Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/register` | **Registration View:** Mintlify Aurora styled registration page with real-time validation | HTML View |
+| **POST** | `/register` | **Account Creation:** Form submission, server validation, bcrypt hashing, non-admin role assignment | HTML View / 201 Success View |
+| **GET** | `/login` | **Sign-In View:** Account login portal matching design system | HTML View |
+| **POST** | `/login` | **Sign-In Action:** Credential verification | HTML View |
+| **POST** | `/api/auth/register` | **REST Registration:** JSON account creation with bcrypt password hashing | JSON (`201 Created` / `400` / `409`) |
+| **POST** | `/api/auth/login` | **REST Authentication:** JSON credential verification | JSON (`200 OK` / `401 Unauthorized`) |
+
 #### 👥 Users Management (`UserController` ➡️ `.../users`)
 | Method | Endpoint | Description | Layer / Format |
 | :--- | :--- | :--- | :--- |

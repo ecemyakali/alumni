@@ -13,18 +13,37 @@
  */
 
 const db = require('./db');
+const authUtils = require('../utils/authUtils');
 
 /**
  * User Domain Entity Definition
  */
 class User {
-  constructor({ id, name, email, role = 'alumni', department = '', graduationYear = 2024, ...extra }) {
+  constructor({
+    id,
+    name,
+    email,
+    role = 'alumni',
+    department = '',
+    graduationYear = 2024,
+    status = 'ACTIVE',
+    currentRole = '',
+    company = '',
+    linkedinUrl = '',
+    passwordHash = null,
+    ...extra
+  }) {
     this.id = id;
     this.name = name;
     this.email = email;
     this.role = role;
     this.department = department;
     this.graduationYear = graduationYear;
+    this.status = status;
+    this.currentRole = currentRole;
+    this.company = company;
+    this.linkedinUrl = linkedinUrl;
+    this.passwordHash = passwordHash;
     Object.assign(this, extra);
     this.createdAt = new Date().toISOString();
     this.updatedAt = null;
@@ -48,6 +67,11 @@ function formatUser(row) {
       ? Number(row.graduationYear)
       : (row.graduation_year !== undefined ? Number(row.graduation_year) : 2024),
     role: row.role || 'alumni',
+    status: row.status || 'ACTIVE',
+    currentRole: row.currentRole || row.current_role || '',
+    company: row.company || '',
+    linkedinUrl: row.linkedinUrl || row.linkedin_url || '',
+    passwordHash: row.passwordHash || row.password_hash || null,
     createdAt: row.createdAt || (row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString()),
     updatedAt: row.updatedAt || (row.updated_at ? new Date(row.updated_at).toISOString() : null)
   };
@@ -106,6 +130,11 @@ const userModel = {
       department: userData.department || '',
       graduationYear: userData.graduationYear ? Number(userData.graduationYear) : 2024,
       role: userData.role || 'alumni',
+      status: userData.status || 'ACTIVE',
+      currentRole: userData.currentRole || '',
+      company: userData.company || '',
+      linkedinUrl: userData.linkedinUrl || '',
+      passwordHash: userData.passwordHash || null,
       createdAt: new Date().toISOString(),
       updatedAt: null,
       ...userData
@@ -380,6 +409,32 @@ const userModel = {
   getApplications(userId) {
     const applicationModel = require('./applicationModel');
     return applicationModel.findByUserId(userId);
+  },
+
+  /**
+   * Sanitizes user entity by removing sensitive security fields (e.g. passwordHash)
+   * @param {Object} user 
+   * @returns {Object} Publicly safe user object
+   */
+  sanitize(user) {
+    if (!user || typeof user !== 'object') return user;
+    const { passwordHash, ...safeUser } = user;
+    return safeUser;
+  },
+
+  /**
+   * Authenticates user credentials by email and plain-text password
+   * @param {string} email 
+   * @param {string} candidatePassword 
+   * @returns {Object|null} User record if verified, else null
+   */
+  verifyCredentials(email, candidatePassword) {
+    const user = this.findByEmail(email);
+    if (!user || !user.passwordHash) {
+      return null;
+    }
+    const isValid = authUtils.comparePassword(candidatePassword, user.passwordHash);
+    return isValid ? user : null;
   }
 };
 

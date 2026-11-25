@@ -622,7 +622,10 @@ const sharedLayout = {
         <li><a href="/api/health" class="nav-link ${activePage === 'health' ? 'active' : ''}">System Health</a></li>
       </ul>
       <div class="nav-actions">
-        <a href="/job-postings#post-job" class="btn-pill-primary">
+        <a href="/register" class="btn-pill-secondary" style="padding: 7px 14px; font-size: 13px;">
+          <span>Register</span>
+        </a>
+        <a href="/job-postings#post-job" class="btn-pill-primary" style="padding: 7px 14px; font-size: 13px;">
           <span>+</span> Post Opportunity
         </a>
       </div>
@@ -647,6 +650,7 @@ const sharedLayout = {
         <div class="footer-col-title">Navigation</div>
         <ul class="footer-links">
           <li><a href="/main">Home</a></li>
+          <li><a href="/register">Register Account</a></li>
           <li><a href="/users">Alumni Directory</a></li>
           <li><a href="/job-postings">Career Opportunities</a></li>
           <li><a href="/announcements">Announcements Board</a></li>

@@ -56,11 +56,122 @@ const swaggerDocument = {
       description: 'Web / Application job application management via ApplicationController (.../applications)'
     },
     {
+      name: 'Authentication API',
+      description: 'RESTful API user registration & authentication via ApiAuthController (.../api/auth)'
+    },
+    {
+      name: 'Authentication Web',
+      description: 'Web registration and sign-in views via AuthController (/register, /login)'
+    },
+    {
       name: 'Whiteboard Routes',
       description: 'Introductory classroom routes and endpoints'
     }
   ],
   paths: {
+    '/register': {
+      get: {
+        tags: ['Authentication Web'],
+        summary: 'Render user registration page',
+        description: 'Serves the Mintlify Aurora-styled account registration view with real-time validation.',
+        responses: {
+          '200': {
+            description: 'Registration HTML view rendered successfully',
+            content: { 'text/html': {} }
+          }
+        }
+      },
+      post: {
+        tags: ['Authentication Web'],
+        summary: 'Submit user registration form',
+        description: 'Validates input, hashes password with bcrypt, assigns non-admin role (alumni or student), and creates user.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/x-www-form-urlencoded': {
+              schema: {
+                type: 'object',
+                required: ['name', 'email', 'password', 'department', 'graduationYear'],
+                properties: {
+                  name: { type: 'string', example: 'Jane Doe' },
+                  email: { type: 'string', format: 'email', example: 'jane.doe@alumni.edu' },
+                  password: { type: 'string', format: 'password', example: 'SecurePass123!' },
+                  department: { type: 'string', example: 'Computer Science' },
+                  graduationYear: { type: 'integer', example: 2024 },
+                  currentRole: { type: 'string', example: 'Software Engineer' },
+                  company: { type: 'string', example: 'Tech Corp' },
+                  linkedinUrl: { type: 'string', format: 'uri', example: 'https://linkedin.com/in/janedoe' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': { description: 'User registered successfully and confirmation view displayed' },
+          '400': { description: 'Validation failed or duplicate email address' }
+        }
+      }
+    },
+    '/api/auth/register': {
+      post: {
+        tags: ['Authentication API'],
+        summary: 'Register new user account (JSON API)',
+        description: 'Creates a new user record with bcrypt password hashing and default non-admin role.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['name', 'email', 'password', 'department', 'graduationYear'],
+                properties: {
+                  name: { type: 'string', example: 'Jane Doe' },
+                  email: { type: 'string', format: 'email', example: 'jane.doe@alumni.edu' },
+                  password: { type: 'string', format: 'password', example: 'SecurePass123!' },
+                  department: { type: 'string', example: 'Computer Science' },
+                  graduationYear: { type: 'integer', example: 2024 },
+                  currentRole: { type: 'string', example: 'Software Engineer' },
+                  company: { type: 'string', example: 'Tech Corp' },
+                  linkedinUrl: { type: 'string', format: 'uri', example: 'https://linkedin.com/in/janedoe' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '201': { description: 'Account created successfully' },
+          '400': { description: 'Validation failed' },
+          '409': { description: 'Email already registered' }
+        }
+      }
+    },
+    '/api/auth/login': {
+      post: {
+        tags: ['Authentication API'],
+        summary: 'Authenticate user credentials',
+        description: 'Verifies email and password using bcrypt comparison.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email', 'password'],
+                properties: {
+                  email: { type: 'string', format: 'email', example: 'jane.doe@alumni.edu' },
+                  password: { type: 'string', format: 'password', example: 'SecurePass123!' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Authentication successful' },
+          '400': { description: 'Missing email or password' },
+          '401': { description: 'Invalid email or password' }
+        }
+      }
+    },
     '/api/health': {
       get: {
         tags: ['System'],

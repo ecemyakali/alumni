@@ -24,10 +24,14 @@ const jobPostingRoutes = require('./jobPostingRoutes');
 const apiJobPostingRoutes = require('./apiJobPostingRoutes');
 const applicationRoutes = require('./applicationRoutes');
 const apiApplicationRoutes = require('./apiApplicationRoutes');
+const authRoutes = require('./authRoutes');
+const apiAuthRoutes = require('./apiAuthRoutes');
 
 // Mount modular sub-routers
 router.use('/', whiteboardRoutes);
 router.use('/', healthRoutes);
+router.use('/', authRoutes);                   // /register, /login -> AuthController
+router.use('/', apiAuthRoutes);                // /api/auth/* -> ApiAuthController
 router.use('/', userRoutes);                // .../users -> UserController
 router.use('/', apiUserRoutes);             // .../api/users -> ApiUserController
 router.use('/', announcementRoutes);        // .../announcements -> AnnouncementController
