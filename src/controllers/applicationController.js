@@ -124,7 +124,7 @@ const applicationController = {
       const jobs = await jobPostingModel.getAll();
       const users = await userModel.getAll();
       const selectedJobId = req.query ? req.query.jobPostingId : null;
-      return res.status(200).send(applicationView.renderApplicationsList(applications, { jobs, users, selectedJobId }));
+      return res.status(200).send(applicationView.renderApplicationsList(applications, { jobs, users, selectedJobId, currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -163,7 +163,7 @@ const applicationController = {
     if (expectsHtml) {
       const user = await userModel.getById(item.userId);
       const job = await jobPostingModel.getById(item.jobPostingId);
-      return res.status(200).send(applicationView.renderApplicationDetail(item, { user, job }));
+      return res.status(200).send(applicationView.renderApplicationDetail(item, { user, job, currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -190,7 +190,7 @@ const applicationController = {
 
     const user = await userModel.getById(item.userId);
     const job = await jobPostingModel.getById(item.jobPostingId);
-    return res.status(200).send(applicationView.renderEditApplicationForm(item, { user, job }));
+    return res.status(200).send(applicationView.renderEditApplicationForm(item, { user, job, currentUser: req.user }));
   },
 
   /**

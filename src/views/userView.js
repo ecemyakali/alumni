@@ -54,7 +54,7 @@ const userView = {
 </head>
 <body>
 
-  ${sharedLayout.renderNavbar('users')}
+  ${sharedLayout.renderNavbar('users', options.currentUser)}
 
   <main class="page-wrapper">
     <div class="page-header-band">
@@ -161,7 +161,7 @@ const userView = {
 </head>
 <body>
 
-  ${sharedLayout.renderNavbar('users')}
+  ${sharedLayout.renderNavbar('users', options.currentUser)}
 
   <main class="page-wrapper">
     <div style="max-width: 680px; margin: 0 auto;">
@@ -248,7 +248,7 @@ const userView = {
 </head>
 <body>
 
-  ${sharedLayout.renderNavbar('users')}
+  ${sharedLayout.renderNavbar('users', options.currentUser)}
 
   <main class="page-wrapper">
     <div style="max-width: 640px; margin: 0 auto;">
@@ -302,7 +302,7 @@ const userView = {
   /**
    * Renders semantic error page
    */
-  renderError(message, statusCode = 404) {
+  renderError(message, statusCode = 404, options = {}) {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -313,7 +313,7 @@ const userView = {
   </style>
 </head>
 <body>
-  ${sharedLayout.renderNavbar('users')}
+  ${sharedLayout.renderNavbar('users', options && options.currentUser)}
 
   <main class="page-wrapper" style="display:flex; align-items:center; justify-content:center;">
     <div class="content-card" style="max-width:520px; width:100%; text-align:center; padding:3rem 2rem;">

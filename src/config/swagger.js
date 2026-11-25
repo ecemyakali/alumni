@@ -68,6 +68,10 @@ const swaggerDocument = {
       description: 'Role-protected administrative control center and user role assignment (.../admin, /api/users/:id/role)'
     },
     {
+      name: 'User Profile & Settings',
+      description: 'Authenticated user profile, networking preferences, and account settings (.../profile, /dashboard, /api/profile)'
+    },
+    {
       name: 'Whiteboard Routes',
       description: 'Introductory classroom routes and endpoints'
     }
@@ -234,6 +238,134 @@ const swaggerDocument = {
           '403': { description: 'Forbidden: Admin access only' },
           '404': { description: 'Target user not found' },
           '422': { description: 'Cannot delete the last active administrator' }
+        }
+      }
+    },
+    '/profile': {
+      get: {
+        tags: ['User Profile & Settings'],
+        summary: 'Render authenticated user profile dashboard',
+        description: 'Serves the Mintlify Aurora profile dashboard with personal details, networking preferences, and security forms.',
+        responses: {
+          '200': { description: 'Profile HTML dashboard rendered successfully' },
+          '302': { description: 'Redirected to /login if unauthenticated' }
+        }
+      },
+      post: {
+        tags: ['User Profile & Settings'],
+        summary: 'Update personal profile details (Web)',
+        description: 'Updates full name, department, graduation year, company, current role, location, LinkedIn, and bio.',
+        responses: {
+          '302': { description: 'Redirected with success confirmation' },
+          '400': { description: 'Validation error: Name or email missing' },
+          '409': { description: 'Email conflict with another user' }
+        }
+      }
+    },
+    '/dashboard': {
+      get: {
+        tags: ['User Profile & Settings'],
+        summary: 'User profile dashboard (alias for /profile)',
+        description: 'Alias route that renders the authenticated profile dashboard.',
+        responses: {
+          '200': { description: 'Profile dashboard view' },
+          '302': { description: 'Redirect to /login' }
+        }
+      }
+    },
+    '/profile/preferences': {
+      post: {
+        tags: ['User Profile & Settings'],
+        summary: 'Update networking and mentorship preferences (Web)',
+        description: 'Updates openToMentor, openToWork, directory visibility, and preferred contact channel.',
+        responses: {
+          '302': { description: 'Preferences updated successfully' }
+        }
+      }
+    },
+    '/profile/password': {
+      post: {
+        tags: ['User Profile & Settings'],
+        summary: 'Update account password (Web)',
+        description: 'Verifies current password and updates with new bcrypt hashed password.',
+        responses: {
+          '302': { description: 'Password updated successfully' },
+          '400': { description: 'Password length or confirmation mismatch' },
+          '401': { description: 'Current password incorrect' }
+        }
+      }
+    },
+    '/api/profile': {
+      get: {
+        tags: ['User Profile & Settings'],
+        summary: 'Retrieve authenticated user profile (REST API)',
+        description: 'Returns the sanitized profile of the current logged-in user.',
+        responses: {
+          '200': { description: 'User profile object' },
+          '401': { description: 'Authentication required' }
+        }
+      },
+      put: {
+        tags: ['User Profile & Settings'],
+        summary: 'Update authenticated user profile (REST API)',
+        description: 'Updates profile details and preferences for the logged-in user.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                  department: { type: 'string' },
+                  graduationYear: { type: 'integer' },
+                  company: { type: 'string' },
+                  currentRole: { type: 'string' },
+                  location: { type: 'string' },
+                  linkedinUrl: { type: 'string' },
+                  bio: { type: 'string' },
+                  openToMentor: { type: 'boolean' },
+                  openToWork: { type: 'boolean' },
+                  profileVisibility: { type: 'string', enum: ['public', 'alumni_only', 'private'] },
+                  preferredContact: { type: 'string', enum: ['email', 'linkedin', 'platform'] }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Profile updated successfully' },
+          '401': { description: 'Authentication required' },
+          '409': { description: 'Email already in use' }
+        }
+      }
+    },
+    '/api/profile/password': {
+      put: {
+        tags: ['User Profile & Settings'],
+        summary: 'Change account password (REST API)',
+        description: 'Updates password after verifying existing password.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['currentPassword', 'newPassword'],
+                properties: {
+                  currentPassword: { type: 'string' },
+                  newPassword: { type: 'string', minLength: 8 },
+                  confirmPassword: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Password changed successfully' },
+          '400': { description: 'Validation error' },
+          '401': { description: 'Current password incorrect' }
         }
       }
     },

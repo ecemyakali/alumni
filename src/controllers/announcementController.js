@@ -76,7 +76,7 @@ const announcementController = {
     const list = announcementModel.getAll();
 
     if (isHtmlRequest(req)) {
-      return res.status(200).send(announcementView.renderAnnouncementsList(list));
+      return res.status(200).send(announcementView.renderAnnouncementsList(list, { currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -105,7 +105,7 @@ const announcementController = {
     }
 
     if (expectsHtml) {
-      return res.status(200).send(announcementView.renderAnnouncementDetail(item));
+      return res.status(200).send(announcementView.renderAnnouncementDetail(item, { currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -132,7 +132,7 @@ const announcementController = {
       });
     }
 
-    return res.status(200).send(announcementView.renderEditAnnouncementForm(item));
+    return res.status(200).send(announcementView.renderEditAnnouncementForm(item, { currentUser: req.user }));
   },
 
   /**

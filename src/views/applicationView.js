@@ -26,8 +26,8 @@ const applicationView = {
   /**
    * Global Navigation Header
    */
-  renderNavbar(activePage = 'applications') {
-    return sharedLayout.renderNavbar(activePage);
+  renderNavbar(activePage = 'applications', currentUser = null) {
+    return sharedLayout.renderNavbar(activePage, currentUser);
   },
 
   /**
@@ -234,7 +234,7 @@ const applicationView = {
 </head>
 <body>
 
-  ${this.renderNavbar('applications')}
+  ${this.renderNavbar('applications', options.currentUser)}
 
   <main class="page-wrapper">
     <div class="page-header-band">
@@ -485,7 +485,7 @@ const applicationView = {
 </head>
 <body>
 
-  ${this.renderNavbar('applications')}
+  ${this.renderNavbar('applications', options.currentUser)}
 
   <main class="page-wrapper" style="max-width:920px;">
     <div style="margin-bottom:1.5rem;">
@@ -610,7 +610,7 @@ const applicationView = {
 </head>
 <body>
 
-  ${this.renderNavbar('applications')}
+  ${this.renderNavbar('applications', options.currentUser)}
 
   <main class="page-wrapper" style="max-width:760px;">
     <div style="margin-bottom:1.5rem;">
@@ -693,7 +693,7 @@ const applicationView = {
   </style>
 </head>
 <body>
-  ${this.renderNavbar('applications')}
+  ${this.renderNavbar('applications', options.currentUser)}
 
   <main class="page-wrapper" style="display:flex; align-items:center; justify-content:center;">
     <div class="content-card" style="max-width:520px; width:100%; text-align:center; padding:3rem 2rem;">

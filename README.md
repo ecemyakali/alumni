@@ -5,7 +5,7 @@
 [![Brand Identity](https://img.shields.io/badge/Brand-Guidelines_&_Identity-5e6ad2?style=flat)](./brand.md)
 [![Design System](https://img.shields.io/badge/Design_System-Mintlify_&_Linear_Hybrid-10b981?style=flat)](./DESIGN.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-263_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-274_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -139,6 +139,18 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **POST** | `/api/auth/logout` | **REST Sign-Out:** Revokes session token and clears cookie | JSON (`200 OK`) |
 | **GET** | `/api/auth/me` | **REST Identity:** Returns profile of authenticated session or Bearer token | JSON (`200 OK` / `401 Unauthorized`) |
 
+#### 👤 User Profile, Dashboard & Preferences (`ProfileController` ➡️ `.../profile`)
+| Method | Endpoint | Description | Layer / Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/profile` | **Profile Dashboard:** Authenticated alumni dashboard displaying bento metrics, profile info, networking preferences, and security forms | HTML View (`200 OK` / `302 Redirect`) |
+| **GET** | `/dashboard` | **Dashboard Alias:** Quick access alias for `/profile` | HTML View (`200 OK` / `302 Redirect`) |
+| **POST** | `/profile/update` | **Update Profile:** Form submission to update name, education, current role, company, location, bio, and LinkedIn | 302 Redirect / HTML View |
+| **POST** | `/profile/preferences` | **Update Preferences:** Toggle student mentorship availability, recruiter job inquiries, directory visibility, and contact channel | 302 Redirect / HTML View |
+| **POST** | `/profile/password` | **Update Password:** Change account password with current password verification and bcrypt hashing | 302 Redirect / HTML View |
+| **GET** | `/api/profile` | **REST Profile:** Retrieve profile of currently authenticated user | JSON (`200 OK` / `401 Unauthorized`) |
+| **PUT/PATCH** | `/api/profile` | **REST Update Profile:** Update profile fields and networking preferences | JSON (`200 OK` / `400` / `401` / `409`) |
+| **PUT** | `/api/profile/password` | **REST Change Password:** Update password via JSON payload | JSON (`200 OK` / `400` / `401`) |
+
 #### 🛡️ Administration & User Management (`AdminController` ➡️ `.../admin`)
 | Method | Endpoint | Description | Layer / Format |
 | :--- | :--- | :--- | :--- |
@@ -167,6 +179,20 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 > 
 > **Domain Invariant Protection:**
 > The system strictly enforces the domain invariant that **the last active administrator cannot be demoted, deactivated, or deleted**. Any attempt returns HTTP 422 Unprocessable Entity or an informative error banner.
+
+> [!TIP]
+> ### 🧭 Dynamic Role-Based Navigation Architecture
+> The top sticky frosted-glass navigation bar dynamically changes its presentation and actionable items according to the user's authentication state and role:
+> * **Unauthenticated Visitor:**
+>   - Public Links: Home (`/main`), Alumni Directory (`/users`), Career Opportunities (`/job-postings`), Announcements (`/announcements`), Application Tracking (`/applications`), Swagger UI (`/api/swagger`), System Health (`/api/health`)
+>   - Action Controls: `Log In` link and `Register` CTA button
+> * **Authenticated User (`alumni`, `student`, `faculty`, `guest`):**
+>   - Public Links + `👤 My Profile` (`/profile`) in the main navigation menu
+>   - Action Controls: User identity badge with role color-coding linking to `/profile` + `Log Out` button
+> * **Administrator (`admin`):**
+>   - Public Links + `👤 My Profile` (`/profile`) + `🛡️ Admin Panel` (`/admin`) highlighted in royal blue
+>   - Action Controls: Admin identity badge linking to `/profile` + `Log Out` button
+
 
 
 #### 👥 Users Management (`UserController` ➡️ `.../users`)
@@ -542,6 +568,7 @@ alumni/
 │   │   ├── apiUserController.js        # Dedicated RESTful API CRUD Controller for Users (JSON responses)
 │   │   ├── authController.js           # Web Authentication & Registration Controller (/register, /login)
 │   │   ├── healthController.js         # System health & uptime metric handler
+│   │   ├── profileController.js        # User Profile Dashboard & Self-Service Mutation Controller (/profile)
 │   │   ├── userController.js           # Web/Application CRUD Controller for Users (HTML/content-negotiated)
 │   │   └── whiteboardController.js     # Classroom introductory routes & calculation handlers
 │   ├── middlewares/                    # Middleware Layer (Request interception, guardians & logging)
@@ -568,6 +595,7 @@ alumni/
 │   │   ├── apiUserRoutes.js            # Routes for .../api/users -> ApiUserController
 │   │   ├── healthRoutes.js             # Routes for /api/health -> HealthController
 │   │   ├── index.js                    # Aggregated master router & Swagger JSON endpoints
+│   │   ├── profileRoutes.js            # Routes for /profile, /dashboard, /api/profile -> ProfileController
 │   │   ├── userRoutes.js               # Routes for .../users -> UserController
 │   │   └── whiteboardRoutes.js         # Routes for classroom endpoints (/, /hello, /sum, etc.)
 │   ├── views/                          # View Layer (HTML page templates & UI rendering)
@@ -578,11 +606,12 @@ alumni/
 │   │   ├── forbiddenView.js            # Semantic 403 Forbidden Access Denied view
 │   │   ├── jobPostingView.js           # Career opportunities board, card view & posting form
 │   │   ├── notFoundView.js             # Generic 404 Page Not Found HTML template with reason & navigation
+│   │   ├── profileView.js              # Authenticated User Profile Dashboard & settings view
 │   │   ├── serverErrorView.js          # Generic 500 Server Error HTML template with reason
 │   │   ├── sharedLayout.js             # Mintlify Aurora design system layout, navbar & tokens
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 263 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 274 tests)
 │   ├── adminPanel.test.js              # Unit & integration tests for Admin Panel, search, edit, delete & invariants
 │   ├── announcementControllers.test.js # Unit tests for ApiAnnouncementController & AnnouncementController
 │   ├── announcementModel.test.js       # Unit tests for Announcement Model CRUD operations
@@ -592,6 +621,7 @@ alumni/
 │   ├── auth.test.js                    # Unit and integration tests for Auth & Registration flows
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
 │   ├── databaseCrud.test.js            # Unit & integration tests for PostgreSQL database CRUD interfaces & resilience
+│   ├── dynamicNavAndProfile.test.js    # Unit and integration tests for Dynamic Role Navigation & User Profile Dashboard
 │   ├── factories.test.js               # Unit and integration tests for User & Announcement factories & seeder
 │   ├── guardians.test.js               # Unit and integration tests for 404 guardian, 5xx guardian & error logs
 │   ├── loggerMiddleware.test.js        # Unit and integration tests for terminal request logger middleware

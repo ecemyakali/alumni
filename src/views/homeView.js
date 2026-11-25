@@ -14,6 +14,8 @@
  *    - Section 3: Filterable Category Tabs + Minimalist Curated Cards (Avatar, Name, Badge, Org, View Link).
  */
 
+const sharedLayout = require('./sharedLayout');
+
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -732,31 +734,7 @@ const homeView = {
 </head>
 <body>
 
-  <!-- ========================================================
-   * TOP NAVIGATION & TABS (SINGLE ROW, 1280PX)
-   * ======================================================== -->
-  <header class="top-nav">
-    <div class="nav-container">
-      <a href="/main" class="brand-lockup">
-        <span class="brand-icon">🎓</span>
-        <span>Alumni Tracking System</span>
-      </a>
-      <ul class="nav-menu">
-        <li><a href="/main" class="nav-link active">Home</a></li>
-        <li><a href="/users" class="nav-link">Alumni Directory</a></li>
-        <li><a href="/job-postings" class="nav-link">Career Opportunities</a></li>
-        <li><a href="/announcements" class="nav-link">Announcements Board</a></li>
-        <li><a href="/applications" class="nav-link">Application Tracking</a></li>
-        <li><a href="/api/swagger" class="nav-link" target="_blank">Swagger UI</a></li>
-        <li><a href="/api/health" class="nav-link">System Health</a></li>
-      </ul>
-      <div class="nav-actions">
-        <a href="/job-postings#post-job" class="btn-pill-primary">
-          <span>+</span> Post Opportunity
-        </a>
-      </div>
-    </div>
-  </header>
+  ${sharedLayout.renderNavbar('home', data.currentUser || options.currentUser)}
 
   <!-- ========================================================
    * SECTION 1: AIRY HERO + CENTRAL SEARCH BAR + 2 CLEAR BUTTONS

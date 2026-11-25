@@ -602,29 +602,38 @@ const sharedLayout = {
 
   /**
    * Renders the top sticky frosted-glass navigation header
+   * Dynamically adapts menu items based on authentication state and user role
    * @param {string} [activePage='home']
    * @param {Object|null} [currentUser=null] - Currently authenticated user
    */
   renderNavbar(activePage = 'home', currentUser = null) {
-    const isAdmin = currentUser && currentUser.role === 'admin';
-    const adminLinkHtml = isAdmin
-      ? `<li><a href="/admin" class="nav-link ${activePage === 'admin' ? 'active' : ''}" style="color: #1d4ed8; font-weight: 600;">🛡️ Admin</a></li>`
+    const isAuthenticated = Boolean(currentUser);
+    const isAdmin = isAuthenticated && currentUser.role === 'admin';
+
+    // Role-specific and authenticated navigation links
+    const profileLinkHtml = isAuthenticated
+      ? `<li><a href="/profile" class="nav-link ${activePage === 'profile' ? 'active' : ''}">👤 My Profile</a></li>`
       : '';
 
-    const authActionsHtml = currentUser
+    const adminLinkHtml = isAdmin
+      ? `<li><a href="/admin" class="nav-link ${activePage === 'admin' ? 'active' : ''}" style="color: #1d4ed8; font-weight: 600;">🛡️ Admin Panel</a></li>`
+      : '';
+
+    // Action buttons in top-right
+    const authActionsHtml = isAuthenticated
       ? `
-        <span class="badge-pill badge-role-${escapeHtml(currentUser.role || 'alumni')}" style="padding: 5px 11px; font-size: 12px; font-weight: 600;">
+        <a href="/profile" class="badge-pill badge-role-${escapeHtml(currentUser.role || 'alumni')}" style="padding: 5px 12px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="View Profile">
           <span>👤</span> ${escapeHtml(currentUser.name)}
-        </span>
-        <a href="/logout" class="btn-pill-secondary" style="padding: 7px 13px; font-size: 12.5px;">
+        </a>
+        <a href="/logout" class="btn-pill-secondary" style="padding: 7px 13px; font-size: 12.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
           <span>Log Out</span>
         </a>`
       : `
         <a href="/login" class="nav-link ${activePage === 'login' ? 'active' : ''}" style="font-weight: 600;">
           Log In
         </a>
-        <a href="/register" class="btn-pill-secondary ${activePage === 'register' ? 'active' : ''}" style="padding: 7px 13px; font-size: 12.5px;">
-          <span>Register</span>
+        <a href="/register" class="btn-pill-secondary ${activePage === 'register' ? 'active' : ''}" style="padding: 7px 14px; font-size: 12.5px; font-weight: 600;">
+          Register
         </a>`;
 
     return `
@@ -640,9 +649,10 @@ const sharedLayout = {
         <li><a href="/job-postings" class="nav-link ${activePage === 'jobs' ? 'active' : ''}">Career Opportunities</a></li>
         <li><a href="/announcements" class="nav-link ${activePage === 'announcements' ? 'active' : ''}">Announcements Board</a></li>
         <li><a href="/applications" class="nav-link ${activePage === 'applications' ? 'active' : ''}">Application Tracking</a></li>
+        ${profileLinkHtml}
+        ${adminLinkHtml}
         <li><a href="/api/swagger" class="nav-link" target="_blank">Swagger UI</a></li>
         <li><a href="/api/health" class="nav-link ${activePage === 'health' ? 'active' : ''}">System Health</a></li>
-        ${adminLinkHtml}
       </ul>
       <div class="nav-actions">
         ${authActionsHtml}

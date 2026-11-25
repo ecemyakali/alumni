@@ -104,7 +104,7 @@ const jobPostingController = {
 
     if (isHtmlRequest(req)) {
       const applications = await applicationModel.getAll();
-      return res.status(200).send(jobPostingView.renderJobPostingsList(jobs, { applications }));
+      return res.status(200).send(jobPostingView.renderJobPostingsList(jobs, { applications, currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -143,7 +143,7 @@ const jobPostingController = {
     if (expectsHtml) {
       const applications = await applicationModel.findByJobPostingId(id);
       const users = await userModel.getAll();
-      return res.status(200).send(jobPostingView.renderJobPostingDetail(item, { applications, users }));
+      return res.status(200).send(jobPostingView.renderJobPostingDetail(item, { applications, users, currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -168,7 +168,7 @@ const jobPostingController = {
       return res.status(404).send(jobPostingView.renderError(`Job posting with ID #${req.params.id} not found`, { statusCode: 404 }));
     }
 
-    return res.status(200).send(jobPostingView.renderEditJobPostingForm(item));
+    return res.status(200).send(jobPostingView.renderEditJobPostingForm(item, { currentUser: req.user }));
   },
 
   /**

@@ -62,7 +62,7 @@ const announcementView = {
 </head>
 <body>
 
-  ${sharedLayout.renderNavbar('announcements')}
+  ${sharedLayout.renderNavbar('announcements', options.currentUser)}
 
   <main class="page-wrapper">
     <div class="page-header-band">
@@ -179,7 +179,7 @@ const announcementView = {
 </head>
 <body>
 
-  ${sharedLayout.renderNavbar('announcements')}
+  ${sharedLayout.renderNavbar('announcements', options.currentUser)}
 
   <main class="page-wrapper">
     <div style="max-width: 780px; margin: 0 auto;">
@@ -239,7 +239,7 @@ ${this.escapeHtml(announcement.content)}
 </head>
 <body>
 
-  ${sharedLayout.renderNavbar('announcements')}
+  ${sharedLayout.renderNavbar('announcements', options.currentUser)}
 
   <main class="page-wrapper">
     <div style="max-width: 720px; margin: 0 auto;">
@@ -308,7 +308,7 @@ ${this.escapeHtml(announcement.content)}
   /**
    * Renders error page
    */
-  renderError(message, statusCode = 404) {
+  renderError(message, statusCode = 404, options = {}) {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -319,7 +319,7 @@ ${this.escapeHtml(announcement.content)}
   </style>
 </head>
 <body>
-  ${sharedLayout.renderNavbar('announcements')}
+  ${sharedLayout.renderNavbar('announcements', options && options.currentUser)}
 
   <main class="page-wrapper" style="display:flex; align-items:center; justify-content:center;">
     <div class="content-card" style="max-width:520px; width:100%; text-align:center; padding:3rem 2rem;">

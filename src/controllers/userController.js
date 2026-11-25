@@ -80,7 +80,7 @@ const userController = {
     const users = userModel.getAll();
 
     if (isHtmlRequest(req)) {
-      return res.status(200).send(userView.renderUsersList(users));
+      return res.status(200).send(userView.renderUsersList(users, { currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -110,7 +110,7 @@ const userController = {
     }
 
     if (expectsHtml) {
-      return res.status(200).send(userView.renderUserDetail(user));
+      return res.status(200).send(userView.renderUserDetail(user, { currentUser: req.user }));
     }
 
     return res.status(200).json({
@@ -138,7 +138,7 @@ const userController = {
       });
     }
 
-    return res.status(200).send(userView.renderEditUserForm(user));
+    return res.status(200).send(userView.renderEditUserForm(user, { currentUser: req.user }));
   },
 
   /**

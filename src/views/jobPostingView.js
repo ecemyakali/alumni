@@ -26,8 +26,8 @@ const jobPostingView = {
   /**
    * Global Navigation Header
    */
-  renderNavbar(activePage = 'jobs') {
-    return sharedLayout.renderNavbar(activePage);
+  renderNavbar(activePage = 'jobs', currentUser = null) {
+    return sharedLayout.renderNavbar(activePage, currentUser);
   },
 
   /**
@@ -187,7 +187,7 @@ const jobPostingView = {
 </head>
 <body>
 
-  ${this.renderNavbar('jobs')}
+  ${this.renderNavbar('jobs', options.currentUser)}
 
   <main class="page-wrapper">
     <div class="page-header-band">
@@ -439,7 +439,7 @@ const jobPostingView = {
 </head>
 <body>
 
-  ${this.renderNavbar('jobs')}
+  ${this.renderNavbar('jobs', options.currentUser)}
 
   <main class="page-wrapper" style="max-width:960px;">
     <div style="margin-bottom:1.5rem;">
@@ -587,7 +587,7 @@ const jobPostingView = {
 </head>
 <body>
 
-  ${this.renderNavbar('jobs')}
+  ${this.renderNavbar('jobs', options.currentUser)}
 
   <main class="page-wrapper" style="max-width:820px;">
     <div style="margin-bottom:1.5rem;">
@@ -681,7 +681,7 @@ const jobPostingView = {
   </style>
 </head>
 <body>
-  ${this.renderNavbar('jobs')}
+  ${this.renderNavbar('jobs', options.currentUser)}
 
   <main class="page-wrapper" style="display:flex; align-items:center; justify-content:center;">
     <div class="content-card" style="max-width:520px; width:100%; text-align:center; padding:3rem 2rem;">

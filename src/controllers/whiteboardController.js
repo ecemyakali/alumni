@@ -85,6 +85,7 @@ const whiteboardController = {
         : [];
 
       const html = homeView.renderHomePage({
+        currentUser: req.user,
         userCount,
         jobPostingCount,
         announcementCount,

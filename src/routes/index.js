@@ -27,6 +27,7 @@ const apiApplicationRoutes = require('./apiApplicationRoutes');
 const authRoutes = require('./authRoutes');
 const apiAuthRoutes = require('./apiAuthRoutes');
 const adminRoutes = require('./adminRoutes');
+const profileRoutes = require('./profileRoutes');
 
 // Mount modular sub-routers
 router.use('/', whiteboardRoutes);
@@ -34,6 +35,7 @@ router.use('/', healthRoutes);
 router.use('/', authRoutes);                   // /register, /login -> AuthController
 router.use('/', apiAuthRoutes);                // /api/auth/* -> ApiAuthController
 router.use('/', adminRoutes);                  // /admin, /api/users/:id/role -> AdminController
+router.use('/', profileRoutes);                // /profile, /dashboard, /api/profile -> ProfileController
 router.use('/', userRoutes);                // .../users -> UserController
 router.use('/', apiUserRoutes);             // .../api/users -> ApiUserController
 router.use('/', announcementRoutes);        // .../announcements -> AnnouncementController
