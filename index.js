@@ -1,4 +1,21 @@
 const app = require('./src/app');
+const userModel = require('./src/models/userModel');
+const announcementModel = require('./src/models/announcementModel');
+const jobPostingModel = require('./src/models/jobPostingModel');
+const userFactory = require('./factories/userFactory');
+const announcementFactory = require('./factories/announcementFactory');
+const jobPostingFactory = require('./factories/jobPostingFactory');
+
+// Auto-seed in-memory store if empty on initial boot
+if (userModel.count() === 0) {
+  userFactory.buildMany(10).forEach(u => userModel.create(u));
+}
+if (announcementModel.count() === 0) {
+  announcementFactory.buildMany(5).forEach(a => announcementModel.create(a));
+}
+if (jobPostingModel.count() === 0) {
+  jobPostingFactory.buildMany(5).forEach(j => jobPostingModel.create(j));
+}
 
 const PORT = process.env.PORT || 5000;
 const ALT_PORT = 3000;
