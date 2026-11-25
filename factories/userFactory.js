@@ -21,8 +21,10 @@ const DEPARTMENTS = [
   'Business Administration'
 ];
 
+const DEFAULT_PASSWORD_HASH = '$2b$10$cKZR3IFPX8dA3r9PgZXbDuTJAlBywJ80CW67dakcnUQanpFwq.6Du'; // AdminPass123!
+
 const SAMPLE_ALUMNI = [
-  { name: 'Ece Yakali', email: 'ece@example.com', department: 'Computer Engineering', graduationYear: 2024, role: 'alumni' },
+  { name: 'Ece Yakali', email: 'ece@example.com', department: 'Computer Engineering', graduationYear: 2024, role: 'admin' },
   { name: 'Admin User', email: 'admin@example.com', department: 'System Administration', graduationYear: 2020, role: 'admin' },
   { name: 'Can Demir', email: 'can.demir@alumni.edu', department: 'Industrial Engineering', graduationYear: 2023, role: 'alumni' },
   { name: 'Zeynep Kaya', email: 'zeynep.kaya@alumni.edu', department: 'Electrical & Electronics Engineering', graduationYear: 2022, role: 'alumni' },
@@ -50,7 +52,9 @@ const userFactory = {
       email: sample ? (overrides.email ? overrides.email : (id <= SAMPLE_ALUMNI.length ? sample.email : `alumni${id}@alumni.edu`)) : `alumni${id}@alumni.edu`,
       department: sample ? sample.department : DEPARTMENTS[id % DEPARTMENTS.length],
       graduationYear: sample ? sample.graduationYear : 2020 + (id % 6),
-      role: sample ? sample.role : 'alumni'
+      role: sample ? sample.role : 'alumni',
+      status: 'ACTIVE',
+      passwordHash: DEFAULT_PASSWORD_HASH
     };
 
     return {

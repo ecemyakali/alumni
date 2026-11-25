@@ -321,8 +321,8 @@ const userModel = {
 
         if (res && res.rows && res.rows[0]) {
           const dbUser = formatUser(res.rows[0]);
-          users[index] = dbUser;
-          return dbUser;
+          users[index] = { ...memUser, ...dbUser };
+          return users[index];
         }
       } catch {
         // Fallback to memUser
@@ -481,6 +481,76 @@ const userModel = {
 
     const updated = this.update(targetUserId, { role: newRole });
     return { success: true, user: updated, statusCode: 200 };
+  },
+
+  /**
+   * Assigns a new account status with domain invariant checks
+   * @param {number|string} targetUserId 
+   * @param {string} newStatus - 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+   * @param {Object} actor - The user performing the status update
+   * @returns {{ success: boolean, user?: Object, error?: string, statusCode?: number }}
+   */
+  assignStatus(targetUserId, newStatus, actor) {
+    const validStatuses = ['ACTIVE', 'INACTIVE', 'SUSPENDED'];
+    if (!validStatuses.includes(newStatus)) {
+      return { success: false, error: `Invalid status: ${newStatus}. Allowed statuses: ${validStatuses.join(', ')}`, statusCode: 400 };
+    }
+
+    if (!actor || actor.role !== 'admin') {
+      return { success: false, error: 'Unauthorized: Only administrators can update user statuses.', statusCode: 403 };
+    }
+
+    const targetUser = this.findById(targetUserId);
+    if (!targetUser) {
+      return { success: false, error: 'Target user not found.', statusCode: 404 };
+    }
+
+    // Invariant check: Cannot deactivate or suspend the last active administrator
+    if (targetUser.role === 'admin' && newStatus !== 'ACTIVE') {
+      const remainingAdmins = this.countAdmins();
+      if (remainingAdmins <= 1) {
+        return {
+          success: false,
+          error: 'Domain Invariant Violation: Cannot deactivate or suspend the last active system administrator.',
+          statusCode: 422
+        };
+      }
+    }
+
+    const updated = this.update(targetUserId, { status: newStatus });
+    return { success: true, user: updated, statusCode: 200 };
+  },
+
+  /**
+   * Deletes a user record with domain invariant checks
+   * @param {number|string} targetUserId 
+   * @param {Object} actor - The user performing the deletion
+   * @returns {{ success: boolean, user?: Object, error?: string, statusCode?: number }}
+   */
+  deleteUser(targetUserId, actor) {
+    if (!actor || actor.role !== 'admin') {
+      return { success: false, error: 'Unauthorized: Only administrators can delete users.', statusCode: 403 };
+    }
+
+    const targetUser = this.findById(targetUserId);
+    if (!targetUser) {
+      return { success: false, error: 'Target user not found.', statusCode: 404 };
+    }
+
+    // Invariant check: Cannot delete the last active administrator
+    if (targetUser.role === 'admin') {
+      const remainingAdmins = this.countAdmins();
+      if (remainingAdmins <= 1) {
+        return {
+          success: false,
+          error: 'Domain Invariant Violation: Cannot delete the last active system administrator.',
+          statusCode: 422
+        };
+      }
+    }
+
+    const deleted = this.delete(targetUserId);
+    return { success: true, user: deleted, statusCode: 200 };
   }
 };
 

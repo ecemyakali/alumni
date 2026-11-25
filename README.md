@@ -5,7 +5,7 @@
 [![Brand Identity](https://img.shields.io/badge/Brand-Guidelines_&_Identity-5e6ad2?style=flat)](./brand.md)
 [![Design System](https://img.shields.io/badge/Design_System-Mintlify_&_Linear_Hybrid-10b981?style=flat)](./DESIGN.md)
 [![Swagger](https://img.shields.io/badge/OpenAPI-3.0_Swagger-85EA2D?style=flat&logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
-[![Tests](https://img.shields.io/badge/Tests-208_Passing-brightgreen?style=flat)](./test/)
+[![Tests](https://img.shields.io/badge/Tests-263_Passing-brightgreen?style=flat)](./test/)
 
 A modern, scalable, and secure **Alumni Tracking & Networking System** designed to bridge the gap between academic institutions and their graduates. This platform enables alumni to maintain up-to-date career profiles, fosters professional networking, and provides institutions with valuable insights into alumni outcomes and career trends.
 
@@ -139,12 +139,35 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **POST** | `/api/auth/logout` | **REST Sign-Out:** Revokes session token and clears cookie | JSON (`200 OK`) |
 | **GET** | `/api/auth/me` | **REST Identity:** Returns profile of authenticated session or Bearer token | JSON (`200 OK` / `401 Unauthorized`) |
 
-#### 🛡️ Administration & Role Management (`AdminController` ➡️ `.../admin`)
+#### 🛡️ Administration & User Management (`AdminController` ➡️ `.../admin`)
 | Method | Endpoint | Description | Layer / Format |
 | :--- | :--- | :--- | :--- |
-| **GET** | `/admin` | **Admin Dashboard:** Role-protected control center (requires `admin` role; redirects unauthenticated to `/login`, returns 403 Forbidden for unauthorized roles) | HTML View (`200 OK` / `401` / `403`) |
-| **POST** | `/admin/users/:id/role` | **Assign Role (Web):** Protected form action to update user role with last-admin invariant check | 302 Redirect / HTML View |
+| **GET** | `/admin` | **Admin Dashboard:** Role-protected control center with multi-field search and status/role filtering (requires `admin` role) | HTML View (`200 OK` / `401` / `403`) |
+| **GET** | `/admin/users/:id/edit` | **Edit User Form:** Pre-filled profile and role/status edit form view | HTML View (`200 OK` / `401` / `403` / `404`) |
+| **POST** | `/admin/users/:id/update` | **Update User Action:** Submit profile edits with last-admin demotion/deactivation invariant protection | 302 Redirect / HTML View (`302` / `400` / `422`) |
+| **POST** | `/admin/users/:id/role` | **Assign Role (Web):** Inline form action to update user role with last-admin invariant check | 302 Redirect / HTML View |
+| **POST** | `/admin/users/:id/status` | **Assign Status (Web):** Inline form action to update status (ACTIVE, INACTIVE, SUSPENDED) | 302 Redirect / HTML View |
+| **POST** | `/admin/users/:id/delete` | **Delete User Action:** Permanently remove user; last active admin deletion strictly prevented | 302 Redirect / HTML View (`302` / `422`) |
 | **PATCH** | `/api/users/:id/role` | **Assign Role (API):** Protected RESTful endpoint for role mutation (`admin` required) | JSON (`200 OK` / `400` / `403` / `422`) |
+| **PATCH** | `/api/users/:id/status` | **Assign Status (API):** Protected RESTful endpoint for status mutation (`admin` required) | JSON (`200 OK` / `400` / `403` / `422`) |
+
+> [!NOTE]
+> ### 🛡️ Administrator Setup, Roles & Default Credentials
+> The Alumni Tracking System features a strict Role-Based Access Control (RBAC) architecture. Only accounts with the `admin` role can access the `/admin` control center.
+> 
+> **Default Seeded Administrator Accounts:**
+> | Full Name | Email | Password | Role | Status | Description |
+> | :--- | :--- | :--- | :--- | :--- | :--- |
+> | **Ece Yakali** | `ece@example.com` | `AdminPass123!` | `admin` | `ACTIVE` | Primary Platform Architect & Administrator |
+> | **System Administrator** | `admin@alumni.edu` | `AdminPass123!` | `admin` | `ACTIVE` | University Alumni Office Superuser |
+> 
+> **Admin Setup & CLI Utilities:**
+> * `npm run seed:admin` — Provisions the default administrator accounts in PostgreSQL and in-memory stores.
+> * `npm run admin:make <email>` — Promotes any registered user to the `admin` role (e.g. `npm run admin:make ece@example.com`).
+> 
+> **Domain Invariant Protection:**
+> The system strictly enforces the domain invariant that **the last active administrator cannot be demoted, deactivated, or deleted**. Any attempt returns HTTP 422 Unprocessable Entity or an informative error banner.
+
 
 #### 👥 Users Management (`UserController` ➡️ `.../users`)
 | Method | Endpoint | Description | Layer / Format |
@@ -503,20 +526,26 @@ alumni/
 │   └── 004_create_applications_table.sql # Schema definition for applications table
 ├── postman/                            # Postman workspace environment and collection files
 ├── scripts/                            # Operational & automated administrative scripts
+│   ├── make-admin.js                   # CLI utility to promote any user to administrator role
 │   ├── migrate.js                      # Database creation & SQL migration runner
+│   ├── seed-admin.js                   # Administrator account provisioning script
 │   └── seed.js                         # Database & in-memory seeder runner using factories
 ├── src/                                # Application source code (MVC Architecture)
 │   ├── config/                         # Environment & API documentation configurations
 │   │   ├── db.js                       # Centralized PostgreSQL connection pool (node-postgres pg.Pool)
 │   │   └── swagger.js                  # OpenAPI 3.0 specification definition (View layer)
 │   ├── controllers/                    # Controller Layer (Request orchestration & business flow)
-│   │   ├── apiAnnouncementController.js# Dedicated RESTful API CRUD Controller for Announcements
+│   │   ├── adminController.js          # Administrator Control Center & user mutation controller
 │   │   ├── announcementController.js   # Web/Application CRUD Controller for Announcements (HTML/View)
+│   │   ├── apiAnnouncementController.js# Dedicated RESTful API CRUD Controller for Announcements
+│   │   ├── apiAuthController.js        # Dedicated RESTful Authentication Controller (/api/auth)
 │   │   ├── apiUserController.js        # Dedicated RESTful API CRUD Controller for Users (JSON responses)
-│   │   ├── userController.js           # Web/Application CRUD Controller for Users (HTML/content-negotiated)
+│   │   ├── authController.js           # Web Authentication & Registration Controller (/register, /login)
 │   │   ├── healthController.js         # System health & uptime metric handler
+│   │   ├── userController.js           # Web/Application CRUD Controller for Users (HTML/content-negotiated)
 │   │   └── whiteboardController.js     # Classroom introductory routes & calculation handlers
 │   ├── middlewares/                    # Middleware Layer (Request interception, guardians & logging)
+│   │   ├── authMiddleware.js           # Session token & Role-Based Access Control (RBAC) middleware
 │   │   ├── errorGuardian.js            # 5xx server error guardian with file logger (logs/error.logs)
 │   │   ├── logger.js                   # Terminal logger middleware: time(...) method(...) route(...) res type(...) duration(...)
 │   │   └── notFoundGuardian.js         # 404 guardian middleware with reason & web redirection (/404)
@@ -525,13 +554,16 @@ alumni/
 │   │   ├── applicationModel.js         # Application entity data store & M:N relations
 │   │   ├── db.js                       # Database connection pool export alias
 │   │   ├── jobPostingModel.js          # JobPosting entity data store & CRUD operations
-│   │   └── userModel.js                # User entity data store & CRUD operations
+│   │   └── userModel.js                # User entity data store, auth validation & RBAC invariants
 │   ├── routes/                         # Router Layer (HTTP verb & URL route definitions)
+│   │   ├── adminRoutes.js              # Protected Admin Control Center routes (/admin, /api/users/:id/role)
 │   │   ├── apiAnnouncementRoutes.js    # Routes for .../api/announcements -> ApiAnnouncementController
 │   │   ├── announcementRoutes.js       # Routes for .../announcements -> AnnouncementController
 │   │   ├── apiApplicationRoutes.js     # Routes for .../api/applications -> ApiApplicationController
 │   │   ├── applicationRoutes.js        # Routes for .../applications -> ApplicationController
+│   │   ├── apiAuthRoutes.js            # Routes for .../api/auth -> ApiAuthController
 │   │   ├── apiJobPostingRoutes.js      # Routes for .../api/job-postings -> ApiJobPostingController
+│   │   ├── authRoutes.js               # Routes for /register, /login, /logout -> AuthController
 │   │   ├── jobPostingRoutes.js         # Routes for .../job-postings -> JobPostingController
 │   │   ├── apiUserRoutes.js            # Routes for .../api/users -> ApiUserController
 │   │   ├── healthRoutes.js             # Routes for /api/health -> HealthController
@@ -539,19 +571,25 @@ alumni/
 │   │   ├── userRoutes.js               # Routes for .../users -> UserController
 │   │   └── whiteboardRoutes.js         # Routes for classroom endpoints (/, /hello, /sum, etc.)
 │   ├── views/                          # View Layer (HTML page templates & UI rendering)
+│   │   ├── adminView.js                # Administrator Control Center, directory, & user edit views
 │   │   ├── announcementView.js         # Announcements board, card view & publishing form
 │   │   ├── applicationView.js          # Job Applications board, detail view & submission form
+│   │   ├── authView.js                 # Mintlify Aurora registration & login portal views
+│   │   ├── forbiddenView.js            # Semantic 403 Forbidden Access Denied view
 │   │   ├── jobPostingView.js           # Career opportunities board, card view & posting form
 │   │   ├── notFoundView.js             # Generic 404 Page Not Found HTML template with reason & navigation
 │   │   ├── serverErrorView.js          # Generic 500 Server Error HTML template with reason
+│   │   ├── sharedLayout.js             # Mintlify Aurora design system layout, navbar & tokens
 │   │   └── userView.js                 # Users directory table, profile view & registration form
 │   └── app.js                          # Express application configuration & middleware setup
-├── test/                               # Automated test suites (Node.js native test runner - 203 tests)
+├── test/                               # Automated test suites (Node.js native test runner - 263 tests)
+│   ├── adminPanel.test.js              # Unit & integration tests for Admin Panel, search, edit, delete & invariants
 │   ├── announcementControllers.test.js # Unit tests for ApiAnnouncementController & AnnouncementController
 │   ├── announcementModel.test.js       # Unit tests for Announcement Model CRUD operations
 │   ├── announcementView.test.js        # Unit and integration tests for Announcement HTML View layer
 │   ├── applicationControllers.test.js  # Unit tests for ApiApplicationController & ApplicationController
 │   ├── applicationModel.test.js        # Unit tests for Application Model CRUD & M:N relations
+│   ├── auth.test.js                    # Unit and integration tests for Auth & Registration flows
 │   ├── controllers.test.js             # Unit tests for ApiUserController & UserController CRUD
 │   ├── databaseCrud.test.js            # Unit & integration tests for PostgreSQL database CRUD interfaces & resilience
 │   ├── factories.test.js               # Unit and integration tests for User & Announcement factories & seeder
@@ -561,6 +599,7 @@ alumni/
 │   ├── jobPostingControllers.test.js   # Unit tests for ApiJobPostingController & JobPostingController
 │   ├── jobPostingModel.test.js         # Unit tests for JobPosting Model CRUD operations
 │   ├── migrations.test.js              # Unit tests for SQL migrations & DB pool architecture
+│   ├── roleMiddleware.test.js          # Unit and integration tests for RBAC middleware & route guarding
 │   ├── routes.test.js                  # Integration tests validating all API, Web & Swagger endpoints
 │   ├── userModel.test.js               # Unit tests for User Model CRUD operations
 │   └── userView.test.js                # Unit and integration tests for User HTML View layer

@@ -127,6 +127,116 @@ const swaggerDocument = {
         }
       }
     },
+    '/api/users/{id}/status': {
+      patch: {
+        tags: ['Administration'],
+        summary: 'Assign status to user (Admin only)',
+        description: 'Updates a target user account status. Deactivating or suspending the last active administrator is rejected.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Numeric user ID'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['status'],
+                properties: {
+                  status: {
+                    type: 'string',
+                    enum: ['ACTIVE', 'INACTIVE', 'SUSPENDED'],
+                    example: 'ACTIVE'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'User status updated successfully' },
+          '400': { description: 'Invalid status enum' },
+          '401': { description: 'Authentication required' },
+          '403': { description: 'Forbidden: Admin access only' },
+          '404': { description: 'Target user not found' },
+          '422': { description: 'Unprocessable Entity: Cannot deactivate the last active administrator' }
+        }
+      }
+    },
+    '/admin/users/{id}/edit': {
+      get: {
+        tags: ['Administration'],
+        summary: 'Render user edit form view (Admin only)',
+        description: 'Serves pre-filled Mintlify Aurora form view to edit user information and privileges.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Numeric user ID'
+          }
+        ],
+        responses: {
+          '200': { description: 'User edit form rendered successfully' },
+          '401': { description: 'Authentication required' },
+          '403': { description: 'Forbidden: Admin access only' },
+          '404': { description: 'Target user not found' }
+        }
+      }
+    },
+    '/admin/users/{id}/update': {
+      post: {
+        tags: ['Administration'],
+        summary: 'Submit user profile edits (Admin only)',
+        description: 'Updates user details with protection against demoting or deactivating the last active administrator.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Numeric user ID'
+          }
+        ],
+        responses: {
+          '302': { description: 'User updated and redirected to admin panel' },
+          '400': { description: 'Missing required fields' },
+          '401': { description: 'Authentication required' },
+          '403': { description: 'Forbidden: Admin access only' },
+          '422': { description: 'Cannot demote or deactivate the last active administrator' }
+        }
+      }
+    },
+    '/admin/users/{id}/delete': {
+      post: {
+        tags: ['Administration'],
+        summary: 'Delete user record (Admin only)',
+        description: 'Permanently removes a user record from the system. Strictly enforces invariant preventing deletion of the last remaining active administrator.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Numeric user ID'
+          }
+        ],
+        responses: {
+          '302': { description: 'User deleted and redirected to admin panel' },
+          '401': { description: 'Authentication required' },
+          '403': { description: 'Forbidden: Admin access only' },
+          '404': { description: 'Target user not found' },
+          '422': { description: 'Cannot delete the last active administrator' }
+        }
+      }
+    },
     '/register': {
       get: {
         tags: ['Authentication Web'],

@@ -113,7 +113,7 @@ CREATE TRIGGER trg_applications_updated_at
 -- 5. Initial Seed Data
 INSERT INTO users (name, email, department, graduation_year, role)
 VALUES
-    ('Ece Yakali', 'ece@example.com', 'Computer Engineering', 2024, 'alumni'),
+    ('Ece Yakali', 'ece@example.com', 'Computer Engineering', 2024, 'admin'),
     ('Admin User', 'admin@example.com', 'System Administration', 2020, 'admin')
 ON CONFLICT (email) DO NOTHING;
 

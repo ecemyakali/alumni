@@ -8,6 +8,8 @@
     "dev": "node --watch index.js",
     "test": "node --test",
     "test:postman": "node scripts/test-postman.js",
+    "seed:admin": "node scripts/seed-admin.js",
+    "admin:make": "node scripts/make-admin.js",
     "migrate": "node scripts/migrate.js",
     "db:create": "node scripts/migrate.js",
     "seed": "node scripts/seed.js",

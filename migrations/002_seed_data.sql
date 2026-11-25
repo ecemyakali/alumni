@@ -6,7 +6,7 @@
 -- 1. Seed Users
 INSERT INTO users (name, email, department, graduation_year, role)
 VALUES
-    ('Ece Yakali', 'ece@example.com', 'Computer Engineering', 2024, 'alumni'),
+    ('Ece Yakali', 'ece@example.com', 'Computer Engineering', 2024, 'admin'),
     ('Admin User', 'admin@example.com', 'System Administration', 2020, 'admin'),
     ('Can Demir', 'can.demir@alumni.edu', 'Industrial Engineering', 2023, 'alumni'),
     ('Zeynep Kaya', 'zeynep.kaya@alumni.edu', 'Electrical & Electronics Engineering', 2022, 'alumni')
