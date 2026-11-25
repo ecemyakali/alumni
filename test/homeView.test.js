@@ -153,19 +153,34 @@ test('Homepage View & Routing Suite', async (t) => {
     assert.ok(htmlAdmin.includes('Open Admin Panel'));
   });
 
-  await t.test('7. Streamlined navbar renders single-row header, compact search trigger, and user dropdown', () => {
+  await t.test('7. Streamlined navbar renders single-row header with Directory, Community, Career, compact search, and user dropdown', () => {
     // Authenticated admin user navbar
     const htmlAdmin = homeView.renderHomePage({}, {
       currentUser: { name: 'Ece Admin', role: 'admin' }
     });
-    assert.ok(htmlAdmin.includes('nav-search-trigger'));
-    assert.ok(htmlAdmin.includes('Explore'));
-    assert.ok(htmlAdmin.includes('nav-dropdown-menu'));
-    assert.ok(htmlAdmin.includes('nav-user-wrap'));
-    assert.ok(htmlAdmin.includes('user-menu-dropdown'));
-    assert.ok(htmlAdmin.includes('My Profile'));
-    assert.ok(htmlAdmin.includes('Admin Panel'));
-    assert.ok(htmlAdmin.includes('Log Out'));
+    // Top-level standalone links
+    assert.ok(htmlAdmin.includes('Directory'), 'Directory top nav link missing');
+    assert.ok(htmlAdmin.includes('Community'), 'Community top nav link missing');
+    assert.ok(htmlAdmin.includes('Career'), 'Career top nav link missing');
+
+    // Explore dropdown must be removed from navbar
+    assert.ok(!htmlAdmin.includes('id="exploreDropdownBtn"'), 'Explore dropdown button should be removed');
+    assert.ok(!htmlAdmin.includes('nav-dropdown-menu'), 'Explore dropdown menu should be removed');
+
+    // Search trigger and user dropdown
+    assert.ok(htmlAdmin.includes('nav-search-trigger'), 'Search trigger missing');
+    assert.ok(htmlAdmin.includes('nav-user-wrap'), 'User dropdown wrap missing');
+    assert.ok(htmlAdmin.includes('user-menu-dropdown'), 'User menu dropdown missing');
+    assert.ok(htmlAdmin.includes('My Profile'), 'My Profile link missing');
+    assert.ok(htmlAdmin.includes('Admin Panel'), 'Admin Panel link missing');
+    assert.ok(htmlAdmin.includes('Log Out'), 'Log Out link missing');
+
+    // Multi-column footer housing secondary informational links
+    assert.ok(htmlAdmin.includes('About Platform'), 'Footer About link missing');
+    assert.ok(htmlAdmin.includes('Community Guidelines'), 'Footer Guidelines link missing');
+    assert.ok(htmlAdmin.includes('Resources &amp; Mentorship'), 'Footer Resources link missing');
+    assert.ok(htmlAdmin.includes('Frequently Asked Questions (FAQ)'), 'Footer FAQ link missing');
+    assert.ok(htmlAdmin.includes('Contact Alumni Relations'), 'Footer Contact link missing');
 
     // Unauthenticated user navbar
     const htmlGuest = homeView.renderHomePage();

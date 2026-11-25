@@ -212,8 +212,8 @@ const sharedLayout = {
       font-weight: 600;
     }
 
-    /* DROPDOWN CORE */
-    .nav-dropdown-wrap, .nav-user-wrap {
+    /* DROPDOWN CORE FOR USER MENU */
+    .nav-user-wrap {
       position: relative;
     }
     .nav-chevron {
@@ -223,80 +223,9 @@ const sharedLayout = {
       line-height: 1;
       display: inline-block;
     }
-    .nav-dropdown-wrap:hover .nav-chevron,
-    .nav-dropdown-wrap:focus-within .nav-chevron,
     .nav-user-wrap:hover .nav-chevron,
     .nav-user-wrap:focus-within .nav-chevron {
       transform: rotate(180deg);
-    }
-
-    /* EXPLORE DROPDOWN PANEL */
-    .nav-dropdown-menu {
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 0;
-      min-width: 290px;
-      background: #ffffff;
-      border: 1px solid var(--hairline);
-      border-radius: var(--rounded-xl);
-      padding: 8px;
-      box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.04);
-      display: none;
-      flex-direction: column;
-      gap: 2px;
-      z-index: 150;
-      animation: fadeInMenu 0.15s ease-out;
-    }
-    .nav-dropdown-wrap:hover .nav-dropdown-menu,
-    .nav-dropdown-wrap:focus-within .nav-dropdown-menu {
-      display: flex;
-    }
-    .dropdown-group-label {
-      font-size: 10.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      color: var(--ink-tertiary);
-      padding: 6px 12px 4px 12px;
-    }
-    .dropdown-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 8px 12px;
-      border-radius: var(--rounded-md);
-      text-decoration: none;
-      color: var(--ink);
-      transition: all 0.12s ease;
-    }
-    .dropdown-item:hover {
-      background: var(--surface-subtle);
-    }
-    .dropdown-item.active {
-      background: var(--brand-mint-subtle);
-    }
-    .dropdown-icon {
-      font-size: 16px;
-      line-height: 1.3;
-      flex-shrink: 0;
-    }
-    .dropdown-content {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-    .dropdown-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink);
-    }
-    .dropdown-item.active .dropdown-title {
-      color: var(--brand-mint);
-    }
-    .dropdown-desc {
-      font-size: 11px;
-      color: var(--ink-subtle);
-      line-height: 1.3;
     }
     .dropdown-hairline {
       height: 1px;
@@ -887,63 +816,13 @@ const sharedLayout = {
 
   /**
    * Renders the top sticky frosted-glass navigation header
-   * Single-row h-16 layout with max 3-4 left items, compact Search (⌘K), and right-hand User/Auth dropdown
+   * Single-row h-16 layout with standalone Directory, Community, Career links, compact Search (⌘K), and right-hand User/Auth dropdown
    * @param {string} [activePage='home']
    * @param {Object|null} [currentUser=null] - Currently authenticated user
    */
   renderNavbar(activePage = 'home', currentUser = null) {
     const isAuthenticated = Boolean(currentUser);
     const isAdmin = isAuthenticated && currentUser.role === 'admin';
-
-    // Explore Dropdown Menu grouping secondary pages
-    const isExploreActive = ['announcements', 'jobs', 'applications', 'health'].includes(activePage);
-    const exploreDropdownHtml = `
-        <li class="nav-dropdown-wrap">
-          <button type="button" class="nav-link nav-dropdown-btn ${isExploreActive ? 'active' : ''}" id="exploreDropdownBtn" aria-haspopup="true" aria-expanded="false">
-            <span>Explore</span>
-            <span class="nav-chevron">▾</span>
-          </button>
-          <div class="nav-dropdown-menu" aria-labelledby="exploreDropdownBtn">
-            <div class="dropdown-group-label">Community &amp; Career</div>
-            <a href="/announcements" class="dropdown-item ${activePage === 'announcements' ? 'active' : ''}">
-              <span class="dropdown-icon">📢</span>
-              <div class="dropdown-content">
-                <div class="dropdown-title">Announcements Board</div>
-                <div class="dropdown-desc">Campus summits, reunions &amp; official updates</div>
-              </div>
-            </a>
-            <a href="/job-postings" class="dropdown-item ${activePage === 'jobs' ? 'active' : ''}">
-              <span class="dropdown-icon">💼</span>
-              <div class="dropdown-content">
-                <div class="dropdown-title">Career Opportunities</div>
-                <div class="dropdown-desc">Job postings, mentorship &amp; alumni referrals</div>
-              </div>
-            </a>
-            <a href="/applications" class="dropdown-item ${activePage === 'applications' ? 'active' : ''}">
-              <span class="dropdown-icon">📋</span>
-              <div class="dropdown-content">
-                <div class="dropdown-title">Application Tracking</div>
-                <div class="dropdown-desc">Monitor submissions &amp; recruitment pipelines</div>
-              </div>
-            </a>
-            <div class="dropdown-hairline"></div>
-            <div class="dropdown-group-label">Platform &amp; Diagnostics</div>
-            <a href="/api/swagger" class="dropdown-item" target="_blank" rel="noopener">
-              <span class="dropdown-icon">📖</span>
-              <div class="dropdown-content">
-                <div class="dropdown-title">Swagger UI</div>
-                <div class="dropdown-desc">OpenAPI 3.0 interactive endpoints</div>
-              </div>
-            </a>
-            <a href="/api/health" class="dropdown-item ${activePage === 'health' ? 'active' : ''}">
-              <span class="dropdown-icon">⚡</span>
-              <div class="dropdown-content">
-                <div class="dropdown-title">System Health</div>
-                <div class="dropdown-desc">Real-time service health &amp; telemetry</div>
-              </div>
-            </a>
-          </div>
-        </li>`;
 
     // Right-hand user avatar/name dropdown (authenticated) vs Log in / Register (unauthenticated)
     let userActionHtml = '';
@@ -1003,13 +882,14 @@ const sharedLayout = {
           <span class="brand-title">Alumni Tracking System</span>
         </a>
         <ul class="nav-menu">
-          <li><a href="/users" class="nav-link ${activePage === 'users' ? 'active' : ''}">Alumni Directory</a></li>
-          ${exploreDropdownHtml}
+          <li><a href="/users" class="nav-link ${activePage === 'users' ? 'active' : ''}" title="Alumni Directory">Directory</a></li>
+          <li><a href="/announcements" class="nav-link ${activePage === 'announcements' ? 'active' : ''}" title="Announcements &amp; Community">Community</a></li>
+          <li><a href="/job-postings" class="nav-link ${activePage === 'jobs' ? 'active' : ''}" title="Career Opportunities">Career</a></li>
         </ul>
       </div>
 
       <div class="nav-right">
-        <button type="button" class="nav-search-trigger" onclick="if(window.location.pathname!=='/main'){window.location.href='/main#search'}else{document.getElementById('globalSearchInput')?.focus()}" title="Search alumni, jobs, announcements (⌘K)">
+        <button type="button" class="nav-search-trigger" onclick="if(window.location.pathname!=='/main'){window.location.href='/main#search'}else{document.getElementById('globalSearchInput')?.focus()}" title="Search directory, jobs &amp; updates (⌘K)">
           <span class="nav-search-icon">🔍</span>
           <span class="nav-search-text">Search...</span>
           <kbd class="nav-search-kbd">⌘K</kbd>
@@ -1021,7 +901,8 @@ const sharedLayout = {
   },
 
   /**
-   * Renders the clean Mintlify footer in English
+   * Renders the clean multi-column Mintlify footer in English
+   * Houses secondary informational links (About, Resources, FAQ, Contact, Guidelines) & documentation
    */
   renderFooter() {
     return `
@@ -1032,30 +913,38 @@ const sharedLayout = {
         <p class="footer-desc">
           A modern, scalable network engineered to bridge academic excellence with lifetime career achievement.
         </p>
+        <div style="margin-top: 1rem; display: flex; align-items: center; gap: 8px;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 0 2px rgba(16, 185, 129, 0.25);"></span>
+          <span style="font-size: 12px; color: var(--ink-muted); font-weight: 500;">All Systems Operational</span>
+        </div>
       </div>
       <div>
-        <div class="footer-col-title">Navigation</div>
+        <div class="footer-col-title">Network &amp; Directory</div>
         <ul class="footer-links">
           <li><a href="/main">Home</a></li>
-          <li><a href="/register">Register Account</a></li>
           <li><a href="/users">Alumni Directory</a></li>
+          <li><a href="/announcements">Community &amp; Announcements Board</a></li>
           <li><a href="/job-postings">Career Opportunities</a></li>
-          <li><a href="/announcements">Announcements Board</a></li>
           <li><a href="/applications">Application Tracking</a></li>
+          <li><a href="/register">Register Member Account</a></li>
         </ul>
       </div>
       <div>
-        <div class="footer-col-title">Developer API</div>
+        <div class="footer-col-title">About &amp; Resources</div>
         <ul class="footer-links">
-          <li><a href="/api/swagger">Swagger UI</a></li>
-          <li><a href="/api/swagger.json">OpenAPI 3.0 Spec</a></li>
-          <li><a href="/api/health">System Health</a></li>
-          <li><a href="/404">404 Guardian</a></li>
+          <li><a href="/about">About Platform</a></li>
+          <li><a href="/announcements#guidelines">Community Guidelines</a></li>
+          <li><a href="/users#mentorship">Resources &amp; Mentorship</a></li>
+          <li><a href="/main#faq">Frequently Asked Questions (FAQ)</a></li>
+          <li><a href="mailto:alumni@university.edu">Contact Alumni Relations</a></li>
         </ul>
       </div>
       <div>
-        <div class="footer-col-title">Documentation</div>
+        <div class="footer-col-title">Developer &amp; Docs</div>
         <ul class="footer-links">
+          <li><a href="/api/swagger">Swagger UI (API Docs)</a></li>
+          <li><a href="/api/swagger.json">OpenAPI 3.0 Specification</a></li>
+          <li><a href="/api/health">System Health &amp; Telemetry</a></li>
           <li><a href="/brand.md">Brand Manual (brand.md)</a></li>
           <li><a href="/DESIGN.md">Design System (DESIGN.md)</a></li>
           <li><a href="https://github.com/ecemyakali/alumni" target="_blank" rel="noopener">GitHub Repository</a></li>
