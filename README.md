@@ -18,6 +18,7 @@ A modern, scalable, and secure **Alumni Tracking & Networking System** designed 
 * 📐 **[Master Design System & UI Specification (`DESIGN.md`)](#-master-design-system--ui-specification-designmd)** · [Direct File Link (`DESIGN.md`)](./DESIGN.md)
 * 📖 **[API Documentation (Swagger UI)](#-api-documentation-swagger-ui)**
 * 🛣️ **[API Endpoints Summary](#️-api-endpoints-summary)**
+* 🔐 **[Authentication & Authorization Architecture](#-authentication--authorization-architecture)**
 * 🏗️ **[Architecture: Model-View-Controller (MVC) Pattern](#-architecture-model-view-controller-mvc-pattern)**
 * 🧪 **[Testing & Automated Verification](#-testing-strategy)**
 
@@ -261,6 +262,146 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **GET** | `/sum/:n1/:n2` | Calculates the sum of two numbers | - |
 | **GET** | `/about` | Temporary about page (`temp. about page`) | - |
 | **GET** | `/alumni` | Alumni base status route (`ok`) | - |
+
+---
+
+## 🔐 Authentication & Authorization Architecture
+
+The Alumni Tracking System incorporates an enterprise-grade security, session management, and **Role-Based Access Control (RBAC)** architecture engineered with security-first design patterns.
+
+```mermaid
+flowchart TD
+    subgraph Client ["Client Browser / Mobile App"]
+        Req["HTTP Request (/profile, /admin)"]
+        Credentials["Login Credentials (Email + Password)"]
+    end
+
+    subgraph AuthPipeline ["Authentication Pipeline (Middlewares)"]
+        Attach["attachUser Middleware<br>Extracts Session Token (Cookie or Bearer)"]
+        Guard{"requireAuth Guard"}
+        RoleGuard{"requireAdmin / requireRole Guard"}
+    end
+
+    subgraph Controllers ["Controllers & Domain Layer"]
+        LoginHandler["AuthController.handleLogin<br>bcrypt.compare -> sessionManager.createSession"]
+        AdminDashboard["AdminController.renderDashboard"]
+        UserProfile["ProfileController.renderProfile"]
+        ForbiddenView["403 Forbidden Error View (forbiddenView.js)"]
+    end
+
+    Credentials --> LoginHandler
+    LoginHandler -->|Sets alumni_session HttpOnly Cookie| Client
+    Req --> Attach
+    Attach --> Guard
+    Guard -- Unauthenticated (HTML) --> RedirectLogin["302 Redirect to /login?redirect=..."]
+    Guard -- Unauthenticated (API) --> JSON401["401 Unauthorized JSON"]
+    Guard -- Authenticated --> RoleGuard
+    RoleGuard -- Role Mismatch --> ForbiddenView
+    RoleGuard -- Authorized Admin --> AdminDashboard
+    RoleGuard -- Authorized Member --> UserProfile
+```
+
+### 1. 🔄 Authentication Flow & Lifecycle
+1. **User Registration (`GET /register`, `POST /register`, `POST /api/auth/register`):**
+   - Client-side real-time validation paired with strict server-side validation (Full Name, valid Email, minimum 8-character Password).
+   - Password is cryptographically salted and hashed using `bcryptjs` with cost factor 10.
+   - Newly registered users are assigned a safe non-admin default role (`alumni` or `student`).
+   - Prevents registration privilege escalation (the `admin` role cannot be requested during registration).
+2. **User Login (`GET /login`, `POST /login`, `POST /api/auth/login`):**
+   - Validates candidate credentials against stored `passwordHash` via `authUtils.comparePassword`.
+   - On successful verification, generates a 24-hour cryptographically secure random session token.
+   - Web responses set a secure, `HttpOnly`, `SameSite=Lax` session cookie (`alumni_session`).
+   - RESTful API responses return the session token alongside user entity details for `Authorization: Bearer <token>` consumption.
+3. **Session Management (`src/utils/sessionManager.js`):**
+   - High-throughput in-memory session registry with automated TTL expiration tracking.
+   - Sliding expiration capability and immediate invalidation of orphaned sessions upon user deletion.
+4. **User Logout (`GET /logout`, `POST /logout`, `POST /api/auth/logout`):**
+   - Destroys active session entry in `sessionManager`.
+   - Clears `alumni_session` cookie and redirects web clients to `/login?logout=success` or returns `200 OK` JSON.
+
+---
+
+### 2. 👥 User Roles & Permission Matrix (RBAC)
+
+The system enforces 5 distinct system roles across all resources:
+
+| Role | Purpose & Target Audience | Directory & Opportunities | Self Profile (`/profile`) | Role Management | Admin Panel (`/admin`) |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **`admin`** | Platform Superusers & University Alumni Officers | ✅ Read & Manage | ✅ Full Access | ✅ Assign & Update | ✅ Full Control |
+| **`alumni`** | Verified University Graduates | ✅ Read & Apply | ✅ Full Access | ❌ None | ❌ Blocked (403) |
+| **`student`** | Current Undergraduate / Graduate Students | ✅ Read & Apply | ✅ Full Access | ❌ None | ❌ Blocked (403) |
+| **`faculty`** | University Academic & Administrative Staff | ✅ Read & Post | ✅ Full Access | ❌ None | ❌ Blocked (403) |
+| **`guest`** | Unverified / Public Prospective Visitors | ✅ Read Only | ❌ None | ❌ None | ❌ Blocked (403) |
+
+---
+
+### 3. 🛡️ Route Protection & Middleware Hierarchy
+
+Security is applied declaratively using modular middlewares defined in [`src/middlewares/authMiddleware.js`](./src/middlewares/authMiddleware.js):
+
+* **`attachUser` (Global):**
+  - Runs on every incoming request.
+  - Inspects both `Cookie: alumni_session=<token>` and `Authorization: Bearer <token>` headers.
+  - Binds the authenticated user entity to `req.user` and `res.locals.currentUser`.
+* **`requireAuth` (Route Guard):**
+  - Guards authenticated endpoints (`/profile`, `/dashboard`, `/admin`, `/api/profile`, etc.).
+  - Web browser requests are gracefully redirected: `302 Found` ➡️ `/login?redirect=<target_url>`.
+  - API consumers receive standard `401 Unauthorized` JSON responses.
+* **`requireRole(...allowedRoles)` (Role Boundary Guard):**
+  - Verifies that `req.user.role` is among the permitted roles.
+  - Unauthorized roles visiting web pages receive a branded `403 Forbidden Access Denied` view ([`src/views/forbiddenView.js`](./src/views/forbiddenView.js)).
+  - API requests receive `403 Forbidden` JSON with explicit error reasons.
+* **`requireAdmin` (Shortcut):**
+  - Syntactic sugar for `requireRole('admin')`.
+
+---
+
+### 4. 🎛️ Admin Control Center Access & Domain Invariant Protection
+
+#### How to Access the Admin Panel:
+1. Navigate to [`http://localhost:5000/login`](http://localhost:5000/login).
+2. Sign in with the seeded administrator credentials:
+   - **User:** `Ece Yakali`
+   - **Email:** `ece@example.com`
+   - **Password:** `AdminPass123!`
+   *(Alternative: `admin@alumni.edu` / `AdminPass123!`)*
+3. Once authenticated, click the royal-blue **`🛡️ Admin Panel`** link in the top navigation bar, or navigate directly to [`http://localhost:5000/admin`](http://localhost:5000/admin).
+4. Direct access by unauthorized roles (`alumni`, `student`, `guest`) will be intercepted and rendered as `403 Forbidden`.
+
+#### Domain Invariant: Last Active Administrator Protection
+> [!CAUTION]
+> The platform strictly enforces the domain invariant that **the last active administrator cannot be deleted, demoted, or deactivated** (`userModel.countAdmins() <= 1`).
+> - Attempting to demote the sole active admin via web or API returns `HTTP 422 Unprocessable Entity`.
+> - Attempting to delete the sole active admin returns `HTTP 422 Unprocessable Entity` with an alert banner.
+
+---
+
+### 5. ⚙️ Environment Variables & Operational Commands
+
+#### Configuration Variables (`.env`):
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `PORT` | `5000` | HTTP listening port for Express server |
+| `ADMIN_PASSWORD` | `AdminPass123!` | Initial password for seeded administrators |
+| `SESSION_SECRET` | `alumni_dev_secret_key` | Secret key used for signing session identifiers |
+| `DATABASE_URL` | `postgresql://alumni_user:alumni_password@localhost:5432/alumni_db` | Relational database connection pool string |
+
+#### Administrative CLI Commands:
+```bash
+# Provision default administrator accounts (Ece Yakali & System Administrator)
+npm run seed:admin
+
+# Promote any registered user to administrator by email
+npm run admin:make ece@example.com
+
+# Seed database with sample alumni, announcements, and job postings
+npm run seed
+
+# Execute the complete automated verification test suite (274 tests)
+npm test
+```
+
+---
 
 ---
 
