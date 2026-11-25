@@ -235,7 +235,7 @@
           "Authentication API"
         ],
         "summary": "Authenticate user credentials",
-        "description": "Verifies email and password using bcrypt comparison.",
+        "description": "Verifies email and password using bcrypt comparison and returns session token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -264,13 +264,128 @@
         },
         "responses": {
           "200": {
-            "description": "Authentication successful"
+            "description": "Authentication successful with session token"
           },
           "400": {
             "description": "Missing email or password"
           },
           "401": {
             "description": "Invalid email or password"
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication API"
+        ],
+        "summary": "Invalidate API session token",
+        "description": "Revokes active session token and clears session cookie.",
+        "responses": {
+          "200": {
+            "description": "Logged out successfully"
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication API"
+        ],
+        "summary": "Retrieve authenticated user identity",
+        "description": "Returns profile details of the currently authenticated session or Bearer token.",
+        "responses": {
+          "200": {
+            "description": "Current authenticated user profile"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/login": {
+      "get": {
+        "tags": [
+          "Authentication Web"
+        ],
+        "summary": "Render login page",
+        "description": "Serves the login portal matching the Mintlify Aurora design system.",
+        "responses": {
+          "200": {
+            "description": "Login HTML view rendered successfully"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Authentication Web"
+        ],
+        "summary": "Submit login credentials",
+        "description": "Authenticates user, issues 24h session token stored in an HttpOnly cookie, and redirects.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jane.doe@alumni.edu"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "SecurePass123!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": {
+            "description": "Redirect to target application view with Set-Cookie"
+          },
+          "400": {
+            "description": "Missing email or password"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "get": {
+        "tags": [
+          "Authentication Web"
+        ],
+        "summary": "Logout user session",
+        "description": "Destroys active session, clears HttpOnly session cookie, and redirects to login.",
+        "responses": {
+          "302": {
+            "description": "Redirect to /login?logged_out=true with cleared cookie"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Authentication Web"
+        ],
+        "summary": "Logout user session (form POST)",
+        "description": "Destroys active session, clears cookie, and redirects.",
+        "responses": {
+          "302": {
+            "description": "Redirect to /login?logged_out=true"
           }
         }
       }

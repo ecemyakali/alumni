@@ -10,7 +10,7 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./config/swagger');
 const routes = require('./routes');
-const { logger, notFoundGuardian, errorGuardian } = require('./middlewares');
+const { logger, notFoundGuardian, errorGuardian, attachUser } = require('./middlewares');
 
 const app = express();
 
@@ -21,6 +21,9 @@ app.use(logger);
 // 2. Body Parsing (JSON and URL-encoded)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 3. Session & User Context Decorator
+app.use(attachUser);
 
 // Swagger UI API Documentation: GET /api/swagger and /api/docs
 const swaggerOptions = {

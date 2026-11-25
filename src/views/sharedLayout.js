@@ -603,8 +603,25 @@ const sharedLayout = {
   /**
    * Renders the top sticky frosted-glass navigation header
    * @param {string} [activePage='home']
+   * @param {Object|null} [currentUser=null] - Currently authenticated user
    */
-  renderNavbar(activePage = 'home') {
+  renderNavbar(activePage = 'home', currentUser = null) {
+    const authActionsHtml = currentUser
+      ? `
+        <span class="badge-pill badge-role-${escapeHtml(currentUser.role || 'alumni')}" style="padding: 5px 11px; font-size: 12px; font-weight: 600;">
+          <span>👤</span> ${escapeHtml(currentUser.name)}
+        </span>
+        <a href="/logout" class="btn-pill-secondary" style="padding: 7px 13px; font-size: 12.5px;">
+          <span>Log Out</span>
+        </a>`
+      : `
+        <a href="/login" class="nav-link ${activePage === 'login' ? 'active' : ''}" style="font-weight: 600;">
+          Log In
+        </a>
+        <a href="/register" class="btn-pill-secondary ${activePage === 'register' ? 'active' : ''}" style="padding: 7px 13px; font-size: 12.5px;">
+          <span>Register</span>
+        </a>`;
+
     return `
   <header class="top-nav">
     <div class="nav-container">
@@ -622,9 +639,7 @@ const sharedLayout = {
         <li><a href="/api/health" class="nav-link ${activePage === 'health' ? 'active' : ''}">System Health</a></li>
       </ul>
       <div class="nav-actions">
-        <a href="/register" class="btn-pill-secondary" style="padding: 7px 14px; font-size: 13px;">
-          <span>Register</span>
-        </a>
+        ${authActionsHtml}
         <a href="/job-postings#post-job" class="btn-pill-primary" style="padding: 7px 14px; font-size: 13px;">
           <span>+</span> Post Opportunity
         </a>

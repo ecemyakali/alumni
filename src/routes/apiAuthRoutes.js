@@ -13,5 +13,7 @@ const apiAuthController = require('../controllers/apiAuthController');
 
 router.post('/api/auth/register', (req, res) => apiAuthController.register(req, res));
 router.post('/api/auth/login', (req, res) => apiAuthController.login(req, res));
+router.post('/api/auth/logout', (req, res) => apiAuthController.logout(req, res));
+router.get('/api/auth/me', (req, res) => apiAuthController.getCurrentUser(req, res));
 
 module.exports = router;

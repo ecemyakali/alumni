@@ -643,25 +643,32 @@ const authView = {
    * Renders the Login Portal (GET /login)
    * 
    * @param {Object} options
-   * @param {string} [options.message]
-   * @param {string} [options.error]
+   * @param {string} [options.email] - Previously entered email to retain
+   * @param {string} [options.message] - Success or status notification
+   * @param {string} [options.error] - Failure or validation error message
+   * @param {Object|null} [options.currentUser=null] - Currently logged-in user if any
+   * @param {string} [options.redirect] - URL to redirect to after successful sign-in
    * @returns {string} Complete HTML Document
    */
   renderLogin(options = {}) {
     const errorAlertHtml = options.error
       ? `
         <div class="alert-banner alert-danger" role="alert" style="margin-bottom: 1.5rem; text-align: left;">
-          <span style="font-size: 1.25rem;">⚠️</span>
-          <div style="font-size: 13.5px;">${escapeHtml(options.error)}</div>
+          <span style="font-size: 1.25rem; flex-shrink: 0;">⚠️</span>
+          <div style="font-size: 13.5px; flex: 1;">${escapeHtml(options.error)}</div>
         </div>`
       : '';
 
     const messageAlertHtml = options.message
       ? `
         <div class="alert-banner alert-success" role="status" style="margin-bottom: 1.5rem; text-align: left;">
-          <span style="font-size: 1.25rem;">ℹ️</span>
-          <div style="font-size: 13.5px;">${escapeHtml(options.message)}</div>
+          <span style="font-size: 1.25rem; flex-shrink: 0;">✅</span>
+          <div style="font-size: 13.5px; flex: 1;">${escapeHtml(options.message)}</div>
         </div>`
+      : '';
+
+    const redirectInputHtml = options.redirect
+      ? `<input type="hidden" name="redirect" value="${escapeHtml(options.redirect)}" />`
       : '';
 
     return `<!DOCTYPE html>
@@ -677,8 +684,8 @@ const authView = {
     ${sharedLayout.getCommonStyles()}
 
     .login-wrapper {
-      max-width: 480px;
-      margin: 3rem auto 5rem auto;
+      max-width: 500px;
+      margin: 3.5rem auto 5.5rem auto;
       padding: 0 1rem;
       width: 100%;
     }
@@ -686,67 +693,192 @@ const authView = {
       background: #ffffff;
       border: 1px solid var(--hairline);
       border-radius: var(--rounded-xl);
-      padding: 2.5rem 2.25rem;
+      padding: 2.75rem 2.25rem;
       box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
     }
     .login-header {
       text-align: center;
       margin-bottom: 2rem;
     }
+    .login-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: #ecfdf5;
+      color: var(--brand-mint);
+      border: 1px solid var(--brand-mint-border);
+      border-radius: var(--rounded-pill);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      margin-bottom: 0.75rem;
+    }
     .login-title {
-      font-size: 1.75rem;
+      font-size: 1.85rem;
       font-weight: 700;
-      letter-spacing: -0.6px;
+      letter-spacing: -0.7px;
       color: var(--ink);
       line-height: 1.2;
       margin-bottom: 0.5rem;
     }
     .login-subtitle {
-      font-size: 14px;
+      font-size: 14.5px;
       color: var(--ink-muted);
       line-height: 1.5;
+    }
+    .password-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-input-wrapper input {
+      padding-right: 42px;
+      width: 100%;
+    }
+    .password-toggle-btn {
+      position: absolute;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--ink-subtle);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease;
+    }
+    .password-toggle-btn:hover {
+      color: var(--ink);
+    }
+    .form-options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0.75rem 0 1.5rem 0;
+      font-size: 13px;
+    }
+    .remember-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .auth-footer-nav {
+      margin-top: 1.75rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--hairline);
+      text-align: center;
+      font-size: 13.5px;
+      color: var(--ink-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .auth-footer-nav a {
+      color: var(--brand-mint);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+    .auth-footer-nav a:hover {
+      color: var(--brand-mint-hover);
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  ${sharedLayout.renderNavbar('login')}
+  ${sharedLayout.renderNavbar('login', options.currentUser)}
 
   <main class="login-wrapper">
     <div class="login-card">
       <div class="login-header">
-        <h1 class="login-title">Sign in to your Account</h1>
-        <p class="login-subtitle">Access your alumni network profile, announcements, and job applications.</p>
+        <div class="login-eyebrow">🔐 Member Portal Sign In</div>
+        <h1 class="login-title">Welcome Back</h1>
+        <p class="login-subtitle">Sign in to access your profile, alumni network, and career opportunities.</p>
       </div>
 
       ${errorAlertHtml}
       ${messageAlertHtml}
 
       <form method="POST" action="/login">
+        ${redirectInputHtml}
+
         <div class="form-group" style="margin-bottom: 1.25rem;">
           <label for="login-email" class="form-label">Email Address</label>
-          <input type="email" id="login-email" name="email" class="form-input" placeholder="e.g. jane.doe@alumni.university.edu" required />
+          <input
+            type="email"
+            id="login-email"
+            name="email"
+            class="form-input"
+            placeholder="e.g. jane.doe@alumni.university.edu"
+            value="${escapeHtml(options.email || '')}"
+            required
+            autocomplete="email"
+            autofocus
+          />
         </div>
 
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label for="login-password" class="form-label">Password</label>
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+          <label for="login-password" class="form-label">Password</label>
+          <div class="password-input-wrapper">
+            <input
+              type="password"
+              id="login-password"
+              name="password"
+              class="form-input"
+              placeholder="Enter your account password"
+              required
+              autocomplete="current-password"
+            />
+            <button type="button" class="password-toggle-btn" id="toggle-login-password" title="Show or hide password" aria-label="Toggle password visibility">
+              👁️
+            </button>
           </div>
-          <input type="password" id="login-password" name="password" class="form-input" placeholder="Your account password" required />
         </div>
 
-        <button type="submit" class="btn-pill-primary" style="width: 100%; justify-content: center; padding: 11px 20px;">
+        <div class="form-options-row">
+          <label class="remember-label">
+            <input type="checkbox" name="rememberMe" value="true" checked />
+            <span>Stay signed in for 24 hours</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-pill-primary" style="width: 100%; justify-content: center; padding: 12px 20px; font-size: 15px;">
           <span>Sign In</span>
           <span>➔</span>
         </button>
       </form>
 
-      <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--hairline); text-align: center; font-size: 13.5px; color: var(--ink-muted);">
-        Don't have an account yet? <a href="/register" style="color: var(--brand-mint); font-weight: 600; text-decoration: none;">Register here</a>
+      <div class="auth-footer-nav">
+        <div>
+          Don't have an account yet? <a href="/register">Register here</a>
+        </div>
+        <div>
+          <a href="/main" style="color: var(--ink-subtle); font-weight: normal;">Return to Homepage</a>
+        </div>
       </div>
     </div>
   </main>
 
   ${sharedLayout.renderFooter()}
+
+  <script>
+    (function() {
+      const passwordInput = document.getElementById('login-password');
+      const toggleBtn = document.getElementById('toggle-login-password');
+      if (toggleBtn && passwordInput) {
+        toggleBtn.addEventListener('click', function() {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+        });
+      }
+    })();
+  </script>
 </body>
 </html>`;
   }

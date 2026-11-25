@@ -1,6 +1,7 @@
 const logger = require('./logger');
 const notFoundGuardian = require('./notFoundGuardian');
 const errorGuardian = require('./errorGuardian');
+const authMiddleware = require('./authMiddleware');
 
 module.exports = {
   logger,
@@ -16,5 +17,8 @@ module.exports = {
   guardian5xx: errorGuardian,
   createServerErrorGuardian: () => errorGuardian,
   logErrorToFile: errorGuardian.logErrorToFile,
-  appendLogLine: errorGuardian.logErrorToFile
+  appendLogLine: errorGuardian.logErrorToFile,
+  authMiddleware,
+  attachUser: authMiddleware.attachUser,
+  requireAuth: authMiddleware.requireAuth
 };

@@ -5,13 +5,16 @@
  * Handles browser-based registration and authentication flows:
  * - GET  /register -> Renders interactive registration form
  * - POST /register -> Validates input, hashes password, assigns non-admin role, creates account
- * - GET  /login    -> Renders sign-in portal
- * - POST /login    -> Verifies credentials
+ * - GET  /login    -> Renders sign-in portal with status/error alerts
+ * - POST /login    -> Verifies credentials, issues session token & cookie, redirects to application
+ * - GET  /logout   -> Destroys session, clears cookie, redirects to login
+ * - POST /logout   -> Form-action logout handler
  */
 
 const userModel = require('../models/userModel');
 const authView = require('../views/authView');
 const authUtils = require('../utils/authUtils');
+const sessionManager = require('../utils/sessionManager');
 
 const authController = {
   /**
@@ -87,36 +90,95 @@ const authController = {
 
   /**
    * GET /login
-   * Renders the login view
+   * Renders the login view with dynamic status alerts
    */
   renderLoginPage(req, res) {
-    const message = req.query && req.query.registered ? 'Account created successfully! Please sign in.' : '';
-    return res.status(200).send(authView.renderLogin({ message }));
+    let message = '';
+    if (req.query) {
+      if (req.query.registered) {
+        message = 'Account created successfully! Please sign in with your credentials.';
+      } else if (req.query.logged_out) {
+        message = 'You have been signed out successfully.';
+      } else if (req.query.expired) {
+        message = 'Your session has expired. Please sign in again.';
+      }
+    }
+
+    const email = (req.query && req.query.email) || '';
+    const redirect = (req.query && req.query.redirect) || '';
+
+    return res.status(200).send(authView.renderLogin({
+      email,
+      message,
+      error: '',
+      currentUser: req.user,
+      redirect
+    }));
   },
 
   /**
    * POST /login
-   * Validates credentials
+   * Verifies credentials, generates session, sets HttpOnly cookie, and redirects
    */
   handleLogin(req, res) {
-    const { email, password } = req.body || {};
+    const rawData = req.body || {};
+    const email = typeof rawData.email === 'string' ? rawData.email.trim() : '';
+    const password = typeof rawData.password === 'string' ? rawData.password : '';
+    const redirect = typeof rawData.redirect === 'string' && rawData.redirect.startsWith('/') && !rawData.redirect.startsWith('//')
+      ? rawData.redirect
+      : '/users';
 
+    // 1. Validate required fields
     if (!email || !password) {
       return res.status(400).send(authView.renderLogin({
-        error: 'Email and password are required.'
+        email,
+        error: 'Email address and password are required.',
+        currentUser: null,
+        redirect
       }));
     }
 
+    // 2. Verify credentials
     const verifiedUser = userModel.verifyCredentials(email, password);
     if (!verifiedUser) {
       return res.status(401).send(authView.renderLogin({
-        error: 'Invalid email or password.'
+        email,
+        error: 'Invalid email address or password. Please verify your credentials.',
+        currentUser: null,
+        redirect
       }));
     }
 
-    return res.status(200).send(authView.renderLogin({
-      message: `Welcome back, ${verifiedUser.name}! (Signed in successfully as ${verifiedUser.role})`
-    }));
+    // 3. Status boundary check (cannot log in if suspended or deactivated)
+    if (verifiedUser.status && verifiedUser.status !== 'ACTIVE') {
+      return res.status(403).send(authView.renderLogin({
+        email,
+        error: `Account status is ${verifiedUser.status}. Access denied.`,
+        currentUser: null,
+        redirect
+      }));
+    }
+
+    // 4. Issue session token and write HttpOnly session cookie
+    const session = sessionManager.createSession(verifiedUser);
+    sessionManager.setSessionCookie(res, session.token);
+
+    // 5. Redirect to destination application page
+    return res.redirect(302, redirect);
+  },
+
+  /**
+   * GET & POST /logout
+   * Destroys active session, clears cookie, and redirects to login view
+   */
+  handleLogout(req, res) {
+    const token = sessionManager.extractToken(req);
+    if (token) {
+      sessionManager.destroySession(token);
+    }
+    sessionManager.clearSessionCookie(res);
+
+    return res.redirect(302, '/login?logged_out=true');
   }
 };
 

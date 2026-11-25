@@ -4,11 +4,14 @@
  * 
  * Provides RESTful JSON API endpoints for user registration & authentication:
  * - POST /api/auth/register -> Validates JSON, hashes password, assigns non-admin role, returns 201 JSON
- * - POST /api/auth/login    -> Validates credentials, returns authenticated user object
+ * - POST /api/auth/login    -> Validates credentials, issues session token, returns 200 JSON
+ * - POST /api/auth/logout   -> Invalidates active session token, clears cookie, returns 200 JSON
+ * - GET  /api/auth/me       -> Retrieves current authenticated user profile
  */
 
 const userModel = require('../models/userModel');
 const authUtils = require('../utils/authUtils');
+const sessionManager = require('../utils/sessionManager');
 
 const apiAuthController = {
   /**
@@ -79,7 +82,7 @@ const apiAuthController = {
 
   /**
    * POST /api/auth/login
-   * Authenticates user via JSON API
+   * Authenticates user via JSON API and returns session token
    */
   login(req, res) {
     const { email, password } = req.body || {};
@@ -99,12 +102,63 @@ const apiAuthController = {
       });
     }
 
+    if (verifiedUser.status && verifiedUser.status !== 'ACTIVE') {
+      return res.status(403).json({
+        success: false,
+        error: `Account status is ${verifiedUser.status}. Access denied.`
+      });
+    }
+
+    // Generate active session token
+    const session = sessionManager.createSession(verifiedUser);
+    sessionManager.setSessionCookie(res, session.token);
+
     const safeUser = userModel.sanitize(verifiedUser);
 
     return res.status(200).json({
       success: true,
       message: 'Authentication successful',
+      token: session.token,
+      expiresAt: session.expiresAt,
       data: safeUser
+    });
+  },
+
+  /**
+   * POST /api/auth/logout
+   * Invalidates active session token and clears cookie
+   */
+  logout(req, res) {
+    const token = sessionManager.extractToken(req);
+    if (token) {
+      sessionManager.destroySession(token);
+    }
+    sessionManager.clearSessionCookie(res);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  },
+
+  /**
+   * GET /api/auth/me
+   * Returns current authenticated user identity
+   */
+  getCurrentUser(req, res) {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required. No valid session or token provided.'
+      });
+    }
+
+    const safeUser = userModel.sanitize(req.user);
+
+    return res.status(200).json({
+      success: true,
+      data: safeUser,
+      session: req.session
     });
   }
 };

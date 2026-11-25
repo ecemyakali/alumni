@@ -19,4 +19,7 @@ router.post('/register', (req, res) => authController.handleRegister(req, res));
 router.get('/login', (req, res) => authController.renderLoginPage(req, res));
 router.post('/login', (req, res) => authController.handleLogin(req, res));
 
+router.get('/logout', (req, res) => authController.handleLogout(req, res));
+router.post('/logout', (req, res) => authController.handleLogout(req, res));
+
 module.exports = router;

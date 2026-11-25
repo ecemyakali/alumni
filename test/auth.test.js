@@ -4,6 +4,7 @@ const app = require('../src/app');
 const userModel = require('../src/models/userModel');
 const authUtils = require('../src/utils/authUtils');
 const authView = require('../src/views/authView');
+const sessionManager = require('../src/utils/sessionManager');
 
 test('Authentication & Registration Test Suite', async (suite) => {
   let server;
@@ -21,6 +22,7 @@ test('Authentication & Registration Test Suite', async (suite) => {
 
   suite.beforeEach(() => {
     userModel.clear();
+    sessionManager.clearAll();
   });
 
   // ========================================================
@@ -161,7 +163,7 @@ test('Authentication & Registration Test Suite', async (suite) => {
     assert.ok(successHtml.includes('Architecture'), 'Renders department');
 
     const loginHtml = authView.renderLogin({ error: 'Invalid credentials' });
-    assert.ok(loginHtml.includes('Sign in to your Account'));
+    assert.ok(loginHtml.includes('Welcome Back') || loginHtml.includes('Sign In'));
     assert.ok(loginHtml.includes('Invalid credentials'));
     assert.ok(loginHtml.includes('action="/login"'));
   });
@@ -382,7 +384,7 @@ test('Authentication & Registration Test Suite', async (suite) => {
     assert.ok(data.error.includes('already exists'));
   });
 
-  await suite.test('17. API Integration: POST /api/auth/login verifies credentials', async () => {
+  await suite.test('17. API Integration: POST /api/auth/login verifies credentials and issues token', async () => {
     // Register user first
     const plainPass = 'MemberSecret123!';
     userModel.create({
@@ -403,8 +405,14 @@ test('Authentication & Registration Test Suite', async (suite) => {
     assert.strictEqual(validRes.status, 200);
     const validData = await validRes.json();
     assert.strictEqual(validData.success, true);
+    assert.ok(validData.token, 'Must return session token');
     assert.strictEqual(validData.data.name, 'Login Test User');
     assert.strictEqual(validData.data.passwordHash, undefined);
+
+    // Verify session in sessionManager
+    const activeSession = sessionManager.getSession(validData.token);
+    assert.ok(activeSession);
+    assert.strictEqual(activeSession.email, 'login@test.com');
 
     // Invalid password
     const invalidRes = await fetch(`${baseUrl}/api/auth/login`, {
@@ -421,5 +429,201 @@ test('Authentication & Registration Test Suite', async (suite) => {
       body: JSON.stringify({ email: 'nonexistent@test.com', password: 'AnyPassword123!' })
     });
     assert.strictEqual(notFoundRes.status, 401);
+  });
+
+  // ========================================================
+  // 5. Session Management, Web Login & Logout Flows
+  // ========================================================
+  await suite.test('18. sessionManager: Lifecycle, Expiry and Cookie Extraction', () => {
+    const mockUser = { id: 10, name: 'Session User', email: 'session@test.com', role: 'alumni' };
+    const session = sessionManager.createSession(mockUser, 5000);
+
+    assert.ok(session.token);
+    assert.strictEqual(session.userId, 10);
+    assert.strictEqual(sessionManager.count(), 1);
+
+    // Retrieve active session
+    const retrieved = sessionManager.getSession(session.token);
+    assert.strictEqual(retrieved.token, session.token);
+
+    // Test Cookie parsing
+    const parsed = sessionManager.parseCookies(`foo=bar; alumni_session=${session.token}; other=value`);
+    assert.strictEqual(parsed.alumni_session, session.token);
+
+    // Extract from mock request with cookie
+    const reqWithCookie = { headers: { cookie: `alumni_session=${session.token}` } };
+    assert.strictEqual(sessionManager.extractToken(reqWithCookie), session.token);
+
+    // Extract from mock request with Authorization Bearer header
+    const reqWithBearer = { headers: { authorization: `Bearer ${session.token}` } };
+    assert.strictEqual(sessionManager.extractToken(reqWithBearer), session.token);
+
+    // Destroy session
+    assert.strictEqual(sessionManager.destroySession(session.token), true);
+    assert.strictEqual(sessionManager.getSession(session.token), null);
+    assert.strictEqual(sessionManager.count(), 0);
+  });
+
+  await suite.test('19. Web Integration: GET /login renders page with status messages', async () => {
+    // Normal GET
+    const res = await fetch(`${baseUrl}/login`);
+    assert.strictEqual(res.status, 200);
+    const body = await res.text();
+    assert.ok(body.includes('Welcome Back'));
+    assert.ok(body.includes('action="/login"'));
+
+    // Status message for registered
+    const resReg = await fetch(`${baseUrl}/login?registered=true`);
+    const bodyReg = await resReg.text();
+    assert.ok(bodyReg.includes('Account created successfully'));
+
+    // Status message for logged out
+    const resLogout = await fetch(`${baseUrl}/login?logged_out=true`);
+    const bodyLogout = await resLogout.text();
+    assert.ok(bodyLogout.includes('signed out successfully'));
+  });
+
+  await suite.test('20. Web Integration: POST /login sets HttpOnly cookie and redirects (302)', async () => {
+    const userPass = 'WebSecurePass123!';
+    userModel.create({
+      name: 'Web Login User',
+      email: 'weblogin@university.edu',
+      passwordHash: authUtils.hashPassword(userPass),
+      role: 'alumni'
+    });
+
+    const params = new URLSearchParams({
+      email: 'weblogin@university.edu',
+      password: userPass
+    });
+
+    const res = await fetch(`${baseUrl}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+      redirect: 'manual' // Prevent following redirect to check 302 and Set-Cookie
+    });
+
+    assert.strictEqual(res.status, 302, 'Successful login must redirect');
+    assert.strictEqual(res.headers.get('location'), '/users');
+
+    const setCookie = res.headers.get('set-cookie');
+    assert.ok(setCookie, 'Must include Set-Cookie header');
+    assert.ok(setCookie.includes('alumni_session='), 'Cookie name must be alumni_session');
+    assert.ok(setCookie.includes('HttpOnly'), 'Must be HttpOnly');
+    assert.ok(setCookie.includes('SameSite=Lax'), 'Must be SameSite=Lax');
+  });
+
+  await suite.test('21. Web Integration: POST /login rejects invalid credentials with 401', async () => {
+    const params = new URLSearchParams({
+      email: 'nonexistent@university.edu',
+      password: 'WrongPassword123!'
+    });
+
+    const res = await fetch(`${baseUrl}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+
+    assert.strictEqual(res.status, 401);
+    const body = await res.text();
+    assert.ok(body.includes('Invalid email address or password'));
+    assert.ok(body.includes('value="nonexistent@university.edu"'), 'Retains submitted email');
+  });
+
+  await suite.test('22. Web Integration: GET /logout clears cookie and redirects to /login', async () => {
+    // Create an active session
+    const mockUser = userModel.create({
+      name: 'Logout Alum',
+      email: 'logout@alum.edu',
+      role: 'alumni'
+    });
+    const session = sessionManager.createSession(mockUser);
+
+    const res = await fetch(`${baseUrl}/logout`, {
+      method: 'GET',
+      headers: {
+        Cookie: `alumni_session=${session.token}`
+      },
+      redirect: 'manual'
+    });
+
+    assert.strictEqual(res.status, 302);
+    assert.strictEqual(res.headers.get('location'), '/login?logged_out=true');
+
+    const setCookie = res.headers.get('set-cookie');
+    assert.ok(setCookie);
+    assert.ok(setCookie.includes('Expires=Thu, 01 Jan 1970'), 'Cookie must be expired on logout');
+
+    // Verify session revoked in sessionManager
+    assert.strictEqual(sessionManager.getSession(session.token), null);
+  });
+
+  await suite.test('23. API Integration: POST /api/auth/logout revokes session token', async () => {
+    const mockUser = userModel.create({
+      name: 'Api Logout User',
+      email: 'apilogout@test.com',
+      role: 'alumni'
+    });
+    const session = sessionManager.createSession(mockUser);
+
+    const res = await fetch(`${baseUrl}/api/auth/logout`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.token}`
+      }
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(sessionManager.getSession(session.token), null);
+  });
+
+  await suite.test('24. API Integration: GET /api/auth/me returns current user identity', async () => {
+    const mockUser = userModel.create({
+      name: 'Identity User',
+      email: 'identity@test.com',
+      role: 'alumni',
+      department: 'Mathematics'
+    });
+    const session = sessionManager.createSession(mockUser);
+
+    // With valid Bearer token
+    const resWithToken = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${session.token}` }
+    });
+    assert.strictEqual(resWithToken.status, 200);
+    const dataWithToken = await resWithToken.json();
+    assert.strictEqual(dataWithToken.success, true);
+    assert.strictEqual(dataWithToken.data.name, 'Identity User');
+    assert.strictEqual(dataWithToken.data.email, 'identity@test.com');
+
+    // Without token -> 401
+    const resNoToken = await fetch(`${baseUrl}/api/auth/me`);
+    assert.strictEqual(resNoToken.status, 401);
+  });
+
+  await suite.test('25. Global Middleware: attachUser populates user in request and view navbar', async () => {
+    const mockUser = userModel.create({
+      name: 'Navbar User',
+      email: 'navbar@test.com',
+      role: 'alumni'
+    });
+    const session = sessionManager.createSession(mockUser);
+
+    // Make request to /users with cookie
+    const res = await fetch(`${baseUrl}/users`, {
+      headers: {
+        Cookie: `alumni_session=${session.token}`,
+        Accept: 'text/html'
+      }
+    });
+
+    assert.strictEqual(res.status, 200);
+    const body = await res.text();
+    // Navbar should include the authenticated user badge and Log Out button
+    assert.ok(body.includes('Navbar User') || body.includes('Log Out'));
   });
 });
