@@ -139,6 +139,13 @@ Interactive Swagger UI documentation is available for inspecting all endpoints, 
 | **POST** | `/api/auth/logout` | **REST Sign-Out:** Revokes session token and clears cookie | JSON (`200 OK`) |
 | **GET** | `/api/auth/me` | **REST Identity:** Returns profile of authenticated session or Bearer token | JSON (`200 OK` / `401 Unauthorized`) |
 
+#### 🛡️ Administration & Role Management (`AdminController` ➡️ `.../admin`)
+| Method | Endpoint | Description | Layer / Format |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/admin` | **Admin Dashboard:** Role-protected control center (requires `admin` role; redirects unauthenticated to `/login`, returns 403 Forbidden for unauthorized roles) | HTML View (`200 OK` / `401` / `403`) |
+| **POST** | `/admin/users/:id/role` | **Assign Role (Web):** Protected form action to update user role with last-admin invariant check | 302 Redirect / HTML View |
+| **PATCH** | `/api/users/:id/role` | **Assign Role (API):** Protected RESTful endpoint for role mutation (`admin` required) | JSON (`200 OK` / `400` / `403` / `422`) |
+
 #### 👥 Users Management (`UserController` ➡️ `.../users`)
 | Method | Endpoint | Description | Layer / Format |
 | :--- | :--- | :--- | :--- |

@@ -435,6 +435,52 @@ const userModel = {
     }
     const isValid = authUtils.comparePassword(candidatePassword, user.passwordHash);
     return isValid ? user : null;
+  },
+
+  /**
+   * Counts total active administrators in the system
+   * @returns {number}
+   */
+  countAdmins() {
+    return users.filter(u => u.role === 'admin' && (u.status === 'ACTIVE' || !u.status)).length;
+  },
+
+  /**
+   * Assigns a new role to a target user with domain invariant checks
+   * @param {number|string} targetUserId 
+   * @param {string} newRole - 'admin' | 'alumni' | 'student' | 'faculty' | 'guest'
+   * @param {Object} actor - The user performing the assignment
+   * @returns {{ success: boolean, user?: Object, error?: string, statusCode?: number }}
+   */
+  assignRole(targetUserId, newRole, actor) {
+    const validRoles = ['admin', 'alumni', 'student', 'faculty', 'guest'];
+    if (!validRoles.includes(newRole)) {
+      return { success: false, error: `Invalid role: ${newRole}. Allowed roles: ${validRoles.join(', ')}`, statusCode: 400 };
+    }
+
+    if (!actor || actor.role !== 'admin') {
+      return { success: false, error: 'Unauthorized: Only administrators can assign roles.', statusCode: 403 };
+    }
+
+    const targetUser = this.findById(targetUserId);
+    if (!targetUser) {
+      return { success: false, error: 'Target user not found.', statusCode: 404 };
+    }
+
+    // Invariant check: Cannot demote the last remaining active admin
+    if (targetUser.role === 'admin' && newRole !== 'admin') {
+      const remainingAdmins = this.countAdmins();
+      if (remainingAdmins <= 1) {
+        return {
+          success: false,
+          error: 'Domain Invariant Violation: Cannot demote the last active system administrator.',
+          statusCode: 422
+        };
+      }
+    }
+
+    const updated = this.update(targetUserId, { role: newRole });
+    return { success: true, user: updated, statusCode: 200 };
   }
 };
 

@@ -20,5 +20,9 @@ module.exports = {
   appendLogLine: errorGuardian.logErrorToFile,
   authMiddleware,
   attachUser: authMiddleware.attachUser,
-  requireAuth: authMiddleware.requireAuth
+  requireAuth: authMiddleware.requireAuth,
+  requireRole: authMiddleware.requireRole,
+  requireAdmin: authMiddleware.requireAdmin,
+  requireAlumniOrAdmin: authMiddleware.requireAlumniOrAdmin,
+  requireFacultyOrAdmin: authMiddleware.requireFacultyOrAdmin
 };

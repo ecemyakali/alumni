@@ -64,11 +64,69 @@ const swaggerDocument = {
       description: 'Web registration and sign-in views via AuthController (/register, /login)'
     },
     {
+      name: 'Administration',
+      description: 'Role-protected administrative control center and user role assignment (.../admin, /api/users/:id/role)'
+    },
+    {
       name: 'Whiteboard Routes',
       description: 'Introductory classroom routes and endpoints'
     }
   ],
   paths: {
+    '/admin': {
+      get: {
+        tags: ['Administration'],
+        summary: 'Protected admin control center',
+        description: 'Enforces requireAdmin RBAC guard. Serves system statistics and user role management controls.',
+        responses: {
+          '200': { description: 'Admin dashboard rendered successfully' },
+          '401': { description: 'Authentication required' },
+          '403': { description: 'Forbidden: Insufficient privileges (non-admin)' }
+        }
+      }
+    },
+    '/api/users/{id}/role': {
+      patch: {
+        tags: ['Administration'],
+        summary: 'Assign role to user (Admin only)',
+        description: 'Updates a target user role. Demoting the last remaining administrator is rejected by invariant protection.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+            description: 'Numeric user ID'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['role'],
+                properties: {
+                  role: {
+                    type: 'string',
+                    enum: ['admin', 'alumni', 'student', 'faculty', 'guest'],
+                    example: 'faculty'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'User role updated successfully' },
+          '400': { description: 'Invalid role enum' },
+          '401': { description: 'Authentication required' },
+          '403': { description: 'Forbidden: Admin access only' },
+          '404': { description: 'Target user not found' },
+          '422': { description: 'Unprocessable Entity: Cannot demote the last active administrator' }
+        }
+      }
+    },
     '/register': {
       get: {
         tags: ['Authentication Web'],

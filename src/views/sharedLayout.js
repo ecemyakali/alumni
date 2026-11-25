@@ -606,6 +606,11 @@ const sharedLayout = {
    * @param {Object|null} [currentUser=null] - Currently authenticated user
    */
   renderNavbar(activePage = 'home', currentUser = null) {
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    const adminLinkHtml = isAdmin
+      ? `<li><a href="/admin" class="nav-link ${activePage === 'admin' ? 'active' : ''}" style="color: #1d4ed8; font-weight: 600;">🛡️ Admin</a></li>`
+      : '';
+
     const authActionsHtml = currentUser
       ? `
         <span class="badge-pill badge-role-${escapeHtml(currentUser.role || 'alumni')}" style="padding: 5px 11px; font-size: 12px; font-weight: 600;">
@@ -637,6 +642,7 @@ const sharedLayout = {
         <li><a href="/applications" class="nav-link ${activePage === 'applications' ? 'active' : ''}">Application Tracking</a></li>
         <li><a href="/api/swagger" class="nav-link" target="_blank">Swagger UI</a></li>
         <li><a href="/api/health" class="nav-link ${activePage === 'health' ? 'active' : ''}">System Health</a></li>
+        ${adminLinkHtml}
       </ul>
       <div class="nav-actions">
         ${authActionsHtml}
