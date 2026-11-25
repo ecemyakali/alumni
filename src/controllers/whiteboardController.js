@@ -83,6 +83,9 @@ const whiteboardController = {
       const recentJobPostings = typeof jobPostingModel.getAll === 'function'
         ? jobPostingModel.getAll()
         : [];
+      const recentUsers = typeof userModel.findAll === 'function'
+        ? userModel.findAll()
+        : (typeof userModel.getAll === 'function' ? userModel.getAll() : []);
 
       const html = homeView.renderHomePage({
         currentUser: req.user,
@@ -91,7 +94,8 @@ const whiteboardController = {
         announcementCount,
         applicationCount,
         recentAnnouncements: Array.isArray(recentAnnouncements) ? recentAnnouncements : [],
-        recentJobPostings: Array.isArray(recentJobPostings) ? recentJobPostings : []
+        recentJobPostings: Array.isArray(recentJobPostings) ? recentJobPostings : [],
+        recentUsers: Array.isArray(recentUsers) ? recentUsers : []
       });
 
       return res.type('html').send(html);

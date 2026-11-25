@@ -1,17 +1,14 @@
 /**
  * ========================================================
- * View Layer: Homepage View (Mintlify-First Design)
+ * View Layer: Homepage View (Mintlify Aurora 4-Section Design)
  * File: src/views/homeView.js
  * ========================================================
  * 
- * Implements a clean, airy, highly readable Mintlify-style layout:
- * 1. Bright white background with subtle pastel emerald radial glow in hero.
- * 2. Signature centered search bar with 🔍 icon and Ctrl K / ⌘K badge.
- * 3. Flawless navigation tabs with white-space nowrap, 8px 16px padding, gap 8px.
- * 4. Streamlined 3-section flow:
- *    - Section 1: Airy Hero + Central Search Bar + 2 Clear Action Buttons.
- *    - Section 2: Single Featured Event Card + 3 Clean Metric Tiles.
- *    - Section 3: Filterable Category Tabs + Minimalist Curated Cards (Avatar, Name, Badge, Org, View Link).
+ * Implements a modern, high-contrast, shaded gradient 4-section layout:
+ * - Section 1: Focused Hero & Live Search with Network Telemetry Bar
+ * - Section 2: Bento Quick-Access Grid (Directory, Profile, Events, Admin/Jobs)
+ * - Section 3: Featured / Recent Alumni Spotlight with high-contrast badges
+ * - Section 4: Call-to-Action Shaded Card & Minimal Footer
  */
 
 const sharedLayout = require('./sharedLayout');
@@ -39,10 +36,15 @@ const homeView = {
    * @param {Array<Object>} [data.recentAnnouncements=[]]
    * @param {Array<Object>} [data.recentJobPostings=[]]
    * @param {Array<Object>} [data.recentUsers=[]]
+   * @param {Object|null} [data.currentUser=null]
    * @param {Object} [options={}]
    * @returns {string} Formatted HTML document
    */
   renderHomePage(data = {}, options = {}) {
+    const currentUser = data.currentUser || options.currentUser || null;
+    const isAuthenticated = Boolean(currentUser);
+    const isAdmin = isAuthenticated && currentUser.role === 'admin';
+
     const userCount = data.userCount !== undefined ? data.userCount : 0;
     const jobPostingCount = data.jobPostingCount !== undefined ? data.jobPostingCount : 0;
     const announcementCount = data.announcementCount !== undefined ? data.announcementCount : 0;
@@ -77,206 +79,126 @@ const homeView = {
       type: 'Full-time'
     };
 
+    const recentUsers = Array.isArray(data.recentUsers) && data.recentUsers.length > 0
+      ? data.recentUsers.slice(0, 4)
+      : [
+        {
+          id: 1,
+          name: 'Dr. Selin Demir',
+          graduationYear: 2018,
+          department: 'Computer Science',
+          currentRole: 'Principal Scientist',
+          company: 'Stanford AI Lab'
+        },
+        {
+          id: 2,
+          name: 'Baris Akin',
+          graduationYear: 2020,
+          department: 'Software Engineering',
+          currentRole: 'Senior Product Manager',
+          company: 'Revolut'
+        },
+        {
+          id: 3,
+          name: 'Elena Rostova',
+          graduationYear: 2019,
+          department: 'Electrical Engineering',
+          currentRole: 'Senior Cloud Architect',
+          company: 'Google Cloud'
+        },
+        {
+          id: 4,
+          name: 'Marcus Chen',
+          graduationYear: 2022,
+          department: 'Data Science',
+          currentRole: 'Staff Systems Engineer',
+          company: 'Stripe Platforms'
+        }
+      ];
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alumni Tracking System — Modern Alumni & Career Network</title>
+  <title>Alumni Tracking System — Modern Alumni &amp; Career Network</title>
   <style>
-    :root {
-      /* Mintlify-First Bright Color Palette */
-      --canvas: #ffffff;
-      --surface-subtle: #f9fafb;
-      --surface-card: #ffffff;
-      --surface-hover: #f3f4f6;
-
-      --hairline: #e5e7eb;
-      --hairline-strong: #d1d5db;
-
-      --ink: #111827;
-      --ink-muted: #4b5563;
-      --ink-subtle: #6b7280;
-      --ink-tertiary: #9ca3af;
-
-      --primary: #111827;
-      --primary-hover: #1f2937;
-
-      --brand-mint: #0d9373;
-      --brand-mint-hover: #0b7c61;
-      --brand-mint-subtle: #ecfdf5;
-      --brand-mint-border: #a7f3d0;
-
-      --rounded-md: 8px;
-      --rounded-lg: 12px;
-      --rounded-xl: 16px;
-      --rounded-pill: 9999px;
-
-      --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-mono: ui-monospace, "SF Mono", "Geist Mono", Menlo, Consolas, monospace;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html, body {
-      overflow-x: hidden;
-    }
-
-    body {
-      font-family: var(--font-sans);
-      background-color: var(--canvas);
-      color: var(--ink);
-      line-height: 1.55;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .font-mono {
-      font-family: var(--font-mono);
-    }
+    ${sharedLayout.getCommonStyles()}
 
     /* ========================================================
-     * NAVIGATION & TAB LABELS (MINTLIFY SINGLE-ROW)
+     * HOMEPAGE SECTION FRAMING & TYPOGRAPHY
      * ======================================================== */
-    .top-nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--hairline);
+    .section-framing {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 3rem auto;
     }
-    .nav-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 1.25rem;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-    }
-    .brand-lockup {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-decoration: none;
-      color: var(--ink);
-      font-weight: 700;
-      font-size: 0.98rem;
-      letter-spacing: -0.3px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .brand-icon {
-      font-size: 1.25rem;
-      line-height: 1;
-    }
-    .nav-menu {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      list-style: none;
-      flex-wrap: nowrap;
-    }
-    .nav-link {
+    .eyebrow-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 6px 11px;
-      font-size: 13px;
-      font-weight: 500;
-      white-space: nowrap;
-      text-decoration: none;
-      color: var(--ink-muted);
-      border-radius: var(--rounded-pill);
-      transition: all 0.15s ease;
-    }
-    .nav-link:hover {
-      color: var(--ink);
-      background: var(--surface-subtle);
-    }
-    .nav-link.active {
-      color: var(--brand-mint);
-      background: var(--brand-mint-subtle);
-      font-weight: 600;
-    }
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .nav-actions .btn-pill-primary {
-      padding: 8px 16px;
-      font-size: 13px;
-    }
-
-    /* PILL BUTONLAR */
-    .btn-pill-primary {
-      background: var(--primary);
-      color: #ffffff !important;
-      padding: 10px 22px;
-      border-radius: var(--rounded-pill);
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid transparent;
-      transition: all 0.15s ease;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .btn-pill-primary:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    }
-    .btn-pill-secondary {
+      gap: 7px;
+      padding: 4px 12px;
       background: #ffffff;
-      color: var(--ink) !important;
-      padding: 10px 20px;
+      border: 1px solid var(--brand-mint-border);
       border-radius: var(--rounded-pill);
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid var(--hairline);
-      transition: all 0.15s ease;
-      cursor: pointer;
-      white-space: nowrap;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--brand-mint);
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(13, 147, 115, 0.08);
     }
-    .btn-pill-secondary:hover {
-      background: var(--surface-subtle);
-      border-color: var(--hairline-strong);
-      transform: translateY(-1px);
+    .eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand-mint);
+      box-shadow: 0 0 0 2px rgba(13, 147, 115, 0.25);
+    }
+    .tracking-tight {
+      letter-spacing: -1.2px;
+    }
+    .text-gradient {
+      background: linear-gradient(135deg, #0d9373 0%, #2563eb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .section-heading-lg {
+      font-size: clamp(1.85rem, 3.2vw, 2.5rem);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+    .section-subtext {
+      font-size: 15px;
+      color: var(--ink-muted);
+      line-height: 1.6;
+      max-width: 620px;
+      margin: 0 auto;
     }
 
     /* ========================================================
-     * MINTLIFY ICONIC AURORA GRADIENT HERO
+     * SECTION 1: FOCUSED HERO & LIVE SEARCH
      * ======================================================== */
-    .hero-wrapper {
+    .hero-section {
       position: relative;
       background-color: #ffffff;
       background-image: 
-        radial-gradient(at 15% 10%, rgba(16, 185, 129, 0.24) 0px, transparent 50%),
-        radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.22) 0px, transparent 50%),
-        radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 60%),
-        linear-gradient(180deg, rgba(236, 253, 245, 0.75) 0%, rgba(255, 255, 255, 1) 100%);
-      padding: 4.5rem 1.5rem 3.5rem 1.5rem;
+        radial-gradient(at 15% 10%, rgba(16, 185, 129, 0.22) 0px, transparent 50%),
+        radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.18) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 60%),
+        linear-gradient(180deg, rgba(236, 253, 245, 0.70) 0%, rgba(255, 255, 255, 1) 100%);
+      padding: 5.5rem 1.5rem 4.5rem 1.5rem;
       border-bottom: 1px solid var(--hairline);
     }
-    .hero-content {
-      max-width: 900px;
+    .hero-inner {
+      max-width: 960px;
       margin: 0 auto;
       text-align: center;
     }
-    .hero-badge {
+    .hero-announcement-pill {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -288,26 +210,17 @@ const homeView = {
       color: var(--ink);
       font-size: 13px;
       font-weight: 500;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
       margin-bottom: 1.5rem;
       transition: all 0.15s ease;
     }
-    .hero-badge:hover {
-      border-color: var(--hairline-strong);
+    .hero-announcement-pill:hover {
+      border-color: var(--brand-mint-border);
       transform: translateY(-1px);
     }
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--brand-mint);
-      border-radius: 50%;
-      display: inline-block;
-      box-shadow: 0 0 0 2px rgba(13, 147, 115, 0.25);
-    }
     .hero-title {
-      font-size: clamp(2.2rem, 4.5vw, 3.75rem);
+      font-size: clamp(2.3rem, 4.5vw, 3.8rem);
       font-weight: 700;
-      letter-spacing: -2px;
       line-height: 1.12;
       color: var(--ink);
       margin-bottom: 1.25rem;
@@ -316,17 +229,14 @@ const homeView = {
       font-size: clamp(1rem, 1.8vw, 1.2rem);
       color: var(--ink-muted);
       max-width: 680px;
-      margin: 0 auto 2rem auto;
+      margin: 0 auto 2.25rem auto;
       line-height: 1.6;
     }
 
-    /* ========================================================
-     * MINTLIFY SIGNATURE: CENTRAL SEARCH BAR
-     * ======================================================== */
+    /* CENTRAL SEARCH BAR */
     .search-box-wrapper {
-      max-width: 600px;
-      margin: 0 auto 2rem auto;
-      position: relative;
+      max-width: 620px;
+      margin: 0 auto 2.5rem auto;
     }
     .search-bar {
       display: flex;
@@ -334,7 +244,7 @@ const homeView = {
       background: #ffffff;
       border: 1px solid var(--hairline-strong);
       border-radius: var(--rounded-xl);
-      padding: 7px 10px 7px 18px;
+      padding: 8px 12px 8px 18px;
       box-shadow: 0 10px 30px -5px rgba(13, 147, 115, 0.10), 0 4px 16px rgba(0, 0, 0, 0.04);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -369,10 +279,61 @@ const homeView = {
       border: 1px solid var(--hairline);
       padding: 4px 8px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-family: var(--font-mono);
       color: var(--ink-subtle);
       user-select: none;
+    }
+
+    /* HORIZONTAL NETWORK METRICS BAR */
+    .metrics-bar-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      max-width: 900px;
+      margin: 0 auto 2.25rem auto;
+    }
+    .metric-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: 1.15rem 1rem;
+      text-decoration: none;
+      color: var(--ink);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+    .metric-card:hover {
+      background: #ffffff;
+      border-color: var(--brand-mint-border);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -4px rgba(13, 147, 115, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+    .metric-num {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--ink);
+      font-family: var(--font-mono);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .metric-num.highlight {
+      color: var(--brand-mint);
+    }
+    .metric-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .metric-sub {
+      font-size: 11px;
+      color: var(--ink-subtle);
+      margin-top: 2px;
     }
 
     .hero-actions {
@@ -384,665 +345,648 @@ const homeView = {
     }
 
     /* ========================================================
-     * STREAMLINED 3-SECTION LAYOUT HIERARCHY
+     * SECTION 2: BENTO QUICK-ACCESS GRID
      * ======================================================== */
-    .content-container {
+    .bento-section {
+      background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+      padding: 5.5rem 1.5rem;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .bento-container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 3.5rem 1.5rem;
     }
-    .section-heading-wrap {
-      margin-bottom: 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .section-title {
-      font-size: 1.65rem;
-      font-weight: 700;
-      letter-spacing: -0.6px;
-      color: var(--ink);
-    }
-    .section-desc {
-      font-size: 14.5px;
-      color: var(--ink-muted);
-      margin-top: 4px;
-    }
-
-    /* SECTION 2: FEATURED SPOTLIGHT CARD + 3 TELEMETRY TILES */
-    .spotlight-grid {
+    .bento-grid {
       display: grid;
-      grid-template-columns: 1.8fr 1fr;
-      gap: 24px;
-      margin-bottom: 4rem;
-      align-items: stretch;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 22px;
     }
-    .featured-event-card {
+    .bento-card {
       background: #ffffff;
       border: 1px solid var(--hairline);
       border-radius: var(--rounded-xl);
-      padding: 2.25rem;
-      box-shadow: 0 16px 36px -6px rgba(16, 185, 129, 0.09), 0 4px 16px -2px rgba(0, 0, 0, 0.04);
+      padding: 2rem;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
-      border-left: 4px solid var(--brand-mint);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
     }
-    .featured-event-card:hover {
-      box-shadow: 0 20px 44px -8px rgba(16, 185, 129, 0.14), 0 6px 20px -2px rgba(0, 0, 0, 0.05);
-      transform: translateY(-2px);
+    .bento-card:hover {
+      border-color: var(--brand-mint-border);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
     }
-    .featured-badge-bar {
+    .bento-card.admin-card {
+      border-top: 3px solid #2563eb;
+    }
+    .bento-card.standard-card {
+      border-top: 3px solid var(--brand-mint);
+    }
+    .bento-card-top {
+      margin-bottom: 1.5rem;
+    }
+    .bento-tag-bar {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
       margin-bottom: 1rem;
     }
-    .badge-mint {
-      background: var(--brand-mint-subtle);
-      color: var(--brand-mint);
-      border: 1px solid var(--brand-mint-border);
-      padding: 4px 12px;
+    .bento-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 3px 8px;
       border-radius: var(--rounded-pill);
-      font-size: 12px;
-      font-weight: 600;
+      background: var(--surface-subtle);
+      color: var(--ink-subtle);
+      border: 1px solid var(--hairline);
+    }
+    .bento-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--rounded-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      background: var(--surface-subtle);
+      border: 1px solid var(--hairline);
+      margin-bottom: 1.25rem;
+    }
+    .bento-card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+    .bento-card-desc {
+      font-size: 13.5px;
+      color: var(--ink-muted);
+      line-height: 1.6;
+    }
+    .bento-card-action {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-    }
-    .badge-date {
-      font-size: 13px;
-      color: var(--ink-subtle);
-      font-family: var(--font-mono);
-    }
-    .featured-event-title {
-      font-size: 1.75rem;
-      font-weight: 700;
-      letter-spacing: -0.8px;
-      color: var(--ink);
-      line-height: 1.25;
-      margin-bottom: 0.75rem;
-    }
-    .featured-event-desc {
-      font-size: 15px;
-      color: var(--ink-muted);
-      line-height: 1.6;
-      margin-bottom: 1.75rem;
-    }
-    .featured-event-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding-top: 1.25rem;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--brand-mint);
+      text-decoration: none;
+      transition: gap 0.15s ease;
+      padding-top: 1rem;
       border-top: 1px solid var(--surface-subtle);
     }
-
-    /* 3 TELEMETRY STAT TILES */
-    .stats-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      justify-content: space-between;
-    }
-    .stat-tile {
-      background: var(--surface-subtle);
-      border: 1px solid var(--hairline);
-      border-radius: var(--rounded-lg);
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      text-decoration: none;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-    }
-    .stat-tile:hover {
-      background: #ffffff;
-      border-color: var(--brand-mint-border);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px -4px rgba(13, 147, 115, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
-    }
-    .stat-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .stat-label {
-      font-size: 13px;
-      color: var(--ink-muted);
-      font-weight: 500;
-    }
-    .stat-sub {
-      font-size: 11.5px;
-      color: var(--ink-tertiary);
-    }
-    .stat-count {
-      font-size: 1.85rem;
-      font-weight: 700;
-      color: var(--ink);
-      font-family: var(--font-mono);
-      line-height: 1;
+    .bento-card-action:hover {
+      gap: 9px;
     }
 
     /* ========================================================
-     * SECTION 3: CATEGORY TABS & CURATED CARDS
+     * SECTION 3: FEATURED / RECENT ALUMNI SPOTLIGHT
      * ======================================================== */
-    .tabs-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 1.75rem;
-      overflow-x: auto;
-      padding-bottom: 4px;
+    .spotlight-section {
+      background: #ffffff;
+      padding: 5.5rem 1.5rem;
+      border-bottom: 1px solid var(--hairline);
     }
-    .tab-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 18px;
-      font-size: 14px;
-      font-weight: 500;
-      white-space: nowrap;
-      background: var(--surface-subtle);
-      border: 1px solid var(--hairline);
-      border-radius: var(--rounded-pill);
-      color: var(--ink-muted);
-      cursor: pointer;
-      transition: all 0.15s ease;
+    .spotlight-container {
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    .tab-btn:hover {
-      background: var(--surface-hover);
-      color: var(--ink);
-    }
-    .tab-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-      font-weight: 600;
-    }
-
-    .cards-grid {
+    .spotlight-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
     }
-    .clean-card {
+    .alumni-card {
       background: #ffffff;
       border: 1px solid var(--hairline);
-      border-radius: var(--rounded-lg);
-      padding: 1.5rem;
+      border-radius: var(--rounded-xl);
+      padding: 1.75rem;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .clean-card:hover {
+    .alumni-card:hover {
       border-color: var(--hairline-strong);
       transform: translateY(-3px);
-      box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
     }
-    .clean-card-header {
+    .alumni-header {
       display: flex;
       align-items: center;
       gap: 14px;
       margin-bottom: 1.25rem;
     }
-    .card-avatar {
+    .alumni-avatar {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: var(--surface-subtle);
-      border: 1px solid var(--hairline);
+      background: linear-gradient(135deg, rgba(13, 147, 115, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
+      border: 1px solid var(--brand-mint-border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       flex-shrink: 0;
     }
-    .card-title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      overflow: hidden;
-    }
-    .card-name {
-      font-size: 1.05rem;
-      font-weight: 600;
+    .alumni-name {
+      font-size: 1.1rem;
+      font-weight: 700;
       color: var(--ink);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      letter-spacing: -0.3px;
     }
-    .card-subtext {
+    .alumni-badges-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .alumni-badge-pill {
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: var(--rounded-pill);
+      background: var(--surface-subtle);
+      border: 1px solid var(--hairline);
+      color: var(--ink-subtle);
+    }
+    .alumni-badge-pill.grad-year {
+      font-family: var(--font-mono);
+      background: var(--brand-mint-subtle);
+      color: var(--brand-mint);
+      border-color: var(--brand-mint-border);
+      font-weight: 600;
+    }
+    .alumni-role-info {
       font-size: 13.5px;
       color: var(--ink-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
     }
-    .card-meta-row {
+    .alumni-role-company {
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .alumni-card-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding-top: 1rem;
       border-top: 1px solid var(--surface-subtle);
     }
-    .pill-tag {
-      background: var(--surface-subtle);
-      border: 1px solid var(--hairline);
-      padding: 3px 9px;
-      border-radius: var(--rounded-pill);
-      font-size: 12px;
-      color: var(--ink-subtle);
-      font-weight: 500;
-    }
-    .card-action-link {
+    .alumni-action-link {
+      font-size: 13px;
+      font-weight: 600;
       color: var(--brand-mint);
       text-decoration: none;
-      font-size: 13.5px;
-      font-weight: 600;
       display: inline-flex;
       align-items: center;
       gap: 4px;
       transition: gap 0.15s ease;
     }
-    .card-action-link:hover {
+    .alumni-action-link:hover {
       gap: 8px;
     }
 
-    /* FOOTER */
-    .site-footer {
-      border-top: 1px solid var(--hairline);
-      background: #ffffff;
-      padding: 4rem 1.5rem 2.5rem 1.5rem;
-      margin-top: 2rem;
+    /* ========================================================
+     * SECTION 4: CALL-TO-ACTION FOOTER BANNER
+     * ======================================================== */
+    .cta-section {
+      background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+      padding: 5.5rem 1.5rem 4rem 1.5rem;
     }
-    .footer-container {
-      max-width: 1200px;
+    .cta-container {
+      max-width: 1100px;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 3rem;
-      margin-bottom: 3rem;
     }
-    .footer-brand {
+    .cta-card {
+      background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+      border-radius: var(--rounded-xl);
+      padding: 4rem 3rem;
+      color: #ffffff;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(13, 147, 115, 0.25);
+    }
+    .cta-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 50% 20%, rgba(13, 147, 115, 0.25) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.20) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .cta-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .cta-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--rounded-pill);
+      font-size: 11px;
       font-weight: 700;
-      font-size: 1.05rem;
-      color: var(--ink);
-      margin-bottom: 0.5rem;
-    }
-    .footer-desc {
-      font-size: 13.5px;
-      color: var(--ink-muted);
-      line-height: 1.6;
-      max-width: 320px;
-    }
-    .footer-col-title {
-      font-size: 12px;
-      font-weight: 600;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      color: var(--ink);
+      color: #a7f3d0;
+      margin-bottom: 1.25rem;
+    }
+    .cta-heading {
+      font-size: clamp(2rem, 3.5vw, 2.75rem);
+      font-weight: 700;
+      line-height: 1.15;
       margin-bottom: 1rem;
+      color: #ffffff;
     }
-    .footer-links {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .cta-subtext {
+      font-size: 15px;
+      color: #d1d5db;
+      line-height: 1.6;
+      margin-bottom: 2.25rem;
     }
-    .footer-links a {
-      color: var(--ink-subtle);
-      text-decoration: none;
-      font-size: 13px;
-      transition: color 0.15s ease;
-    }
-    .footer-links a:hover {
-      color: var(--ink);
-    }
-    .footer-bottom {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding-top: 1.75rem;
-      border-top: 1px solid var(--hairline);
+    .cta-buttons {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 14px;
       flex-wrap: wrap;
-      gap: 1rem;
-      font-size: 13px;
-      color: var(--ink-tertiary);
+    }
+    .btn-cta-primary {
+      background: #0d9373;
+      color: #ffffff !important;
+      padding: 11px 26px;
+      border-radius: var(--rounded-pill);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 14px rgba(13, 147, 115, 0.4);
+    }
+    .btn-cta-primary:hover {
+      background: #0b7c61;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(13, 147, 115, 0.5);
+    }
+    .btn-cta-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 11px 24px;
+      border-radius: var(--rounded-pill);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-cta-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
     }
 
-    @media (max-width: 1024px) {
-      .spotlight-grid { grid-template-columns: 1fr; }
-      .footer-container { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 900px) {
+      .metrics-bar-grid { grid-template-columns: repeat(2, 1fr); }
+      .cta-card { padding: 3rem 1.5rem; }
     }
-    @media (max-width: 768px) {
-      .nav-menu { display: none; }
-      .footer-container { grid-template-columns: 1fr; }
-      .hero-title { font-size: 2.2rem; }
+    @media (max-width: 600px) {
+      .metrics-bar-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  ${sharedLayout.renderNavbar('home', data.currentUser || options.currentUser)}
+  <!-- Sticky Single-Row Top Navigation Bar -->
+  ${sharedLayout.renderNavbar('home', currentUser)}
 
   <!-- ========================================================
-   * SECTION 1: AIRY HERO + CENTRAL SEARCH BAR + 2 CLEAR BUTTONS
+   * SECTION 1: FOCUSED HERO & LIVE SEARCH
    * ======================================================== -->
-  <section class="hero-wrapper">
-    <div class="hero-content">
-      <a href="/announcements" class="hero-badge">
-        <span class="pulse-dot"></span>
-        <span>${this.escapeHtml(firstAnnouncement.title)}</span>
-        <span>&rarr;</span>
-      </a>
+  <section class="hero-section">
+    <div class="hero-inner">
+      <div class="eyebrow-badge">
+        <span class="eyebrow-dot"></span>
+        <span>OFFICIAL ALUMNI PORTAL</span>
+      </div>
 
-      <h1 class="hero-title">
-        The Premier Network for Verified Alumni & Modern Careers
+      <h1 class="hero-title tracking-tight">
+        Where Graduates <span class="text-gradient">Reconnect, Mentor, and Grow</span> Together
       </h1>
 
       <p class="hero-subtitle">
-        A next-generation verification-first academic and career network uniting alumni, students, and faculty.
+        A verified academic and career network uniting alumni, industry leaders, and students worldwide.
       </p>
 
-      <!-- Mintlify Signature: Central Search Bar -->
-      <div class="search-box-wrapper">
+      <!-- Actionable Central Search Bar -->
+      <div class="search-box-wrapper" id="search">
         <div class="search-bar">
           <span class="search-icon">🔍</span>
           <input 
             type="text" 
             id="globalSearchInput" 
             class="search-input" 
-            placeholder="Search alumni by name, department, company, or career role..." 
+            placeholder="Search alumni by name, graduation year, department, or company..." 
             autocomplete="off"
+            aria-label="Search alumni network"
           />
-          <kbd class="search-badge font-mono">Ctrl K</kbd>
+          <kbd class="search-badge font-mono">⌘K</kbd>
         </div>
       </div>
 
+      <!-- Live Network Key Metrics Bar -->
+      <div class="metrics-bar-grid">
+        <a href="/users" class="metric-card">
+          <div class="metric-num highlight">${userCount}</div>
+          <div class="metric-title">Alumni Directory</div>
+          <div class="metric-sub">Verified Alumni</div>
+        </a>
+
+        <a href="/job-postings" class="metric-card">
+          <div class="metric-num">${jobPostingCount}</div>
+          <div class="metric-title">Career Opportunities</div>
+          <div class="metric-sub">Active Job Postings</div>
+        </a>
+
+        <a href="/announcements" class="metric-card">
+          <div class="metric-num highlight">${announcementCount}</div>
+          <div class="metric-title">Announcements Board</div>
+          <div class="metric-sub">Institutional Updates</div>
+        </a>
+
+        <a href="/applications" class="metric-card">
+          <div class="metric-num">${applicationCount}</div>
+          <div class="metric-title">Application Tracking</div>
+          <div class="metric-sub">Applications Tracked</div>
+        </a>
+      </div>
+
+      <!-- Hero Call-to-Actions -->
       <div class="hero-actions">
-        <a href="/users" class="btn-pill-primary">Explore Alumni Directory &rarr;</a>
-        <a href="/job-postings#post-job" class="btn-pill-secondary">+ Post Opportunity</a>
+        <a href="/users" class="btn-pill-primary">
+          <span>Explore Alumni Directory</span>
+          <span>&rarr;</span>
+        </a>
+        <a href="/job-postings#post-job" class="btn-pill-secondary">
+          <span>+ Post Opportunity</span>
+        </a>
       </div>
     </div>
   </section>
 
-  <main class="content-container">
-
-    <!-- ========================================================
-     * SECTION 2: SINGLE FEATURED EVENT / ANNOUNCEMENT + 3 TELEMETRY TILES
-     * ======================================================== -->
-    <section class="section-heading-wrap">
-      <div>
-        <h2 class="section-title">Community Showcase & Telemetry</h2>
-        <p class="section-desc">Featured institutional announcement and verified live network statistics.</p>
-      </div>
-    </section>
-
-    <div class="spotlight-grid">
-      <!-- Single Large Featured Event / Announcement Card -->
-      <article class="featured-event-card">
-        <div>
-          <div class="featured-badge-bar">
-            <span class="badge-mint">
-              <span class="pulse-dot"></span>
-              Featured Announcement
-            </span>
-            <span class="badge-date font-mono">📅 November 20–22, 2026</span>
-          </div>
-          <h3 class="featured-event-title">${this.escapeHtml(firstAnnouncement.title)}</h3>
-          <p class="featured-event-desc">
-            Registration is now open for the grand homecoming summit. Reserve your seat for global keynote sessions, industry panels, and 1-on-1 mentorship workshops.
-          </p>
-        </div>
-        <div class="featured-event-footer">
-          <a href="/announcements" class="btn-pill-primary">View Event Details & RSVP &rarr;</a>
-          <span style="font-size:13px; color:var(--ink-subtle);" class="font-mono">Organizer: ${this.escapeHtml(firstAnnouncement.author)}</span>
-        </div>
-      </article>
-
-      <!-- 3 Clean Metric Tiles -->
-      <aside class="stats-stack">
-        <a href="/users" class="stat-tile">
-          <div class="stat-meta">
-            <span class="stat-label">Alumni Directory</span>
-            <span class="stat-sub">Verified Alumni</span>
-          </div>
-          <div class="stat-count">${userCount}</div>
-        </a>
-
-        <a href="/job-postings" class="stat-tile">
-          <div class="stat-meta">
-            <span class="stat-label">Career Opportunities</span>
-            <span class="stat-sub">Active Job Postings</span>
-          </div>
-          <div class="stat-count" style="color:var(--brand-mint);">${jobPostingCount}</div>
-        </a>
-
-        <a href="/applications" class="stat-tile">
-          <div class="stat-meta">
-            <span class="stat-label">Application Tracking</span>
-            <span class="stat-sub">Applications Tracked</span>
-          </div>
-          <div class="stat-count">${applicationCount}</div>
-        </a>
-      </aside>
-    </div>
-
-    <!-- ========================================================
-     * SECTION 3: FILTERABLE CATEGORY TABS & CURATED MINIMALIST CARDS
-     * ======================================================== -->
-    <section class="section-heading-wrap">
-      <div>
-        <h2 class="section-title">Featured Opportunities & Alumni</h2>
-        <p class="section-desc">Filter verified alumni profiles, career positions, and campus announcements.</p>
-      </div>
-    </section>
-
-    <!-- Clean Category Tabs -->
-    <div class="tabs-bar" id="categoryTabs">
-      <button class="tab-btn active" data-filter="all">All</button>
-      <button class="tab-btn" data-filter="jobs">Career Opportunities</button>
-      <button class="tab-btn" data-filter="alumni">Alumni Profiles</button>
-      <button class="tab-btn" data-filter="announcements">Announcements Board (${announcementCount})</button>
-    </div>
-
-    <!-- Minimalist & Clean Cards Grid -->
-    <div class="cards-grid" id="curatedCardsGrid">
-      <!-- Card 1: Job Opportunity (Google Cloud) -->
-      <article class="clean-card" data-category="jobs" data-title="${this.escapeHtml(firstJob.title)} ${this.escapeHtml(firstJob.company)}">
-        <div class="clean-card-header">
-          <div class="card-avatar" style="background:#eff6ff;">💼</div>
-          <div class="card-title-group">
-            <h3 class="card-name">${this.escapeHtml(firstJob.title)}</h3>
-            <div class="card-subtext">🏢 ${this.escapeHtml(firstJob.company)} · ${this.escapeHtml(firstJob.city || 'Zurich')}</div>
-          </div>
-        </div>
-        <div class="card-meta-row">
-          <span class="pill-tag">${this.escapeHtml(firstJob.type || 'Full-time')}</span>
-          <a href="/job-postings" class="card-action-link">View Details &rarr;</a>
-        </div>
-      </article>
-
-      <!-- Card 2: Verified Alumnus Profile -->
-      <article class="clean-card" data-category="alumni" data-title="Dr. Selin Demir Stanford AI Lab Computer Science">
-        <div class="clean-card-header">
-          <div class="card-avatar" style="background:#ecfdf5;">🎓</div>
-          <div class="card-title-group">
-            <h3 class="card-name">Dr. Selin Demir</h3>
-            <div class="card-subtext">Principal Scientist · Stanford AI Lab</div>
-          </div>
-        </div>
-        <div class="card-meta-row">
-          <span class="pill-tag font-mono">Class of 2018</span>
-          <a href="/users" class="card-action-link">View Details &rarr;</a>
-        </div>
-      </article>
-
-      <!-- Card 3: Second Career Opportunity -->
-      <article class="clean-card" data-category="jobs" data-title="Staff Systems Engineer Stripe Platforms">
-        <div class="clean-card-header">
-          <div class="card-avatar" style="background:#f5f3ff;">🚀</div>
-          <div class="card-title-group">
-            <h3 class="card-name">Staff Systems Engineer</h3>
-            <div class="card-subtext">🏢 Stripe Platforms · Remote / Berlin</div>
-          </div>
-        </div>
-        <div class="card-meta-row">
-          <span class="pill-tag">Full-time</span>
-          <a href="/job-postings" class="card-action-link">View Details &rarr;</a>
-        </div>
-      </article>
-
-      <!-- Card 4: Verified Alumnus 2 -->
-      <article class="clean-card" data-category="alumni" data-title="Baris Akin Product Lead Revolut">
-        <div class="clean-card-header">
-          <div class="card-avatar" style="background:#fef3c7;">👨‍💻</div>
-          <div class="card-title-group">
-            <h3 class="card-name">Baris Akin</h3>
-            <div class="card-subtext">Senior Product Manager · Revolut London</div>
-          </div>
-        </div>
-        <div class="card-meta-row">
-          <span class="pill-tag font-mono">Class of 2020</span>
-          <a href="/users" class="card-action-link">View Details &rarr;</a>
-        </div>
-      </article>
-
-      <!-- Card 5: Official Announcement -->
-      <article class="clean-card" data-category="announcements" data-title="Annual Alumni Homecoming 2026 Dean of Engineering">
-        <div class="clean-card-header">
-          <div class="card-avatar" style="background:#ecfdf5;">📢</div>
-          <div class="card-title-group">
-            <h3 class="card-name">Annual Alumni Homecoming 2026</h3>
-            <div class="card-subtext">Faculty of Engineering · November 20, 2026</div>
-          </div>
-        </div>
-        <div class="card-meta-row">
-          <span class="pill-tag">Event</span>
-          <a href="/announcements" class="card-action-link">View Details &rarr;</a>
-        </div>
-      </article>
-
-      <!-- Card 6: Career Opportunity 3 -->
-      <article class="clean-card" data-category="jobs" data-title="Frontend Infrastructure Lead Vercel">
-        <div class="clean-card-header">
-          <div class="card-avatar" style="background:#eff6ff;">💻</div>
-          <div class="card-title-group">
-            <h3 class="card-name">Frontend Infrastructure Lead</h3>
-            <div class="card-subtext">🏢 Vercel · Remote Global</div>
-          </div>
-        </div>
-        <div class="card-meta-row">
-          <span class="pill-tag">Full-time</span>
-          <a href="/job-postings" class="card-action-link">View Details &rarr;</a>
-        </div>
-      </article>
-    </div>
-
-  </main>
-
   <!-- ========================================================
-   * FOOTER
+   * SECTION 2: BENTO QUICK-ACCESS GRID
    * ======================================================== -->
-  <footer class="site-footer">
-    <div class="footer-container">
-      <div>
-        <div class="footer-brand">🎓 Alumni Tracking System</div>
-        <p class="footer-desc">
-          A modern, scalable network engineered to bridge academic excellence with lifetime career achievement.
+  <section class="bento-section">
+    <div class="bento-container">
+      <div class="section-framing">
+        <div class="eyebrow-badge">
+          <span class="eyebrow-dot"></span>
+          <span>EXPLORE THE PLATFORM</span>
+        </div>
+        <h2 class="section-heading-lg tracking-tight">
+          Everything You Need to <span class="text-gradient">Stay Connected</span>
+        </h2>
+        <p class="section-subtext">
+          Fast access to core platform services, directory lookups, and career acceleration tools.
         </p>
       </div>
-      <div>
-        <div class="footer-col-title">Navigation</div>
-        <ul class="footer-links">
-          <li><a href="/main">Home</a></li>
-          <li><a href="/users">Alumni Directory</a></li>
-          <li><a href="/job-postings">Career Opportunities</a></li>
-          <li><a href="/announcements">Announcements Board</a></li>
-          <li><a href="/applications">Application Tracking</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="footer-col-title">Developer API</div>
-        <ul class="footer-links">
-          <li><a href="/api/swagger">Swagger UI</a></li>
-          <li><a href="/api/swagger.json">OpenAPI 3.0 Spec</a></li>
-          <li><a href="/api/health">System Health</a></li>
-          <li><a href="/404">404 Guardian</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="footer-col-title">Documentation</div>
-        <ul class="footer-links">
-          <li><a href="/brand.md">Brand Manual (brand.md)</a></li>
-          <li><a href="/DESIGN.md">Design System (DESIGN.md)</a></li>
-          <li><a href="https://github.com/ecemyakali/alumni" target="_blank" rel="noopener">GitHub Repository</a></li>
-        </ul>
+
+      <div class="bento-grid">
+        <!-- Card 1: Browse Directory -->
+        <article class="bento-card standard-card">
+          <div class="bento-card-top">
+            <div class="bento-tag-bar">
+              <span class="bento-tag">COMMUNITY</span>
+            </div>
+            <div class="bento-icon-wrap">👥</div>
+            <h3 class="bento-card-title">Browse Directory</h3>
+            <p class="bento-card-desc">
+              Search, filter, and connect with verified graduates across departments, industries, and graduation classes worldwide.
+            </p>
+          </div>
+          <a href="/users" class="bento-card-action">
+            <span>Explore Directory</span>
+            <span>&rarr;</span>
+          </a>
+        </article>
+
+        <!-- Card 2: Update Your Profile -->
+        <article class="bento-card standard-card">
+          <div class="bento-card-top">
+            <div class="bento-tag-bar">
+              <span class="bento-tag">MEMBERSHIP</span>
+            </div>
+            <div class="bento-icon-wrap">👤</div>
+            <h3 class="bento-card-title">Update Your Profile</h3>
+            <p class="bento-card-desc">
+              Keep your career trajectory, industry milestones, mentorship availability, and networking preferences up to date.
+            </p>
+          </div>
+          <a href="/profile" class="bento-card-action">
+            <span>Manage Profile</span>
+            <span>&rarr;</span>
+          </a>
+        </article>
+
+        <!-- Card 3: Events & Community -->
+        <article class="bento-card standard-card">
+          <div class="bento-card-top">
+            <div class="bento-tag-bar">
+              <span class="bento-tag">CAMPUS LIFE</span>
+            </div>
+            <div class="bento-icon-wrap">📢</div>
+            <h3 class="bento-card-title">Events &amp; Community</h3>
+            <p class="bento-card-desc">
+              Stay informed with institutional summits, alumni reunions, workshops, and official updates like <em>${this.escapeHtml(firstAnnouncement.title)}</em>.
+            </p>
+          </div>
+          <a href="/announcements" class="bento-card-action">
+            <span>View Announcements</span>
+            <span>&rarr;</span>
+          </a>
+        </article>
+
+        <!-- Card 4: Conditionally Admin Dashboard (admin) or Career Opportunities (non-admin) -->
+        ${isAdmin ? `
+        <article class="bento-card admin-card">
+          <div class="bento-card-top">
+            <div class="bento-tag-bar">
+              <span class="bento-tag" style="background:#eff6ff; color:#1d4ed8; border-color:#dbeafe;">ADMINISTRATION</span>
+            </div>
+            <div class="bento-icon-wrap" style="background:#eff6ff; border-color:#dbeafe;">🛡️</div>
+            <h3 class="bento-card-title">Admin Dashboard</h3>
+            <p class="bento-card-desc">
+              Manage verified member accounts, enforce role-based access, search directory records, and oversee platform health.
+            </p>
+          </div>
+          <a href="/admin" class="bento-card-action" style="color:#1d4ed8;">
+            <span>Open Admin Panel</span>
+            <span>&rarr;</span>
+          </a>
+        </article>` : `
+        <article class="bento-card standard-card">
+          <div class="bento-card-top">
+            <div class="bento-tag-bar">
+              <span class="bento-tag">CAREERS</span>
+            </div>
+            <div class="bento-icon-wrap">💼</div>
+            <h3 class="bento-card-title">Career Opportunities</h3>
+            <p class="bento-card-desc">
+              Discover exclusive job openings, internships, and executive positions shared by alumni employers at companies like ${this.escapeHtml(firstJob.company)}.
+            </p>
+          </div>
+          <a href="/job-postings" class="bento-card-action">
+            <span>Explore Opportunities</span>
+            <span>&rarr;</span>
+          </a>
+        </article>`}
       </div>
     </div>
+  </section>
 
-    <div class="footer-bottom">
-      <div>© 2026 Alumni Tracking System. All rights reserved.</div>
-      <div style="display:flex; gap:8px;">
-        <span class="pill-tag font-mono">Node.js</span>
-        <span class="pill-tag font-mono">Express</span>
-        <span class="pill-tag font-mono">PostgreSQL</span>
+  <!-- ========================================================
+   * SECTION 3: FEATURED / RECENT ALUMNI SPOTLIGHT
+   * ======================================================== -->
+  <section class="spotlight-section">
+    <div class="spotlight-container">
+      <div class="section-framing">
+        <div class="eyebrow-badge">
+          <span class="eyebrow-dot"></span>
+          <span>COMMUNITY SPOTLIGHT</span>
+        </div>
+        <h2 class="section-heading-lg tracking-tight">
+          Meet the Minds Behind Our <span class="text-gradient">Growing Network</span>
+        </h2>
+        <p class="section-subtext">
+          Celebrating recent graduates and distinguished alumni driving innovation across global industries.
+        </p>
+      </div>
+
+      <div class="spotlight-grid" id="alumniSpotlightGrid">
+        ${recentUsers.map(u => `
+        <article class="alumni-card" data-search-term="${this.escapeHtml((u.name || '') + ' ' + (u.department || '') + ' ' + (u.company || '') + ' ' + (u.currentRole || '')).toLowerCase()}">
+          <div>
+            <div class="alumni-header">
+              <div class="alumni-avatar">🎓</div>
+              <div>
+                <h3 class="alumni-name">${this.escapeHtml(u.name)}</h3>
+                <div style="font-size:12px; color:var(--ink-subtle);">${this.escapeHtml(u.department || 'General Alumni')}</div>
+              </div>
+            </div>
+
+            <div class="alumni-badges-row">
+              <span class="alumni-badge-pill grad-year">Class of ${this.escapeHtml(u.graduationYear || '2024')}</span>
+              <span class="alumni-badge-pill">Verified Alumnus</span>
+            </div>
+
+            <p class="alumni-role-info">
+              <span class="alumni-role-company">${this.escapeHtml(u.currentRole || 'Professional')}</span> · ${this.escapeHtml(u.company || 'Alumni Network')}
+            </p>
+          </div>
+
+          <div class="alumni-card-footer">
+            <span style="font-size:12px; color:var(--ink-subtle);">Active Member</span>
+            <a href="/users" class="alumni-action-link">
+              <span>View Profile</span>
+              <span>&rarr;</span>
+            </a>
+          </div>
+        </article>
+        `).join('')}
       </div>
     </div>
-  </footer>
+  </section>
 
-  <!-- Interactive Client Script: Search & Category Filtering -->
+  <!-- ========================================================
+   * SECTION 4: CALL-TO-ACTION FOOTER BANNER
+   * ======================================================== -->
+  <section class="cta-section">
+    <div class="cta-container">
+      <div class="cta-card">
+        <div class="cta-inner">
+          <div class="cta-eyebrow">
+            <span>✦</span>
+            <span>JOIN THE MOVEMENT</span>
+          </div>
+          <h2 class="cta-heading tracking-tight">
+            Empower Your Career and Inspire the Next Generation
+          </h2>
+          <p class="cta-subtext">
+            Join thousands of verified alumni worldwide. Share your journey, mentor aspiring graduates, and discover unlisted career opportunities.
+          </p>
+          <div class="cta-buttons">
+            ${isAuthenticated ? `
+              <a href="/profile" class="btn-cta-primary">Update Your Profile &rarr;</a>
+              <a href="/users" class="btn-cta-secondary">Explore Alumni Directory</a>
+            ` : `
+              <a href="/register" class="btn-cta-primary">Create Your Account &rarr;</a>
+              <a href="/login" class="btn-cta-secondary">Log In to Portal</a>
+            `}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Standard Mintlify Footer -->
+  ${sharedLayout.renderFooter()}
+
+  <!-- Client-side Interactive Search & Shortcut Controller -->
   <script>
     (function() {
       const searchInput = document.getElementById('globalSearchInput');
-      const tabButtons = document.querySelectorAll('.tab-btn');
-      const cards = document.querySelectorAll('.clean-card');
-
-      let currentCategory = 'all';
-
-      function filterCards() {
-        const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
-
-        cards.forEach(card => {
-          const cat = card.getAttribute('data-category') || '';
-          const text = (card.getAttribute('data-title') || '').toLowerCase();
-
-          const matchesCat = currentCategory === 'all' || cat === currentCategory;
-          const matchesQuery = !query || text.includes(query);
-
-          card.style.display = (matchesCat && matchesQuery) ? 'flex' : 'none';
-        });
-      }
+      const cards = document.querySelectorAll('#alumniSpotlightGrid .alumni-card');
 
       if (searchInput) {
-        searchInput.addEventListener('input', filterCards);
-        // Ctrl+K / Cmd+K shortcut
-        window.addEventListener('keydown', function(e) {
-          if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-            e.preventDefault();
-            searchInput.focus();
+        searchInput.addEventListener('input', function() {
+          const q = this.value.toLowerCase().trim();
+          cards.forEach(card => {
+            const text = card.getAttribute('data-search-term') || '';
+            card.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+          });
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            const q = this.value.trim();
+            if (q) {
+              window.location.href = '/users?q=' + encodeURIComponent(q);
+            }
           }
         });
       }
 
-      tabButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-          tabButtons.forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          currentCategory = this.getAttribute('data-filter') || 'all';
-          filterCards();
-        });
+      // Cmd+K / Ctrl+K listener
+      window.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+          e.preventDefault();
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }
       });
     })();
   </script>

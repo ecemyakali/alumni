@@ -100,4 +100,79 @@ test('Homepage View & Routing Suite', async (t) => {
       await new Promise(resolve => server.close(resolve));
     }
   });
+
+  await t.test('5. homeView renders all 4 distinct sections with 3-tier framing and high-contrast typography', () => {
+    const html = homeView.renderHomePage({
+      userCount: 150,
+      jobPostingCount: 24,
+      announcementCount: 12,
+      applicationCount: 45
+    });
+
+    // Section 1: Focused Hero & Live Search
+    assert.ok(html.includes('OFFICIAL ALUMNI PORTAL'), 'Section 1 Eyebrow missing');
+    assert.ok(html.includes('Where Graduates'), 'Section 1 Headline missing');
+    assert.ok(html.includes('Reconnect, Mentor, and Grow'), 'Section 1 Gradient text missing');
+    assert.ok(html.includes('globalSearchInput'), 'Central search bar missing');
+    assert.ok(html.includes('⌘K'), '⌘K shortcut badge missing');
+
+    // Section 2: Bento Quick-Access Grid
+    assert.ok(html.includes('EXPLORE THE PLATFORM'), 'Section 2 Eyebrow missing');
+    assert.ok(html.includes('Everything You Need to'), 'Section 2 Headline missing');
+    assert.ok(html.includes('Stay Connected'), 'Section 2 Gradient text missing');
+    assert.ok(html.includes('Browse Directory'), 'Bento Browse Directory card missing');
+    assert.ok(html.includes('Update Your Profile'), 'Bento Update Profile card missing');
+    assert.ok(html.includes('Events &amp; Community'), 'Bento Events & Community card missing');
+
+    // Section 3: Featured / Recent Alumni Spotlight
+    assert.ok(html.includes('COMMUNITY SPOTLIGHT'), 'Section 3 Eyebrow missing');
+    assert.ok(html.includes('Meet the Minds Behind Our'), 'Section 3 Headline missing');
+    assert.ok(html.includes('Growing Network'), 'Section 3 Gradient text missing');
+    assert.ok(html.includes('alumniSpotlightGrid'), 'Alumni spotlight grid missing');
+    assert.ok(html.includes('Class of'), 'Graduation year badge missing');
+
+    // Section 4: Call-to-Action Footer Banner
+    assert.ok(html.includes('JOIN THE MOVEMENT'), 'Section 4 Eyebrow missing');
+    assert.ok(html.includes('Empower Your Career and Inspire the Next Generation'), 'Section 4 Headline missing');
+  });
+
+  await t.test('6. homeView renders Bento Admin Dashboard card conditionally for admin users', () => {
+    // Non-admin user
+    const htmlMember = homeView.renderHomePage({}, {
+      currentUser: { name: 'Sarah Member', role: 'alumni' }
+    });
+    assert.ok(!htmlMember.includes('bento-card admin-card'));
+    assert.ok(htmlMember.includes('Career Opportunities'));
+
+    // Admin user
+    const htmlAdmin = homeView.renderHomePage({}, {
+      currentUser: { name: 'Ece Admin', role: 'admin' }
+    });
+    assert.ok(htmlAdmin.includes('bento-card admin-card'));
+    assert.ok(htmlAdmin.includes('Admin Dashboard'));
+    assert.ok(htmlAdmin.includes('Open Admin Panel'));
+  });
+
+  await t.test('7. Streamlined navbar renders single-row header, compact search trigger, and user dropdown', () => {
+    // Authenticated admin user navbar
+    const htmlAdmin = homeView.renderHomePage({}, {
+      currentUser: { name: 'Ece Admin', role: 'admin' }
+    });
+    assert.ok(htmlAdmin.includes('nav-search-trigger'));
+    assert.ok(htmlAdmin.includes('Explore'));
+    assert.ok(htmlAdmin.includes('nav-dropdown-menu'));
+    assert.ok(htmlAdmin.includes('nav-user-wrap'));
+    assert.ok(htmlAdmin.includes('user-menu-dropdown'));
+    assert.ok(htmlAdmin.includes('My Profile'));
+    assert.ok(htmlAdmin.includes('Admin Panel'));
+    assert.ok(htmlAdmin.includes('Log Out'));
+
+    // Unauthenticated user navbar
+    const htmlGuest = homeView.renderHomePage();
+    assert.ok(htmlGuest.includes('nav-search-trigger'));
+    assert.ok(htmlGuest.includes('Log In'));
+    assert.ok(htmlGuest.includes('Register'));
+    assert.ok(!htmlGuest.includes('id="userMenuBtn"'));
+    assert.ok(!htmlGuest.includes('class="nav-user-wrap"'));
+  });
 });
